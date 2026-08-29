@@ -1,0 +1,54 @@
+*.xcodeproj/
+# XcodeGen writes these from the `info:` / `entitlements:` blocks of
+# App/project.yml, so they are generator output like the .xcodeproj beside
+# them, and they matched the generator byte for byte. (A second, `Probe`, pair
+# was ignored here too until that target was deleted with the rename.)
+App/Vocula/Info.plist
+App/Vocula/Vocula.entitlements
+.build/
+.swiftpm/
+DerivedData/
+# `scripts/notarize.sh` writes its Release build, its own DerivedData and the
+# signed zips here — inside the working tree, and it was the one build output
+# with no rule. A release run left a gigabyte untracked in `git status`, where
+# the next `git add -A` would have swept it into a commit.
+# ANCHORED, and it has to be. Unanchored `build/` matches EVERY directory of
+# that name — including `Design/build/`, whose tokens.css is TRACKED. That file
+# survived only because gitignore does not apply to what is already tracked, so
+# rebuilding the index in a fresh checkout dropped it silently. Measured: 265
+# files staged where 266 were expected.
+/build/
+*.xcuserstate
+xcuserdata/
+.idea/
+
+# Developer-local signing overrides (see App/Signing.xcconfig).
+App/Local.xcconfig
+.DS_Store
+
+# Tooling scratch output.
+.playwright-mcp/
+
+# Isolated git worktrees created for subagent-driven feature work.
+.worktrees/
+
+# Maintainer's notes. Kept on one machine, out of the tree. README.md is what a
+# person needs to build and run this.
+CLAUDE.md
+BUSINESS.md
+docs/architecture.md
+
+# Export/import traffic for the translation loop. NOT `Localization/` — the
+# glossary lives there and is committed.
+Localization/*.xcloc
+
+# Slow-test audio fixtures. They are RENDERED, not authored: four are `say`
+# output in Apple-licensed voices and pl-cue.f32 carries 565 ms of
+# /System/Library/Sounds/Frog.aiff. Publishing this tree under GPL-3.0 would
+# re-license Apple's assets, which is not ours to do. `Cue.swift` itself is
+# clean — NSSound(named:) is a runtime lookup on the user's own Mac and
+# redistributes nothing; only the baked bytes were the problem.
+# `scripts/make-fixtures.sh` renders them locally, and every slow suite that
+# needs one is gated on its existence, so a checkout without them SKIPS rather
+# than fails.
+Tests/VoculaSlowTests/Fixtures/*.f32

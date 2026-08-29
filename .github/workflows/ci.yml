@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+# A called workflow inherits the caller's token scope, and release.yml calls
+# this one under `contents: write`; without this the job holds a token that can
+# push to main while running a fork's build phases.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-26
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Guards
+        run: |
+          ./scripts/check-purity.sh
+          ./scripts/check-localization.sh
+
+      - name: swift test
+        run: swift test
+
+      - name: Generate the Xcode project
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
+
+      - name: Hosted app tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project App/Vocula.xcodeproj \
+            -scheme Vocula \
+            -only-testing:VoculaAppTests \
+            | tee "$RUNNER_TEMP/xcodebuild.log"
+
+      - name: Build log
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log

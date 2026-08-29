@@ -1,0 +1,25 @@
+// Signing configuration.
+//
+// The default below is AD-HOC: no team, no certificate, signed only for this
+// machine. That is what a stranger cloning the repository gets, and it builds
+// and runs. It does NOT survive distribution, and macOS re-prompts for
+// Accessibility and Microphone after every rebuild, because both are bound to
+// (bundle id + signature) and an ad-hoc signature changes with the binary.
+// See "Build it yourself" in README.md.
+//
+// To sign with your own Apple Developer team, create App/Local.xcconfig —
+// gitignored, never committed — from Local.xcconfig.example:
+//
+//     DEVELOPMENT_TEAM = ABCDE12345
+//     CODE_SIGN_STYLE = Automatic
+//     CODE_SIGN_IDENTITY = Apple Development
+//
+// The optional include below is what picks it up. `#include?` does not fail
+// when the file is absent, and xcconfig assignment is last-wins, so anything
+// Local.xcconfig sets overrides the ad-hoc defaults above it.
+
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Manual
+CODE_SIGN_IDENTITY = -
+
+#include? "Local.xcconfig"

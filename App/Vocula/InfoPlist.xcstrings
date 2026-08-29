@@ -1,0 +1,66 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "The FIRST English a user ever sees — macOS's own microphone permission dialog, before any window of ours. It must say when recording happens and nothing more; a longer sentence is truncated by the system dialog.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nimmt nur Audio auf, während Sie diktieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vocula records audio only while you are dictating."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula graba audio solo mientras dictas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula n’enregistre du son que pendant que vous dictez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula registra audio solo mentre detti."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nagrywa dźwięk tylko wtedy, gdy dyktujesz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula grava áudio somente enquanto você dita."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записывает звук только во время диктовки."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записує звук лише під час диктування."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

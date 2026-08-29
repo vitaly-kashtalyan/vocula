@@ -1,0 +1,28 @@
+name: Decline pull requests
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  decline:
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr comment "$PR" --repo "$REPO" --body \
+          "Thank you for this, and sorry — **pull requests are not accepted on this repository**, so this one is being closed unread.
+
+          It is not about the code. A merged patch leaves its author's copyright in the tree, which permanently ends any possibility of relicensing or selling the work — and Vocula is GPL-3.0 source with a paid binary. The full reasoning is in [CONTRIBUTING.md](https://github.com/$REPO/blob/main/CONTRIBUTING.md), and it is written down there rather than delivered here so that nobody discovers it after doing the work.
+
+          What is genuinely wanted: bug reports (with \`Settings → Diagnostics\` attached), measurements that contradict what the README claims, and anything about a language. Please open an issue.
+
+          Forking is free, needs no permission, and is what the licence is for."
+          gh pr close "$PR" --repo "$REPO"

@@ -1,0 +1,5226 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "appearance.dark" : {
+      "comment" : "Appearance tile: always the dark appearance.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dunkel"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dark"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oscuro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sombre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Scuro"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ciemny"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Escuro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Тёмное"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Темне"
+          }
+        }
+      }
+    },
+    "appearance.light" : {
+      "comment" : "Appearance tile: always the light appearance.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hell"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Light"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Claro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Clair"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chiaro"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jasny"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Claro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Светлое"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Світле"
+          }
+        }
+      }
+    },
+    "appearance.system" : {
+      "comment" : "Appearance tile: follow the system's light/dark setting.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wie System"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Match System"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Igual que el sistema"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comme le système"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Come il sistema"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak w systemie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Igual ao sistema"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Как в системе"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Як у системі"
+          }
+        }
+      }
+    },
+    "binding.rejected.bareKey" : {
+      "comment" : "Why a key with no modifiers cannot be bound.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eine normale Taste ohne Sondertasten: Tippen würde zum Diktieren werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "An ordinary key with no modifiers: typing would become dictation."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Una tecla normal sin modificadores: escribir se convertiría en dictar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une touche ordinaire sans modificateur : taper deviendrait dicter."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un tasto normale senza modificatori: digitare diventerebbe dettare."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zwykły klawisz bez modyfikatorów: pisanie stałoby się dyktowaniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uma tecla comum sem modificadores: digitar viraria ditar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Обычная клавиша без модификаторов: набор текста превратился бы в диктовку."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Звичайна клавіша без модифікаторів: набір тексту перетворився б на диктування."
+          }
+        }
+      }
+    },
+    "binding.rejected.capsLock" : {
+      "comment" : "Why Caps Lock cannot be bound. Load-bearing: this row has no footer of its own and carries the whole explanation.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Feststelltaste lässt sich nicht belegen: Das System behandelt sie besonders, mit eigener Rastung und Verzögerung. Sie zu einer gewöhnlichen Taste zu machen erfordert eine Umbelegung auf Treiberebene — das ist eine Einstellung des Geräts, nicht dieser App."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Caps Lock cannot be assigned: the system treats it specially, with latching and a delay of its own. Turning it into an ordinary key needs driver-level remapping — that is a setting of the machine, not of this app."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloq Mayús no se puede asignar: el sistema la trata de forma especial, con enclavamiento y un retardo propio. Convertirla en una tecla normal exige reasignarla a nivel de controlador, y eso es un ajuste de la máquina, no de esta app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verr. maj. ne peut pas être affectée : le système la traite à part, avec un verrouillage et un délai qui lui sont propres. En faire une touche ordinaire exige un remappage au niveau du pilote, ce qui est un réglage de la machine et non de cette app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Blocco maiuscole non è assegnabile: il sistema lo tratta in modo speciale, con un blocco e un ritardo propri. Renderlo un tasto normale richiede una rimappatura a livello di driver, che è un’impostazione della macchina e non di questa app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caps Lock nie może zostać przypisany: system traktuje go szczególnie, z własną blokadą i opóźnieniem. Uczynienie z niego zwykłego klawisza wymaga przemapowania na poziomie sterownika — a to ustawienie maszyny, nie tego programu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A Caps Lock não pode ser atribuída: o sistema a trata de forma especial, com travamento e atraso próprios. Torná-la uma tecla comum exige remapeamento no nível do driver — isso é um ajuste da máquina, não deste app."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caps Lock назначить нельзя: система обращается с ней особым образом — с фиксацией и собственной задержкой. Сделать её обычной клавишей можно только переназначением на уровне драйвера, а это настройка машины, а не этой программы."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caps Lock призначити не можна: система поводиться з нею особливо — з фіксацією та власною затримкою. Зробити її звичайною клавішею можна лише перепризначенням на рівні драйвера, а це налаштування машини, а не цієї програми."
+          }
+        }
+      }
+    },
+    "binding.rejected.commandQ" : {
+      "comment" : "Why ⌘Q cannot be bound.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q beendet die App. Eine App, die ⌘Q kaputt macht, ist kaputt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⌘Q quits the application. An app that breaks ⌘Q is a broken app."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q cierra la app. Una app que rompe ⌘Q es una app rota."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q quitte l’app. Une app qui casse ⌘Q est cassée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q chiude l’app. Un’app che rompe ⌘Q è un’app rotta."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q kończy program. Program, który psuje ⌘Q, jest zepsuty."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q encerra o app. Um app que quebra ⌘Q é um app quebrado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q завершает программу. Программа, которая ломает ⌘Q, сломана."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Q завершує програму. Програма, яка ламає ⌘Q, зламана."
+          }
+        }
+      }
+    },
+    "binding.rejected.commandSpace" : {
+      "comment" : "Why ⌘Space cannot be bound. Spotlight is macOS's own name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Leertaste öffnet Spotlight."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⌘Space opens Spotlight."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Espacio abre Spotlight."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Espace ouvre Spotlight."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Spazio apre Spotlight."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Spacja otwiera Spotlight."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Espaço abre o Spotlight."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Пробел открывает Spotlight."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Пробіл відкриває Spotlight."
+          }
+        }
+      }
+    },
+    "binding.rejected.commandTab" : {
+      "comment" : "Why ⌘Tab cannot be bound. The chord is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tabulator wechselt zwischen Apps."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⌘Tab switches applications."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab cambia de app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab change d’app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab cambia app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab przełącza programy."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab alterna entre apps."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab переключает программы."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘Tab перемикає програми."
+          }
+        }
+      }
+    },
+    "binding.rejected.commandV" : {
+      "comment" : "Why ⌘V cannot be bound; the app synthesises it. The chord is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die App erzeugt ⌘V selbst — ein Einsetzen würde sofort eine neue Aufnahme starten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The app synthesises ⌘V itself — a paste would immediately start a new session."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La app genera ⌘V por su cuenta: pegar iniciaría de inmediato una grabación nueva."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’app produit ⌘V elle-même — un collage lancerait aussitôt un nouvel enregistrement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’app genera ⌘V da sé: incollare avvierebbe subito una nuova registrazione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Program sam wytwarza ⌘V — wklejenie natychmiast rozpoczęłoby nowe nagranie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O app gera ⌘V por conta própria — colar iniciaria imediatamente uma nova gravação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Программа сама создаёт ⌘V — вставка немедленно начала бы новую запись."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Програма сама створює ⌘V — вставлення негайно почало б новий запис."
+          }
+        }
+      }
+    },
+    "binding.rejected.commandW" : {
+      "comment" : "Why ⌘W cannot be bound.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W schließt das Fenster."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⌘W closes the window."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W cierra la ventana."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W ferme la fenêtre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W chiude la finestra."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W zamyka okno."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W fecha a janela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W закрывает окно."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌘W закриває вікно."
+          }
+        }
+      }
+    },
+    "binding.rejected.escape" : {
+      "comment" : "Why Esc cannot be bound. Esc is a key name and is not translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc bricht eine Aufnahme ab. Diese Taste zu belegen würde Abbrechen und Starten ununterscheidbar machen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Esc cancels a recording. Binding to it would make cancelling indistinguishable from starting."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc cancela una grabación. Asignarla haría que cancelar fuese indistinguible de empezar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc annule un enregistrement. L’affecter rendrait l’annulation indiscernable du démarrage."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc annulla una registrazione. Assegnarlo renderebbe l’annullamento indistinguibile dall’avvio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc anuluje nagranie. Przypisanie go sprawiłoby, że anulowanie byłoby nie do odróżnienia od rozpoczęcia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc cancela uma gravação. Atribuí-la tornaria cancelar indistinguível de começar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc отменяет запись. Назначение на неё сделало бы отмену неотличимой от начала."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esc скасовує запис. Призначення на неї зробило б скасування невідрізнюваним від початку."
+          }
+        }
+      }
+    },
+    "binding.warning.appleStandard" : {
+      "comment" : "Warning that a standard macOS shortcut is being taken over.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS gibt diesem Kurzbefehl in jeder App eine feste Bedeutung. Ihn hier zu belegen nimmt ihn allen anderen weg."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "macOS gives this shortcut a standard meaning in every app. Binding it here takes it away from all of them."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS da a esta combinación un significado estándar en todas las apps. Ocuparla aquí se la quita a todas ellas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS donne à ce raccourci un sens standard dans toutes les apps. L’occuper ici le retire à toutes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS dà a questa combinazione un significato standard in ogni app. Occuparla qui la toglie a tutte."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS nadaje temu skrótowi standardowe znaczenie w każdym programie. Zajęcie go tutaj odbiera go im wszystkim."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O macOS dá a este atalho um significado padrão em todos os apps. Ocupá-lo aqui o tira de todos eles."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS придаёт этому сокращению стандартный смысл во всех программах. Заняв его здесь, вы отнимете его у всех остальных."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS надає цьому скороченню стандартне значення в усіх програмах. Зайнявши його тут, ви заберете його в усіх них."
+          }
+        }
+      }
+    },
+    "binding.warning.controlSpace" : {
+      "comment" : "Warning that ⌃Space switches the input source.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Leertaste wechselt die Eingabequelle."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "⌃Space switches the input source."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Espacio cambia la fuente de entrada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Espace change la source de saisie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Spazio cambia la sorgente di input."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Spacja przełącza źródło wprowadzania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Espaço troca a fonte de entrada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Пробел переключает источник ввода."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⌃Пробіл перемикає джерело введення."
+          }
+        }
+      }
+    },
+    "binding.warning.doubleShift" : {
+      "comment" : "Warning that double ⇧ is taken in JetBrains IDEs, which is a product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Doppeltes ⇧ ist in JetBrains-IDEs belegt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Double ⇧ is taken in JetBrains IDEs."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Doble ⇧ está ocupado en los IDE de JetBrains."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Double ⇧ est pris dans les IDE JetBrains."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Doppio ⇧ è occupato negli IDE JetBrains."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podwójny ⇧ jest zajęty w środowiskach JetBrains."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "⇧ duplo está ocupado nas IDEs da JetBrains."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Двойной ⇧ занят в средах JetBrains."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Подвійний ⇧ зайнятий у середовищах JetBrains."
+          }
+        }
+      }
+    },
+    "binding.warning.rightOption" : {
+      "comment" : "Warning that the right ⌥ types characters on some layouts.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Auf manchen Belegungen ist die rechte ⌥-Taste am Tippen von Zeichen beteiligt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "On some layouts the right ⌥ takes part in typing characters."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En algunas distribuciones la tecla ⌥ derecha participa al escribir caracteres."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sur certaines dispositions, la touche ⌥ droite participe à la saisie de caractères."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Su alcuni layout il tasto ⌥ destro partecipa alla digitazione dei caratteri."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W niektórych układach prawy ⌥ bierze udział w pisaniu znaków."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Em alguns layouts a tecla ⌥ direita participa da digitação de caracteres."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "На некоторых раскладках правый ⌥ участвует в наборе символов."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "На деяких розкладках права ⌥ бере участь у наборі символів."
+          }
+        }
+      }
+    },
+    "history.day.today" : {
+      "comment" : "History day heading for the current day.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Heute"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aujourd’hui"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oggi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dzisiaj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoje"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сегодня"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сьогодні"
+          }
+        }
+      }
+    },
+    "history.day.yesterday" : {
+      "comment" : "History day heading for the day before the current one.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gestern"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yesterday"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ayer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ieri"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wczoraj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ontem"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вчера"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Учора"
+          }
+        }
+      }
+    },
+    "hotkey.applicationWindows" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Programmfenster"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Application windows"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ventanas de la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fenêtres de l’app"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finestre dell’app"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okna programu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Janelas do app"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Окна программы"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вікна програми"
+          }
+        }
+      }
+    },
+    "hotkey.dock" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording. Dock is Apple's own name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fokus auf Dock bewegen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move focus to the Dock"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover el foco al Dock"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer le focus sur le Dock"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sposta il focus sul Dock"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przenieś fokus na Dock"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover o foco para o Dock"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Переместить фокус в Dock"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Перемістити фокус у Dock"
+          }
+        }
+      }
+    },
+    "hotkey.help" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hilfe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Help"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ayuda"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aide"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aiuto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomoc"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajuda"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Помощь"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Довідка"
+          }
+        }
+      }
+    },
+    "hotkey.launchpad" : {
+      "comment" : "macOS Keyboard Shortcuts row name — Launchpad is Apple's product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Launchpad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Launchpad"
+          }
+        }
+      }
+    },
+    "hotkey.menuBar" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fokus auf Menüleiste bewegen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move focus to the menu bar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover el foco a la barra de menús"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déplacer le focus sur la barre des menus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sposta il focus sulla barra dei menu"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przenieś fokus na pasek menu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover o foco para a barra de menus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Переместить фокус в строку меню"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Перемістити фокус у рядок меню"
+          }
+        }
+      }
+    },
+    "hotkey.missionControl" : {
+      "comment" : "macOS Keyboard Shortcuts row name — Apple keeps this name untranslated in most languages; check that system.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mission Control"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mission Control"
+          }
+        }
+      }
+    },
+    "hotkey.nextInputSource" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nächste Eingabequelle auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select the next input source"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleccionar la fuente de entrada siguiente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sélectionner la source de saisie suivante"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleziona la sorgente di input successiva"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz następne źródło wprowadzania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Selecionar a próxima fonte de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Выбрать следующий источник ввода"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вибрати наступне джерело введення"
+          }
+        }
+      }
+    },
+    "hotkey.notificationCentre" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording, and its own spelling.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mitteilungszentrale"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notification Centre"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Centro de notificaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Centre de notifications"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Centro Notifiche"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Centrum powiadomień"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Central de Notificações"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Центр уведомлений"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Центр сповіщень"
+          }
+        }
+      }
+    },
+    "hotkey.previousInputSource" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vorherige Eingabequelle auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select the previous input source"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleccionar la fuente de entrada anterior"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sélectionner la source de saisie précédente"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seleziona la sorgente di input precedente"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz poprzednie źródło wprowadzania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Selecionar a fonte de entrada anterior"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Выбрать предыдущий источник ввода"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вибрати попереднє джерело введення"
+          }
+        }
+      }
+    },
+    "hotkey.quickNote" : {
+      "comment" : "macOS Keyboard Shortcuts row name — Apple's feature name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kurznotiz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quick Note"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nota rápida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Note rapide"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nota rapida"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szybka notatka"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nota rápida"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Быстрая заметка"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Швидка нотатка"
+          }
+        }
+      }
+    },
+    "hotkey.showDesktop" : {
+      "comment" : "macOS Keyboard Shortcuts row name — use that system's own wording.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schreibtisch einblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show desktop"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar el escritorio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afficher le bureau"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostra la scrivania"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż biurko"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar a mesa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показать рабочий стол"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показати робочий стіл"
+          }
+        }
+      }
+    },
+    "hotkey.spaceLeft" : {
+      "comment" : "macOS Keyboard Shortcuts row name — a Space is Apple's desktop, not a blank.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ein Space nach links bewegen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move one space left"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desplazarse un espacio a la izquierda"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se déplacer d’un espace vers la gauche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spostati di uno spazio a sinistra"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przejdź o jedną przestrzeń w lewo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover um espaço para a esquerda"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Переместиться на одно пространство влево"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Перейти на один простір ліворуч"
+          }
+        }
+      }
+    },
+    "hotkey.spaceRight" : {
+      "comment" : "macOS Keyboard Shortcuts row name — a Space is Apple's desktop, not a blank.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ein Space nach rechts bewegen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move one space right"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desplazarse un espacio a la derecha"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se déplacer d’un espace vers la droite"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spostati di uno spazio a destra"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przejdź o jedną przestrzeń w prawo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mover um espaço para a direita"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Переместиться на одно пространство вправо"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Перейти на один простір праворуч"
+          }
+        }
+      }
+    },
+    "hotkey.spotlight" : {
+      "comment" : "macOS Keyboard Shortcuts row name — Spotlight is Apple's product name and is not translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Spotlight"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spotlight"
+          }
+        }
+      }
+    },
+    "hotkey.spotlightFinder" : {
+      "comment" : "macOS Keyboard Shortcuts row name — Spotlight and Finder are Apple's names.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finder-Suchfenster einblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Spotlight search in Finder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Búsqueda de Spotlight en el Finder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Recherche Spotlight dans le Finder"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ricerca Spotlight nel Finder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyszukiwanie Spotlight w Finderze"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Busca do Spotlight no Finder"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Поиск Spotlight в Finder"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Пошук Spotlight у Finder"
+          }
+        }
+      }
+    },
+    "hotkey.unknown" : {
+      "comment" : "Fallback when this table has gone stale against a macOS release; the argument is a numeric identifier and is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Systemaktion #%@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "system action #%@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "acción del sistema n.º %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "action système n° %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "azione di sistema n. %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "akcja systemowa nr %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ação do sistema nº %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "системное действие №%@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "системна дія №%@"
+          }
+        }
+      }
+    },
+    "livecheck.nothingArrived" : {
+      "comment" : "Live-check result: nothing reached the tap. The four app names are products and are never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Taste kommt gar nicht an. Wahrscheinliche Ursachen: Ein anderes Programm fängt sie ab (Raycast, Alfred, Karabiner, BetterTouchTool, ein Firmen-Agent), die Firmware einer externen Tastatur, oder die sichere Eingabe ist gerade aktiv. Wählen Sie eine andere Taste."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The key does not arrive at all. Likely causes: another interceptor took it (Raycast, Alfred, Karabiner, BetterTouchTool, a corporate agent), external keyboard firmware, or secure input is active right now. Choose another key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La tecla no llega en absoluto. Causas probables: otra app la intercepta (Raycast, Alfred, Karabiner, BetterTouchTool, un agente corporativo), el firmware de un teclado externo, o la entrada segura está activa ahora mismo. Elige otra tecla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La touche n’arrive pas du tout. Causes probables : une autre app l’intercepte (Raycast, Alfred, Karabiner, BetterTouchTool, un agent d’entreprise), le micrologiciel d’un clavier externe, ou la saisie sécurisée est active en ce moment. Choisissez une autre touche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il tasto non arriva affatto. Cause probabili: un’altra app lo intercetta (Raycast, Alfred, Karabiner, BetterTouchTool, un agente aziendale), il firmware di una tastiera esterna, oppure l’input sicuro è attivo in questo momento. Scegli un altro tasto."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klawisz w ogóle nie dochodzi. Prawdopodobne przyczyny: przechwytuje go inny program (Raycast, Alfred, Karabiner, BetterTouchTool, agent firmowy), oprogramowanie zewnętrznej klawiatury albo właśnie działa bezpieczne wprowadzanie. Wybierz inny klawisz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A tecla não chega de jeito nenhum. Causas prováveis: outro app a intercepta (Raycast, Alfred, Karabiner, BetterTouchTool, um agente corporativo), o firmware de um teclado externo, ou a entrada segura está ativa agora. Escolha outra tecla."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Клавиша не доходит вовсе. Вероятные причины: её перехватила другая программа (Raycast, Alfred, Karabiner, BetterTouchTool, корпоративный агент), прошивка внешней клавиатуры, либо прямо сейчас включён защищённый ввод. Выберите другую клавишу."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Клавіша не доходить узагалі. Ймовірні причини: її перехоплює інша програма (Raycast, Alfred, Karabiner, BetterTouchTool, корпоративний агент), прошивка зовнішньої клавіатури, або просто зараз увімкнено захищене введення. Оберіть іншу клавішу."
+          }
+        }
+      }
+    },
+    "livecheck.pressWithoutRelease" : {
+      "comment" : "Live-check result: the release never came. Must stay clearly distinct from livecheck.releaseWithoutPress — they differ by four words in English.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Drücken kam an, das Loslassen nicht: Die Halte-Geste funktioniert mit dieser Taste nicht. Wählen Sie eine andere Taste."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The press arrived without the release: the hold gesture will not work on this key. Choose another key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Llegó la pulsación pero no la suelta: el gesto de mantener no funcionará con esta tecla. Elige otra tecla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’appui est arrivé sans le relâchement : le geste de maintien ne fonctionnera pas avec cette touche. Choisissez-en une autre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "È arrivata la pressione ma non il rilascio: il gesto di tenuta non funzionerà con questo tasto. Scegline un altro."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Naciśnięcie dotarło, zwolnienie nie: gest przytrzymania nie zadziała na tym klawiszu. Wybierz inny."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O pressionar chegou, mas o soltar não: o gesto de manter pressionado não vai funcionar nesta tecla. Escolha outra."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нажатие дошло, отпускание — нет: жест удержания на этой клавише работать не будет. Выберите другую клавишу."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Натискання дійшло, а відпускання — ні: жест утримання на цій клавіші не працюватиме. Оберіть іншу клавішу."
+          }
+        }
+      }
+    },
+    "livecheck.releaseWithoutPress" : {
+      "comment" : "Live-check result: the press never came. Must stay clearly distinct from livecheck.pressWithoutRelease.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Loslassen kam an, das Drücken nicht: Die Halte-Geste funktioniert mit dieser Taste nicht. Wählen Sie eine andere Taste."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The release arrived without the press: the hold gesture will not work on this key. Choose another key."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Llegó la suelta pero no la pulsación: el gesto de mantener no funcionará con esta tecla. Elige otra tecla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le relâchement est arrivé sans l’appui : le geste de maintien ne fonctionnera pas avec cette touche. Choisissez-en une autre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "È arrivato il rilascio ma non la pressione: il gesto di tenuta non funzionerà con questo tasto. Scegline un altro."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zwolnienie dotarło, naciśnięcie nie: gest przytrzymania nie zadziała na tym klawiszu. Wybierz inny."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O soltar chegou, mas o pressionar não: o gesto de manter pressionado não vai funcionar nesta tecla. Escolha outra."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Отпускание дошло, нажатие — нет: жест удержания на этой клавише работать не будет. Выберите другую клавишу."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Відпускання дійшло, а натискання — ні: жест утримання на цій клавіші не працюватиме. Оберіть іншу клавішу."
+          }
+        }
+      }
+    },
+    "livecheck.working" : {
+      "comment" : "Live-check result: press and release both reached the tap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Taste ist vollständig sichtbar — die Belegung ist gesichert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The key is fully visible — the binding is saved."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La tecla se ve por completo: la asignación está guardada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La touche est entièrement visible — l’affectation est enregistrée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il tasto è pienamente visibile: l’assegnazione è salvata."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klawisz jest w pełni widoczny — przypisanie zostało zapisane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A tecla está totalmente visível — a atribuição foi salva."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Клавиша видна полностью — привязка сохранена."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Клавіша видима повністю — прив’язку збережено."
+          }
+        }
+      }
+    },
+    "microphone.unknownDevice" : {
+      "comment" : "Row label for a ranked microphone that has not been seen connected since it was added, so macOS never gave us its name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Unbekanntes Gerät"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unknown device"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dispositivo desconocido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appareil inconnu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dispositivo sconosciuto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieznane urządzenie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dispositivo desconhecido"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Неизвестное устройство"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Невідомий пристрій"
+          }
+        }
+      }
+    },
+    "models.space.enough" : {
+      "comment" : "Disk-space verdict, shown inside a longer sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "es ist genug Platz vorhanden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "there is enough room"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "hay espacio suficiente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "il y a assez de place"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "c’è spazio a sufficienza"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "miejsca jest wystarczająco"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "há espaço suficiente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "места достаточно"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "місця достатньо"
+          }
+        }
+      }
+    },
+    "models.space.short" : {
+      "comment" : "Disk-space verdict; the argument is an already-formatted number of gigabytes.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ GB zu wenig"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%@ GB short"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "faltan %@ GB"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "il manque %@ Go"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "mancano %@ GB"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "brakuje %@ GB"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "faltam %@ GB"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "не хватает %@ ГБ"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "бракує %@ ГБ"
+          }
+        }
+      }
+    },
+    "models.space.unknown" : {
+      "comment" : "Disk-space verdict, shown inside a longer sentence.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "der freie Speicherplatz ließ sich nicht ermitteln"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "free disk space could not be determined"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "no se pudo determinar el espacio libre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "l’espace disque libre n’a pas pu être déterminé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "non è stato possibile determinare lo spazio libero"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nie udało się ustalić wolnego miejsca"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "não foi possível determinar o espaço livre"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "свободное место определить не удалось"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "вільне місце визначити не вдалося"
+          }
+        }
+      }
+    },
+    "models.speechDetector" : {
+      "comment" : "Name of the VAD model as shown in the model list.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spracherkennung des Sprechbeginns"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Speech detector"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detector de voz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Détecteur de parole"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rilevatore vocale"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detektor mowy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detector de fala"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Детектор речи"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Детектор мовлення"
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.explanation" : {
+      "comment" : "Why Accessibility is needed. ⌘V is a key chord and is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Damit ⌘V an eine andere App gesendet werden kann und damit wir fragen können, ob das aktive Feld ein sicheres ist."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "So ⌘V can be sent to another application, and so we can ask whether the focused field is a secure one."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Para poder enviar ⌘V a otra app y para poder preguntar si el campo activo es seguro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pour pouvoir envoyer ⌘V à une autre app et pour pouvoir demander si le champ actif est sécurisé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Per poter inviare ⌘V a un’altra app e per poter chiedere se il campo attivo è protetto."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aby ⌘V mogło zostać wysłane do innego programu i aby można było zapytać, czy aktywne pole jest chronione."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Para que ⌘V possa ser enviado a outro app e para que possamos perguntar se o campo em foco é seguro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Чтобы ⌘V можно было отправить в другую программу и чтобы можно было спросить, защищено ли активное поле."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Щоб ⌘V можна було надіслати в іншу програму і щоб можна було запитати, чи є активне поле захищеним."
+          }
+        }
+      }
+    },
+    "onboarding.accessibility.title" : {
+      "comment" : "Row title; must match macOS's own Accessibility pane name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bedienungshilfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Accessibility"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Accesibilidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Accessibilité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Accessibilità"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostępność"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Acessibilidade"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Универсальный доступ"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Доступність"
+          }
+        }
+      }
+    },
+    "onboarding.action.disable" : {
+      "comment" : "Turns the login item off. A VERB.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deaktivieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Disable"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desactivar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Désactiver"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Disattiva"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłącz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desativar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Выключить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вимкнути"
+          }
+        }
+      }
+    },
+    "onboarding.action.enable" : {
+      "comment" : "Turns the login item on. A VERB.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktivieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enable"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attiva"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ativar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Включить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Увімкнути"
+          }
+        }
+      }
+    },
+    "onboarding.action.openKeyboardSettings" : {
+      "comment" : "Opens macOS's own Keyboard pane.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tastatureinstellungen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Open Keyboard Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir ajustes del teclado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir les réglages du clavier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Apri le impostazioni della tastiera"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz ustawienia klawiatury"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir ajustes do teclado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Открыть настройки клавиатуры"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Відкрити параметри клавіатури"
+          }
+        }
+      }
+    },
+    "onboarding.action.openScreenTime" : {
+      "comment" : "Opens macOS's own Screen Time pane.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bildschirmzeit öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Open Screen Time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Tiempo de uso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir Temps d’écran"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Apri Tempo di utilizzo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz Czas przed ekranem"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir Tempo de Uso"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Открыть Экранное время"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Відкрити Екранний час"
+          }
+        }
+      }
+    },
+    "onboarding.action.openSettings" : {
+      "comment" : "Opens a macOS System Settings pane. Shared by three rows on purpose.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einstellungen öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Open Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir ajustes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir les réglages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Apri le impostazioni"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz ustawienia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir ajustes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Открыть настройки"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Відкрити параметри"
+          }
+        }
+      }
+    },
+    "onboarding.action.request" : {
+      "comment" : "Asks macOS for the microphone. A VERB.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anfragen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Request"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Solicitar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Demander"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Richiedi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poproś"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Solicitar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запросить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запитати"
+          }
+        }
+      }
+    },
+    "onboarding.action.tryAgain" : {
+      "comment" : "Asks macOS for the microphone once more. A VERB.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Try again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reintentar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Riprova"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spróbuj ponownie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tentar de novo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Попробовать снова"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Спробувати ще раз"
+          }
+        }
+      }
+    },
+    "onboarding.autostart.explanation" : {
+      "comment" : "Why launching at login matters.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diktieren, das man jedes Mal von Hand starten muss, ist kein Diktieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dictation you have to start by hand every time is not dictation."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un dictado que hay que arrancar a mano cada vez no es dictado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une dictée qu’il faut lancer à la main chaque fois n’est pas une dictée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Una dettatura che va avviata a mano ogni volta non è dettatura."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dyktowanie, które trzeba za każdym razem uruchamiać ręcznie, nie jest dyktowaniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Um ditado que precisa ser iniciado à mão toda vez não é ditado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Диктовка, которую каждый раз надо запускать вручную, — не диктовка."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Диктування, яке щоразу треба запускати вручну, — не диктування."
+          }
+        }
+      }
+    },
+    "onboarding.autostart.explanation.needsApproval" : {
+      "comment" : "Shown while macOS is waiting for the user to approve the login item.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Erfordert Ihre Zustimmung in den Systemeinstellungen. Diktieren, das man jedes Mal von Hand starten muss, ist kein Diktieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Requires your approval in System Settings. Dictation you have to start by hand every time is not dictation."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Requiere tu aprobación en Ajustes del Sistema. Un dictado que hay que arrancar a mano cada vez no es dictado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nécessite votre approbation dans les Réglages Système. Une dictée qu’il faut lancer à la main chaque fois n’est pas une dictée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Richiede la tua approvazione in Impostazioni di Sistema. Una dettatura che va avviata a mano ogni volta non è dettatura."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaga Twojej zgody w Ustawieniach systemowych. Dyktowanie, które trzeba za każdym razem uruchamiać ręcznie, nie jest dyktowaniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Requer sua aprovação nos Ajustes do Sistema. Um ditado que precisa ser iniciado à mão toda vez não é ditado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Требуется ваше подтверждение в Системных настройках. Диктовка, которую каждый раз надо запускать вручную, — не диктовка."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Потрібне ваше підтвердження в Системних параметрах. Диктування, яке щоразу треба запускати вручну, — не диктування."
+          }
+        }
+      }
+    },
+    "onboarding.autostart.title" : {
+      "comment" : "Row title; Login Items is macOS's own name for the pane.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Beim Anmelden öffnen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Launch at login"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir al iniciar sesión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir à l’ouverture de session"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Apri al login"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwieraj przy logowaniu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Abrir ao iniciar sessão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запуск при входе"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запуск при вході"
+          }
+        }
+      }
+    },
+    "onboarding.globeKey.explanation" : {
+      "comment" : "Why the globe key must be set to do nothing.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sonst nimmt das System die Taste für sein eigenes Diktat oder für die Emoji-Auswahl."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Otherwise the system takes the key for its own dictation or the emoji picker."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Si no, el sistema se queda la tecla para su propio dictado o para el selector de emojis."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sinon le système prend la touche pour sa propre dictée ou pour le sélecteur d’émojis."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Altrimenti il sistema si prende il tasto per la propria dettatura o per il selettore di emoji."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W przeciwnym razie system zabierze klawisz na własne dyktowanie albo na wybór emoji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caso contrário o sistema fica com a tecla para o próprio ditado ou para o seletor de emoji."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Иначе система заберёт клавишу под собственную диктовку или панель эмодзи."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Інакше система забере клавішу під власне диктування або панель емодзі."
+          }
+        }
+      }
+    },
+    "onboarding.globeKey.title" : {
+      "comment" : "Row title. This is macOS's own setting name, verbatim from its Keyboard pane, and 🌐 is the key's own glyph.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Beim Drücken von 🌐 → Nichts"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Press 🌐 key to → Do Nothing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Al pulsar 🌐 → No hacer nada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appui sur 🌐 → Ne rien faire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Premendo 🌐 → Nessuna azione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Naciśnięcie 🌐 → Nic nie rób"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ao pressionar 🌐 → Nenhuma ação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "При нажатии 🌐 → Ничего не делать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "При натисканні 🌐 → Нічого не робити"
+          }
+        }
+      }
+    },
+    "onboarding.microphone.explanation.granted" : {
+      "comment" : "A PRIVACY statement: the microphone is not open outside a dictation. Must keep saying so.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nur eingeschaltet, während Sie diktieren. Außerhalb eines Diktats hört die App überhaupt nichts."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Switched on only while you dictate. Outside a dictation the app hears nothing at all."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se activa solo mientras dictas. Fuera de un dictado la app no oye nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activé uniquement pendant que vous dictez. Hors dictée, l’app n’entend rien du tout."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attivo solo mentre detti. Fuori da una dettatura l’app non sente nulla."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włączony tylko wtedy, gdy dyktujesz. Poza dyktowaniem program nie słyszy nic."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ligado somente enquanto você dita. Fora de um ditado o app não ouve absolutamente nada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Включается только на время диктовки. Вне диктовки программа не слышит ничего."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вмикається лише поки ви диктуєте. Поза диктуванням програма не чує нічого."
+          }
+        }
+      }
+    },
+    "onboarding.microphone.explanation.promptDidNotAppear" : {
+      "comment" : "Must keep saying that NOTHING was refused. The backticked command is typed by the user and is never translated; Terminal is macOS's own app name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS hat den Dialog nie gezeigt, es wurde also nichts verweigert — und Vocula erscheint unter Mikrofon erst, wenn die App gefragt hat. Versuchen Sie es erneut. Bleibt es still, beenden Sie Vocula, führen Sie `tccutil reset Microphone app.vocula.mac` im Terminal aus und öffnen Sie die App erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "macOS never showed the prompt, so nothing was refused — and it does not list Vocula under Microphone until the app has asked. Try again. If it stays silent, quit Vocula, run `tccutil reset Microphone app.vocula.mac` in Terminal, and reopen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS nunca mostró el diálogo, así que no se denegó nada, y Vocula no aparece en Micrófono hasta que la app lo pide. Inténtalo otra vez. Si sigue en silencio, cierra Vocula, ejecuta `tccutil reset Microphone app.vocula.mac` en el Terminal y vuelve a abrirla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS n’a jamais affiché la demande, donc rien n’a été refusé — et Vocula n’apparaît pas sous Microphone tant que l’app n’a pas demandé. Réessayez. Si le silence persiste, quittez Vocula, exécutez `tccutil reset Microphone app.vocula.mac` dans le Terminal, puis rouvrez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS non ha mai mostrato la richiesta, quindi non è stato negato nulla — e Vocula non compare sotto Microfono finché l’app non lo chiede. Riprova. Se resta in silenzio, chiudi Vocula, esegui `tccutil reset Microphone app.vocula.mac` nel Terminale e riapri."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS nigdy nie pokazał pytania, więc nic nie zostało odmówione — a Vocula nie pojawia się w sekcji Mikrofon, dopóki program nie zapyta. Spróbuj ponownie. Jeśli nadal jest cicho, zakończ Voculę, wykonaj `tccutil reset Microphone app.vocula.mac` w Terminalu i otwórz ją znowu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O macOS nunca mostrou o pedido, então nada foi negado — e o Vocula não aparece em Microfone até o app pedir. Tente de novo. Se continuar em silêncio, encerre o Vocula, execute `tccutil reset Microphone app.vocula.mac` no Terminal e abra de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS так и не показала запрос, значит ничего не было отклонено — и Vocula не появится в разделе «Микрофон», пока программа не спросит. Попробуйте снова. Если тишина сохраняется, завершите Vocula, выполните `tccutil reset Microphone app.vocula.mac` в Терминале и откройте заново."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "macOS так і не показала запит, отже нічого не було відхилено — і Vocula не з’явиться в розділі «Мікрофон», доки програма не запитає. Спробуйте ще раз. Якщо тиша триває, завершіть Vocula, виконайте `tccutil reset Microphone app.vocula.mac` у Терміналі та відкрийте знову."
+          }
+        }
+      }
+    },
+    "onboarding.microphone.explanation.refusedEarlier" : {
+      "comment" : "That macOS asks only once is a fact about the platform and must survive translation.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Früher verweigert, und macOS fragt nur einmal — die App kann diesen Dialog nicht erneut zeigen. Schalten Sie es selbst wieder ein."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Refused earlier, and macOS asks only once — the app cannot show that dialog again. Switch it back on yourself."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se denegó antes, y macOS lo pregunta una sola vez: la app no puede volver a mostrar ese diálogo. Actívalo tú mismo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Refusé précédemment, et macOS ne demande qu’une fois : l’app ne peut plus afficher cette boîte de dialogue. Réactivez-le vous-même."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Negato in precedenza, e macOS lo chiede una sola volta: l’app non può mostrare di nuovo quella finestra. Riattivalo tu."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odmówiono wcześniej, a macOS pyta tylko raz — program nie może pokazać tego okna ponownie. Włącz to samodzielnie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Negado antes, e o macOS pergunta apenas uma vez — o app não pode mostrar aquela caixa de diálogo de novo. Ative você mesmo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Отклонено ранее, а macOS спрашивает лишь однажды — программа не может показать этот диалог снова. Включите доступ сами."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Відхилено раніше, а macOS запитує лише один раз — програма не може показати той діалог знову. Увімкніть доступ самі."
+          }
+        }
+      }
+    },
+    "onboarding.microphone.explanation.restricted" : {
+      "comment" : "Blames the POLICY, never the user. The two pane paths are Apple's own and come from the glossary.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Durch eine Richtlinie auf diesem Mac blockiert — Sie haben nichts verweigert. Datenschutz & Sicherheit → Mikrofon kann es nicht einschalten und führt Vocula nicht auf, solange die Richtlinie gilt. Sehen Sie unter Bildschirmzeit → Inhalt & Datenschutz nach; wird dieser Mac verwaltet, entscheidet sein Konfigurationsprofil."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Blocked by a policy on this Mac — you did not refuse anything. Privacy & Security → Microphone cannot switch it on and does not list Vocula while the policy holds. Look in Screen Time → Content & Privacy; if this Mac is managed, its configuration profile decides."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloqueado por una política en este Mac; tú no has denegado nada. Privacidad y seguridad → Micrófono no puede activarlo y no muestra Vocula mientras la política siga vigente. Mira en Tiempo de uso → Contenido y privacidad; si este Mac está gestionado, decide su perfil de configuración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloqué par une règle sur ce Mac — vous n’avez rien refusé. Confidentialité et sécurité → Microphone ne peut pas l’activer et n’affiche pas Vocula tant que la règle s’applique. Regardez dans Temps d’écran → Contenu et confidentialité ; si ce Mac est géré, c’est son profil de configuration qui décide."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloccato da un criterio su questo Mac — tu non hai negato nulla. Privacy e sicurezza → Microfono non può attivarlo e non elenca Vocula finché il criterio è in vigore. Guarda in Tempo di utilizzo → Contenuti e privacy; se questo Mac è gestito, decide il suo profilo di configurazione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zablokowane przez zasadę na tym Macu — niczego nie odmówiłeś. Prywatność i bezpieczeństwo → Mikrofon nie może tego włączyć i nie pokazuje Voculi, dopóki zasada obowiązuje. Zajrzyj do Czas przed ekranem → Treści i prywatność; jeśli ten Mac jest zarządzany, decyduje jego profil konfiguracji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bloqueado por uma política neste Mac — você não negou nada. Privacidade e Segurança → Microfone não consegue ativar e não lista o Vocula enquanto a política valer. Veja em Tempo de Uso → Conteúdo e Privacidade; se este Mac for gerenciado, quem decide é o perfil de configuração dele."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Заблокировано политикой на этом Mac — вы ничего не отклоняли. «Конфиденциальность и безопасность → Микрофон» не может это включить и не показывает Vocula, пока действует политика. Загляните в «Экранное время → Контент и конфиденциальность»; если Mac управляемый, решает его конфигурационный профиль."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Заблоковано політикою на цьому Mac — ви нічого не відхиляли. «Конфіденційність і безпека → Мікрофон» не може це ввімкнути й не показує Vocula, доки діє політика. Загляньте в «Екранний час → Контент і конфіденційність»; якщо цей Mac керований, вирішує його конфігураційний профіль."
+          }
+        }
+      }
+    },
+    "onboarding.microphone.explanation.willAsk" : {
+      "comment" : "States the one-shot rule BEFORE the request is made. That macOS asks once per install is a platform fact.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nur eingeschaltet, während Sie diktieren. macOS zeigt diesen Dialog einmal pro Installation: Wenn Sie ihn wegklicken, kann die App nicht erneut fragen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Switched on only while you dictate. macOS shows this dialog once per install: if you dismiss it, the app cannot ask again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se activa solo mientras dictas. macOS muestra este diálogo una vez por instalación: si lo descartas, la app no podrá volver a pedirlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activé uniquement pendant que vous dictez. macOS affiche cette demande une fois par installation : si vous la fermez, l’app ne pourra plus demander."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attivo solo mentre detti. macOS mostra questa finestra una volta per installazione: se la chiudi, l’app non potrà più chiedere."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włączony tylko wtedy, gdy dyktujesz. macOS pokazuje to okno raz na instalację: jeśli je zamkniesz, program nie będzie mógł zapytać ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ligado somente enquanto você dita. O macOS mostra esta caixa de diálogo uma vez por instalação: se você fechá-la, o app não poderá perguntar de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Включается только на время диктовки. macOS показывает этот диалог один раз за установку: если закрыть его, программа больше не сможет спросить."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Вмикається лише поки ви диктуєте. macOS показує цей діалог один раз за встановлення: якщо закрити його, програма більше не зможе запитати."
+          }
+        }
+      }
+    },
+    "onboarding.microphone.title" : {
+      "comment" : "Row title; must match macOS's own Microphone pane name AND this app's own Microphone section.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mikrofon"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Microphone"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Micrófono"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Microphone"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Microfono"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mikrofon"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Microfone"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Микрофон"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Мікрофон"
+          }
+        }
+      }
+    },
+    "refusal.denied.appChanged" : {
+      "comment" : "Said in terms of what the USER did, not what the app detected.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht eingefügt: Sie sind zu einer anderen App gewechselt, während noch transkribiert wurde."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not inserted: you switched to another app while it was still transcribing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado: cambiaste a otra app mientras aún se transcribía."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inséré : vous êtes passé à une autre app pendant la transcription."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inserito: sei passato a un’altra app mentre era ancora in trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wstawiono: przełączyłeś się do innego programu, gdy trwało jeszcze rozpoznawanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não inserido: você mudou para outro app enquanto ainda transcrevia."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: вы переключились в другую программу, пока шло распознавание."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: ви перейшли в іншу програму, поки тривало розпізнавання."
+          }
+        }
+      }
+    },
+    "refusal.denied.elementChanged" : {
+      "comment" : "Said in terms of what the USER did.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht eingefügt: Sie haben in ein anderes Feld geklickt, während noch transkribiert wurde."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not inserted: you clicked into another field while it was still transcribing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado: hiciste clic en otro campo mientras aún se transcribía."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inséré : vous avez cliqué dans un autre champ pendant la transcription."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inserito: hai fatto clic in un altro campo mentre era ancora in trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wstawiono: kliknąłeś w inne pole, gdy trwało jeszcze rozpoznawanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não inserido: você clicou em outro campo enquanto ainda transcrevia."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: вы перешли в другое поле, пока шло распознавание."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: ви перейшли в інше поле, поки тривало розпізнавання."
+          }
+        }
+      }
+    },
+    "refusal.denied.secureField" : {
+      "comment" : "The insert was refused because the target was secure.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht eingefügt: Die Einfügemarke stand in einem Passwortfeld."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not inserted: the cursor was in a password field."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado: el cursor estaba en un campo de contraseña."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inséré : le curseur était dans un champ de mot de passe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inserito: il cursore era in un campo password."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wstawiono: kursor był w polu hasła."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não inserido: o cursor estava em um campo de senha."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: курсор стоял в поле пароля."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: курсор стояв у полі пароля."
+          }
+        }
+      }
+    },
+    "refusal.denied.secureInputRaised" : {
+      "comment" : "Secure input is macOS's own term.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht eingefügt: Die sichere Eingabe wurde aktiviert, während noch transkribiert wurde."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not inserted: secure input turned on while it was still transcribing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado: la entrada segura se activó mientras aún se transcribía."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inséré : la saisie sécurisée s’est activée pendant la transcription."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inserito: l’input sicuro si è attivato mentre era ancora in trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wstawiono: bezpieczne wprowadzanie włączyło się, gdy trwało jeszcze rozpoznawanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não inserido: a entrada segura foi ativada enquanto ainda transcrevia."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: защищённый ввод включился, пока шло распознавание."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: захищене введення ввімкнулося, поки тривало розпізнавання."
+          }
+        }
+      }
+    },
+    "refusal.denied.windowChanged" : {
+      "comment" : "Said in terms of what the USER did.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht eingefügt: Sie sind zu einem anderen Fenster gewechselt, während noch transkribiert wurde."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not inserted: you switched to another window while it was still transcribing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado: cambiaste a otra ventana mientras aún se transcribía."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inséré : vous êtes passé à une autre fenêtre pendant la transcription."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non inserito: sei passato a un’altra finestra mentre era ancora in trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wstawiono: przełączyłeś się do innego okna, gdy trwało jeszcze rozpoznawanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não inserido: você mudou para outra janela enquanto ainda transcrevia."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: вы переключились в другое окно, пока шло распознавание."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вставлено: ви перейшли в інше вікно, поки тривало розпізнавання."
+          }
+        }
+      }
+    },
+    "refusal.emptyTranscript" : {
+      "comment" : "Speech was detected but transcribed to nothing.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Erkennung hat Sprache gefunden, aber keinen Text erzeugt, es wurde also nichts eingefügt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recognition found speech but produced no text, so nothing was inserted."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El reconocimiento encontró voz pero no produjo texto, así que no se ha insertado nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La reconnaissance a trouvé de la parole mais n’a produit aucun texte, donc rien n’a été inséré."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il riconoscimento ha trovato parlato ma non ha prodotto testo, quindi non è stato inserito nulla."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoznawanie znalazło mowę, ale nie wytworzyło tekstu, więc nic nie zostało wstawione."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O reconhecimento encontrou fala mas não produziu texto, então nada foi inserido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Распознавание нашло речь, но не выдало текста, поэтому ничего не вставлено."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Розпізнавання знайшло мовлення, але не видало тексту, тому нічого не вставлено."
+          }
+        }
+      }
+    },
+    "refusal.engineFailed" : {
+      "comment" : "The engine itself failed.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Erkennung hat einen Fehler gemeldet; es wurde kein Text erzeugt. Sie können erneut diktieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The recognition engine returned an error; no text was produced. You can try dictating again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El motor de reconocimiento devolvió un error; no se produjo texto. Puedes volver a dictar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le moteur de reconnaissance a renvoyé une erreur ; aucun texte n’a été produit. Vous pouvez redicter."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il motore di riconoscimento ha restituito un errore; non è stato prodotto testo. Puoi dettare di nuovo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Silnik rozpoznawania zwrócił błąd; nie powstał żaden tekst. Możesz podyktować jeszcze raz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O motor de reconhecimento retornou um erro; nenhum texto foi produzido. Você pode ditar de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Движок распознавания вернул ошибку; текст не получен. Можно продиктовать ещё раз."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Рушій розпізнавання повернув помилку; тексту не отримано. Можна продиктувати ще раз."
+          }
+        }
+      }
+    },
+    "refusal.insertionFailed" : {
+      "comment" : "Cause sentence only; the recovery sentence follows as its own key.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Zwischenablage oder das Einsetzen ließ sich nicht vorbereiten, es wurde also nichts gesendet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The clipboard or paste event could not be prepared, so nothing was sent."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo preparar el portapapeles ni el evento de pegado, así que no se envió nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le presse-papiers ou l’évènement de collage n’a pas pu être préparé, donc rien n’a été envoyé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile preparare gli appunti o l’evento di incolla, quindi non è stato inviato nulla."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się przygotować schowka ani zdarzenia wklejenia, więc nic nie zostało wysłane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível preparar a área de transferência nem o evento de colar, então nada foi enviado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось подготовить буфер обмена или событие вставки, поэтому ничего не отправлено."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вдалося підготувати буфер обміну або подію вставлення, тому нічого не надіслано."
+          }
+        }
+      }
+    },
+    "refusal.noSpeech" : {
+      "comment" : "Announced when a recording held no speech. Neither a rejection nor a failure — the user did speak, from their side, so it must not read as blame.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Es wurde keine Sprache gefunden, es wurde also nichts eingefügt. Sie können es erneut versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No speech was found, so nothing was inserted. You can try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se encontró voz, así que no se ha insertado nada. Puedes intentarlo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune parole n’a été trouvée, donc rien n’a été inséré. Vous pouvez réessayer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato trovato parlato, quindi non è stato inserito nulla. Puoi riprovare."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie znaleziono mowy, więc nic nie zostało wstawione. Możesz spróbować ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nenhuma fala foi encontrada, então nada foi inserido. Você pode tentar de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Речь не найдена, поэтому ничего не вставлено. Можно попробовать снова."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Мовлення не знайдено, тому нічого не вставлено. Можна спробувати ще раз."
+          }
+        }
+      }
+    },
+    "refusal.nothingInserted" : {
+      "comment" : "Shown when a history record carries no reason at all.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Es wurde nichts eingefügt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nothing was inserted."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien n’a été inséré."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato inserito nulla."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nic nie zostało wstawione."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nada foi inserido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ничего не вставлено."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нічого не вставлено."
+          }
+        }
+      }
+    },
+    "refusal.nothingInserted.unknown" : {
+      "comment" : "An unrecognised stored reason; the argument is a raw enum value and is NEVER translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Es wurde nichts eingefügt (%@)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nothing was inserted (%@)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se ha insertado nada (%@)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien n’a été inséré (%@)."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato inserito nulla (%@)."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nic nie zostało wstawione (%@)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nada foi inserido (%@)."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ничего не вставлено (%@)."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нічого не вставлено (%@)."
+          }
+        }
+      }
+    },
+    "refusal.overflow" : {
+      "comment" : "Too many sessions in flight at once.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Es werden noch zu viele Diktate verarbeitet. Warten Sie, bis sie fertig sind."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Too many dictations are still being processed. Wait for them to finish."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aún se están procesando demasiados dictados. Espera a que terminen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trop de dictées sont encore en traitement. Attendez qu’elles se terminent."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Troppe dettature sono ancora in elaborazione. Attendi che finiscano."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbyt wiele dyktowań jest jeszcze przetwarzanych. Poczekaj, aż się zakończą."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ainda há ditados demais em processamento. Espere eles terminarem."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Слишком много диктовок ещё обрабатывается. Дождитесь их завершения."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Забагато диктувань ще обробляється. Дочекайтеся їх завершення."
+          }
+        }
+      }
+    },
+    "refusal.passTimeout" : {
+      "comment" : "The whisper pass ran past its deadline.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Transkription wurde nicht rechtzeitig fertig und wurde abgebrochen. Es wurde kein Text erzeugt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Transcription did not finish in time and was aborted. No text was produced."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcripción no terminó a tiempo y se abortó. No se produjo texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La transcription n’a pas fini à temps et a été interrompue. Aucun texte n’a été produit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La trascrizione non è finita in tempo ed è stata interrotta. Non è stato prodotto testo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoznawanie nie zdążyło na czas i zostało przerwane. Nie powstał żaden tekst."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A transcrição não terminou a tempo e foi abortada. Nenhum texto foi produzido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Распознавание не уложилось в срок и было прервано. Текст не получен."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Розпізнавання не вклалося в строк і було перерване. Тексту не отримано."
+          }
+        }
+      }
+    },
+    "refusal.queueTimeout" : {
+      "comment" : "Dropped before transcription began. Must read differently from refusal.passTimeout — they are different failures.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Diktat hat zu lange auf seinen Platz gewartet und wurde vor der Transkription verworfen, es wurde also kein Text erzeugt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The dictation waited too long for its turn and was dropped before transcription, so no text was produced."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El dictado esperó demasiado su turno y se descartó antes de transcribirse, así que no se produjo texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La dictée a trop attendu son tour et a été abandonnée avant transcription, donc aucun texte n’a été produit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La dettatura ha atteso troppo il proprio turno ed è stata scartata prima della trascrizione, quindi non è stato prodotto testo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dyktowanie zbyt długo czekało na swoją kolej i zostało odrzucone przed rozpoznawaniem, więc nie powstał żaden tekst."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O ditado esperou tempo demais pela vez dele e foi descartado antes da transcrição, então nenhum texto foi produzido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Диктовка слишком долго ждала очереди и была отброшена до распознавания, поэтому текст не получен."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Диктування надто довго чекало черги й було відкинуте до розпізнавання, тому тексту не отримано."
+          }
+        }
+      }
+    },
+    "refusal.recovery.historyOff" : {
+      "comment" : "As refusal.recovery.historyOn but with history off. MUST NOT mention History: with recording off the text is not there, and saying so is a privacy statement.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verwenden Sie „Letztes Transkript kopieren“ — die Verlaufsaufzeichnung ist aus, der Text wird also nicht gesichert."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Use Copy the last transcript — history recording is off, so it is not saved."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usa «Copiar la última transcripción»: el registro del historial está desactivado, así que no se guarda."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisez « Copier la dernière transcription » — l’enregistrement de l’historique est désactivé, le texte n’est donc pas conservé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usa «Copia l’ultima trascrizione»: la registrazione della cronologia è disattivata, quindi il testo non viene salvato."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj „Kopiuj ostatnią transkrypcję” — zapis historii jest wyłączony, więc tekst nie zostaje zachowany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Use “Copiar a última transcrição” — o registro do histórico está desligado, então ela não fica salva."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Возьмите «Скопировать последний текст» — запись истории выключена, поэтому текст не сохранён."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Скористайтеся «Скопіювати останній текст» — запис історії вимкнено, тому текст не збережено."
+          }
+        }
+      }
+    },
+    "refusal.recovery.historyOn" : {
+      "comment" : "Where the text still is after a refusal. History and Copy the last transcript are this app's own names — use the sidebar's and the menu's words.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der Text steht im Verlauf, oder verwenden Sie „Letztes Transkript kopieren“."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The text is in History, or use Copy the last transcript."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El texto está en el Historial, o usa «Copiar la última transcripción»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le texte est dans l’Historique, ou utilisez « Copier la dernière transcription »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il testo è nella Cronologia, oppure usa «Copia l’ultima trascrizione»."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tekst jest w Historii albo użyj „Kopiuj ostatnią transkrypcję”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O texto está no Histórico, ou use “Copiar a última transcrição”."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Текст в Истории, либо возьмите «Скопировать последний текст»."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Текст в Історії, або скористайтеся «Скопіювати останній текст»."
+          }
+        }
+      }
+    },
+    "refusal.silentInput.deadDevice" : {
+      "comment" : "A dead input device, NOT a quiet room. Fixed by a different action from refusal.silentInput.volumeDown, so the two must not converge. Microphone is this app's own section name. — the indicator caps at three lines and cuts anything longer. Drawn on the indicator strip, which clamps at three lines; IndicatorChipSizeTests measures every locale against it.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kein Signal vom Mikrofon. Prüfen Sie Voculas Mikrofon-Einstellungen — ein nur zur Wiedergabe verbundenes Headset nimmt nichts auf."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No signal at all from the microphone. Check Vocula’s Microphone settings — a headset connected only for playback records nothing."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El micrófono no dio señal alguna. Revisa los ajustes de Micrófono de Vocula: unos auriculares conectados solo para reproducir no graban nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun signal du microphone. Vérifiez les réglages Microphone de Vocula — un casque connecté seulement en lecture n’enregistre rien."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nessun segnale dal microfono. Controlla le impostazioni Microfono di Vocula: cuffie collegate solo per la riproduzione non registrano nulla."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak sygnału z mikrofonu. Sprawdź ustawienia Mikrofonu w Voculi — słuchawki podłączone tylko do odtwarzania nie nagrywają nic."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nenhum sinal do microfone. Confira os ajustes de Microfone do Vocula — um fone conectado só para reprodução não grava nada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Микрофон не дал сигнала. Проверьте раздел «Микрофон» — гарнитура только для воспроизведения не пишет ничего."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Мікрофон не дав сигналу. Перевірте розділ «Мікрофон» — гарнітура лише для відтворення не записує нічого."
+          }
+        }
+      }
+    },
+    "refusal.silentInput.volumeDown" : {
+      "comment" : "The system input level is at zero. The pane path is macOS's own and comes from the glossary.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Eingabelautstärke Ihres Mikrofons ist ganz unten, die Aufnahme war still. Erhöhen Sie sie unter Systemeinstellungen → Ton → Eingabe."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your microphone's input volume is turned all the way down, so the recording was silent. Raise it in System Settings → Sound → Input."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El volumen de entrada de tu micrófono está al mínimo, por eso la grabación salió muda. Súbelo en Ajustes del Sistema → Sonido → Entrada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le volume d’entrée de votre microphone est au minimum, l’enregistrement était donc muet. Augmentez-le dans Réglages Système → Son → Entrée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il volume di ingresso del microfono è al minimo, perciò la registrazione è risultata muta. Alzalo in Impostazioni di Sistema → Suono → Ingresso."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Głośność wejścia mikrofonu jest ściszona do zera, dlatego nagranie wyszło ciche. Podnieś ją w Ustawienia systemowe → Dźwięk → Wejście."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O volume de entrada do seu microfone está no mínimo, por isso a gravação saiu muda. Aumente em Ajustes do Sistema → Som → Entrada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Громкость входа микрофона убрана до нуля, поэтому запись вышла тихой. Поднимите её: Системные настройки → Звук → Вход."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Гучність входу мікрофона зведено до нуля, тому запис вийшов тихим. Підніміть її: Системні параметри → Звук → Вхід."
+          }
+        }
+      }
+    },
+    "session.state.failed" : {
+      "comment" : "History row status: the dictation ended in an error.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "fehlgeschlagen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "failed"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "con error"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "échec"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "non riuscita"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "błąd"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "falhou"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "сбой"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "збій"
+          }
+        }
+      }
+    },
+    "session.state.noSpeech" : {
+      "comment" : "History row status: nothing was said.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "keine Sprache"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "no speech"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "sin voz"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "pas de parole"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nessun parlato"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "brak mowy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "sem fala"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "нет речи"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "немає мовлення"
+          }
+        }
+      }
+    },
+    "session.state.recorded" : {
+      "comment" : "History row status: the audio was captured.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "aufgenommen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "recorded"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "grabado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "enregistré"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "registrata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nagrane"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "gravado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "записано"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "записано"
+          }
+        }
+      }
+    },
+    "session.state.rejected" : {
+      "comment" : "History row status: the insert was refused by the target guard.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "abgelehnt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "refused"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "rechazado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "refusé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "rifiutata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "odrzucone"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "recusado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "отклонено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "відхилено"
+          }
+        }
+      }
+    },
+    "session.state.sent" : {
+      "comment" : "History row status: the text was pasted.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "eingefügt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "inserted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "insertado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "inséré"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "inserita"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "wstawione"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "inserido"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "вставлено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "вставлено"
+          }
+        }
+      }
+    },
+    "session.state.transcribed" : {
+      "comment" : "History row status: text exists but never reached the caret.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nicht eingefügt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "not inserted"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "no insertado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "non inséré"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "non inserita"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nie wstawione"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "não inserido"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "не вставлено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "не вставлено"
+          }
+        }
+      }
+    },
+    "session.state.transcribing" : {
+      "comment" : "History row status: recognition is still running.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "wird transkribiert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "transcribing"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "transcribiendo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "transcription"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "in trascrizione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "rozpoznawanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "transcrevendo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "распознаётся"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "розпізнається"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

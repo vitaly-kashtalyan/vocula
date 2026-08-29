@@ -1,0 +1,8 @@
+// Copy to App/Local.xcconfig and fill in your own team.
+// That file is gitignored: it is developer-local configuration, not a secret.
+// Find your Team ID in Xcode → Settings → Accounts, or with
+// `security find-identity -v -p codesigning`.
+
+DEVELOPMENT_TEAM = ABCDE12345
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development

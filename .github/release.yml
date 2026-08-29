@@ -1,0 +1,26 @@
+# Categories for the notes GitHub generates on `gh release create
+# --generate-notes`. It groups merged pull requests by LABEL — there is no
+# grouping by commit prefix, whatever the commits themselves say — so a PR that
+# carries no label lands in the catch-all at the bottom rather than being lost.
+#
+# Nothing here is typed at release time: the entries are pull request titles,
+# and the ordering is this file.
+changelog:
+  exclude:
+    labels: [no-changelog]
+  categories:
+    - title: Fixed
+      labels: [fix]
+    - title: Added
+      labels: [feat]
+    - title: Changed
+      labels: [refactor, perf]
+    - title: Translations
+      labels: [i18n]
+    - title: Documentation and tests
+      labels: [docs, test]
+    # The catch-all. Without it an unlabelled pull request is omitted from the
+    # notes entirely, which is the failure that has no symptom: the release
+    # reads as complete while naming less than shipped.
+    - title: Other
+      labels: ["*"]

@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  notarize:
+    needs: test
+    runs-on: macos-26
+
+    env:
+      VOCULA_NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+      VOCULA_NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Work out the version, and tag it
+        run: |
+          set -euo pipefail
+          LINE=$(grep -E '^ +MARKETING_VERSION:' App/project.yml | head -1 | sed -E 's/.*"(.*)".*/\1/')
+          SERIES=$(echo "$LINE" | cut -d. -f1,2)
+          LATEST=$(git tag -l "v$SERIES.*" \
+            | sed -E "s|^v$SERIES\.||" | grep -E '^[0-9]+$' | sort -n | tail -1 || true)
+          VERSION="$SERIES.$(( ${LATEST:--1} + 1 ))"
+          echo "VOCULA_MARKETING_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TAG=v$VERSION" >> "$GITHUB_ENV"
+          echo "▸ releasing $VERSION"
+
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Tools
+        # Before the keychain is imported, never after: from then on the signing
+        # identity is unlocked and a formula could sign with it.
+        run: brew install xcodegen
+
+      - name: Import the Developer ID certificate
+        env:
+          P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          PASSWORD=$(uuidgen)
+          security create-keychain -p "$PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 1800 "$KEYCHAIN"
+          security unlock-keychain -p "$PASSWORD" "$KEYCHAIN"
+
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$RUNNER_TEMP/cert.p12"
+
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$PASSWORD" "$KEYCHAIN" >/dev/null
+
+          security list-keychains -d user -s "$KEYCHAIN"
+
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+      - name: Team, and the notary key
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          DEVELOPMENT_TEAM: ${{ vars.DEVELOPMENT_TEAM }}
+        run: |
+          set -euo pipefail
+          printf 'DEVELOPMENT_TEAM = %s\n' "$DEVELOPMENT_TEAM" > App/Local.xcconfig
+
+          printf '%s' "$NOTARY_KEY_P8" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          echo "VOCULA_NOTARY_KEY=$RUNNER_TEMP/notary.p8" >> "$GITHUB_ENV"
+
+      - name: Build, sign, notarise, staple
+        run: ./scripts/notarize.sh
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: Vocula-notarized
+          path: build/notarize/Vocula-notarized.zip
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ZIP=build/notarize/Vocula-notarized.zip
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ZIP" --clobber
+          else
+            gh release create "$TAG" "$ZIP" \
+              --verify-tag \
+              --title "$TAG" \
+              --generate-notes
+          fi
+
+      - name: Shred the credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/cert.p12" "$RUNNER_TEMP/signing.keychain-db"

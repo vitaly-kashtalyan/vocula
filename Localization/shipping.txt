@@ -1,0 +1,15 @@
+# Locales whose translations are ENFORCED by scripts/check-localization.sh.
+#
+# A locale reaches this list only after a native speaker has reviewed it. Until
+# then it is a DRAFT: the guard reports how much of it exists and does not fail
+# on it, because a machine pass leaves every entry `needs_review` and a guard
+# that is permanently red has stopped being a signal.
+#
+# `RefusalCopy` and `OnboardingModel` are not marketing prose — they are
+# instructions the user follows. A mistranslated instruction is worse than an
+# English one.
+#
+# Nothing but the source language is here yet. The other eight locales carry
+# every key, and every one of their entries is `needs_review`: they are complete
+# drafts waiting on a native reader, not partial translations.
+en

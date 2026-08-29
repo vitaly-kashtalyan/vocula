@@ -1,0 +1,93 @@
+# App/project.yml
+name: Vocula
+options:
+  bundleIdPrefix: app.vocula
+  developmentLanguage: en
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+packages:
+  Vocula:
+    path: ..
+configFiles:
+  Debug: Signing.xcconfig
+  Release: Signing.xcconfig
+settings:
+  base:
+    MARKETING_VERSION: "0.1.0"
+    SWIFT_VERSION: "6.0"
+    ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_EMIT_LOC_STRINGS: YES
+targets:
+  Vocula:
+    type: application
+    platform: macOS
+    sources:
+      - path: Vocula
+      - path: ../LICENSE
+        buildPhase: resources
+    dependencies:
+      - package: Vocula
+        product: VoculaKit
+      - package: Vocula
+        product: VoculaWhisper
+    info:
+      path: Vocula/Info.plist
+      properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "1"
+        LSUIElement: true
+        NSMicrophoneUsageDescription: >-
+          Vocula records audio only while you are dictating.
+        NSHumanReadableCopyright: >-
+          Copyright © 2026 Vitali Kashtalyan. Licensed under the GNU General
+          Public License, version 3. Source: github.com/vitaly-kashtalyan/vocula
+    postBuildScripts:
+      - script: ../scripts/stamp-build-number.sh
+        name: Stamp CFBundleVersion from the commit count
+        basedOnDependencyAnalysis: false
+    entitlements:
+      path: Vocula/Vocula.entitlements
+      properties:
+        com.apple.security.device.audio-input: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.vocula.mac
+        ENABLE_HARDENED_RUNTIME: YES
+  VoculaAppTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [VoculaTests]
+    dependencies:
+      - target: Vocula
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.vocula.VoculaTests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Vocula.app/Contents/MacOS/Vocula"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        ENABLE_HARDENED_RUNTIME: NO
+  VoculaUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources: [VoculaUITests]
+    dependencies:
+      - target: Vocula
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.vocula.VoculaUITests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Vocula
+schemes:
+  Vocula:
+    build:
+      targets:
+        Vocula: all
+        VoculaAppTests: [test]
+        VoculaUITests: [test]
+    test:
+      targets: [VoculaAppTests, VoculaUITests]
+    run:
+      config: Debug
