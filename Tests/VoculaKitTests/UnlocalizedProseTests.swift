@@ -166,6 +166,10 @@ struct InvariantCasingTests {
   private static let bare = [
     "uppercased()", "lowercased()", "localizedCapitalized",
     "localizedUppercase", "localizedLowercase",
+    "uppercased(with: .current)", "lowercased(with: .current)",
+    "capitalized(with: .current)",
+    "uppercased(with: Locale.current)", "lowercased(with: Locale.current)",
+    "capitalized(with: Locale.current)",
   ]
 
   private static func sources() throws -> [(path: String, lines: [String])] {
@@ -193,6 +197,12 @@ struct InvariantCasingTests {
     #expect(sources.count > 30, "found \(sources.count) sources — nothing would be checked")
     let cased = sources.flatMap(\.lines).filter { $0.contains("capitalized(with:") }
     #expect(!cased.isEmpty, "found no cased-with-a-locale call — the scan is looking at nothing")
+    #expect(
+      Self.bare.contains { "code.lowercased(with: .current)".contains($0) },
+      "the explicit wrong-locale spelling would not be flagged")
+    #expect(
+      !Self.bare.contains { "code.lowercased(with: .invariant)".contains($0) },
+      "the correct spelling would be flagged as a defect")
   }
 
   @Test("the one documented exception still exists")
