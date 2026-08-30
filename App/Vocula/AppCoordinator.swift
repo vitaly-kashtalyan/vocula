@@ -203,9 +203,11 @@ final class AppCoordinator: ObservableObject {
         if let self {
           switch self.admits(signal) {
           case .refuse(let session):
+            self.forgetGestureShape(signal)
             await controller.skip(session: session)
             continue
           case .swallow:
+            self.forgetGestureShape(signal)
             continue
           case .admit:
             break
@@ -358,6 +360,16 @@ final class AppCoordinator: ObservableObject {
     }
   }
 
+  // A gesture the trial wall refuses never reaches the controller, so it never
+  // produces the outcome that would clear what noteGestureShape recorded.
+  private func forgetGestureShape(_ signal: DictationSignal) {
+    switch signal {
+    case .start(let session), .stop(let session, _), .cancel(let session, _):
+      gestureBeganAt[session] = nil
+      gestureHeldFor[session] = nil
+    }
+  }
+
   private func noteGestureShape(_ signal: DictationSignal) {
     let now = ContinuousClock.now
     let kbd = monitor?.lastKeyboardType ?? 0
@@ -371,7 +383,6 @@ final class AppCoordinator: ObservableObject {
       gestureBeganAt[session] = now
       let stale = session - Self.gestureShapeMemory
       gestureBeganAt = gestureBeganAt.filter { $0.key > stale }
-      gestureHeldFor = gestureHeldFor.filter { $0.key > stale }
     case .stop(let session, _), .cancel(let session, _):
       defer {
         gestureBeganAt[session] = nil
@@ -379,7 +390,7 @@ final class AppCoordinator: ObservableObject {
       }
       guard let began = gestureBeganAt[session] else { return }
       let held = now - began
-      gestureHeldFor[session] = held
+      if case .stop = signal { gestureHeldFor[session] = held }
       guard held > Timings.implausibleHold else { return }
       log("gesture.longHold", "ms=\(Self.milliseconds(held)) kbd=\(kbd)")
     }
@@ -577,7 +588,7 @@ final class AppCoordinator: ObservableObject {
         .flatMap { AudioInputDevices.inputIsSilenced($0) } ?? false,
       historyIsRecording: settings.isRecordingHistory,
       alreadyExplained: refusalDedup.alreadyExplained(session: session))
-    if plan.forgetsHold { gestureHeldFor[session] = nil }
+    gestureHeldFor[session] = nil
     if plan.recordsUsage {
       usage.recordDictation()
       if case .limited(1) = usage.entitlement(licensed: isLicensed) {

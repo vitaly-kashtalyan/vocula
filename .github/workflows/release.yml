@@ -56,7 +56,11 @@ jobs:
           KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
           PASSWORD=$(uuidgen)
           security create-keychain -p "$PASSWORD" "$KEYCHAIN"
-          security set-keychain-settings -lut 1800 "$KEYCHAIN"
+          # No -t: the disk image is signed AFTER Apple answers, and a wait past
+          # half an hour is not unusual, so an idle timeout locked the keychain
+          # before the last codesign of the run — on a runner with nobody to
+          # unlock it.
+          security set-keychain-settings "$KEYCHAIN"
           security unlock-keychain -p "$PASSWORD" "$KEYCHAIN"
 
           printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
@@ -86,19 +90,31 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
-          name: Vocula-notarized
-          path: build/notarize/Vocula-notarized.zip
+          name: Vocula
+          path: |
+            build/notarize/Vocula.dmg
+            build/notarize/Vocula.zip
+
+      # Release strips the symbols out of the binary and leaves them here. A
+      # crash report from a shipped build is unreadable without the dSYM of
+      # that exact build, and it cannot be reproduced: the signature carries a
+      # nonce. Kept beside the run, not in the release — buyers do not need it.
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: Vocula-symbols
+          path: build/notarize/dd/Build/Products/Release/*.dSYM
 
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          ZIP=build/notarize/Vocula-notarized.zip
+          ASSETS=(build/notarize/Vocula.dmg build/notarize/Vocula.zip)
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$ZIP" --clobber
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
           else
-            gh release create "$TAG" "$ZIP" \
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --draft \
               --verify-tag \
               --title "$TAG" \
               --generate-notes
@@ -106,4 +122,6 @@ jobs:
 
       - name: Shred the credentials
         if: always()
-        run: rm -f "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/cert.p12" "$RUNNER_TEMP/signing.keychain-db"
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/cert.p12" "$RUNNER_TEMP/signing.keychain-db"
