@@ -196,12 +196,10 @@ if [ "$total_keys" -eq 0 ]; then
 fi
 
 # A catalog has ONE legitimate writer, `xcrun xcstringstool`, and it separates
-# key from value as `"key" : value`. Every other JSON tool writes `"key":` with
-# no space, so one pass through a formatter or a jq filter rewrites the whole
-# file — and the next sync flips all of it back, burying a one-key change in a
-# ten-thousand-line diff. Only the separator is checked: reproducing the whole
-# serialisation needs xcstringstool's own byte order, and plutil's sort is
-# case-insensitive where xcstringstool's is not.
+# key from value as `"key" : value`. Every other JSON tool writes `"key":`, so
+# one pass through a formatter or a jq filter rewrites all ten thousand lines.
+# Only the separator is checked: plutil's key sort is case-insensitive where
+# xcstringstool's is not, so a full round-trip would fail on a correct catalog.
 foreign=0
 for catalog in "${catalogs[@]}"; do
     if grep -qE '^[[:space:]]*"[^"]*":[[:space:]]' "$catalog"; then

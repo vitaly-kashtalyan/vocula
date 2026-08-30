@@ -65,6 +65,7 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
   ${VERSION_OVERRIDE[@]+"${VERSION_OVERRIDE[@]}"} \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_STYLE=Manual \
+  CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO \
   OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" \
   build >"$BUILD_DIR/build.log" 2>&1 \
   || { tail -30 "$BUILD_DIR/build.log"; fail "build failed — full log in $BUILD_DIR/build.log"; }
@@ -86,32 +87,66 @@ echo "▸ Version $VERSION ($BUILD_NUMBER)"
      - this is not a git checkout,
      - the count passed 9999, CFBundleVersion's four-digit ceiling."
 
-TAG=$(git describe --exact-match --tags HEAD 2>/dev/null || true)
-if [ -n "$TAG" ]; then
-  [ "$TAG" = "v$VERSION" ] || fail "tag $TAG disagrees with CFBundleShortVersionString
-   $VERSION. Raise CFBundleShortVersionString in App/project.yml, or retag."
-  echo "▸ tag $TAG agrees with the bundle"
+# `git describe --exact-match` returns the lexicographically smallest of the
+# tags on a commit, so a retry after a failed release — which leaves the first
+# tag behind — compared the OLD tag against the NEW version and could never
+# pass. Asking whether the expected tag is present has no ordering to get wrong.
+TAGS=$(git tag --points-at HEAD)
+if [ -n "$TAGS" ]; then
+  printf '%s\n' "$TAGS" | grep -qFx "v$VERSION" || fail "HEAD carries \
+$(printf '%s' "$TAGS" | tr '\n' ' ')— but not v$VERSION, which is what this build stamped.
+   Raise MARKETING_VERSION in App/project.yml, or tag v$VERSION.
+   CFBundleShortVersionString is \$(MARKETING_VERSION) and must stay a substitution."
+  echo "▸ tag v$VERSION is on this commit"
 fi
 
 echo "▸ verifying signature…"
 codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 | tail -3
 codesign -dv --verbose=4 "$APP" 2>&1 | grep -E "TeamIdentifier|flags" || true
 
-ZIP="$BUILD_DIR/Vocula.zip"
-ditto -c -k --keepParent "$APP" "$ZIP"
-echo "▸ submitting to Apple (this waits for the verdict)…"
-xcrun notarytool submit "$ZIP" "${NOTARY[@]}" --wait \
-  || fail "notarisation rejected — read the log with:
-   xcrun notarytool log <submission-id> ${NOTARY[*]}"
+# The ticket is fetched for what was SUBMITTED and written into what is
+# SHIPPED, and for the app those are different files: stapler refuses a zip.
+notarise() {
+    local submit="$1" staple="$2" log="$BUILD_DIR/notarytool-$3.txt"
+    xcrun notarytool submit "$submit" "${NOTARY[@]}" --wait 2>&1 | tee "$log"
+    local submission
+    submission=$(grep -E "^ *id: " "$log" | head -1 | sed -E 's/.*id: //')
+    grep -qE "^ *status: Accepted" "$log" || fail "Apple refused $(basename "$submit") \
+($(grep -E '^ *status: ' "$log" | tail -1 | sed -E 's/.*status: //')).
+   Read what it objected to:
+   xcrun notarytool log $submission ${NOTARY[*]}"
+    xcrun stapler staple "$staple"
+    xcrun stapler validate "$staple"
+}
 
-echo "▸ stapling…"
-xcrun stapler staple "$APP"
-xcrun stapler validate "$APP"
+# notarytool submit exits 0 even when Apple refuses, so the status decides.
+# Trusting the exit code sent a rejected build to stapler, which then failed
+# with "Record not found" and named nothing about why.
+echo "▸ submitting the app (this waits for the verdict)…"
+ditto -c -k --keepParent "$APP" "$BUILD_DIR/submission.zip"
+notarise "$BUILD_DIR/submission.zip" "$APP" app
 
-echo "▸ Gatekeeper verdict:"
+echo "▸ Gatekeeper verdict on the app:"
 spctl --assess --type execute --verbose=2 "$APP" 2>&1 | sed 's/^/   /'
 
-ditto -c -k --keepParent "$APP" "$BUILD_DIR/Vocula-notarized.zip"
-echo "✅ done: $BUILD_DIR/Vocula-notarized.zip"
-echo "   The ticket is stapled to the .app, so it opens with no warning and"
-echo "   without a network connection."
+ZIP="$BUILD_DIR/Vocula.zip"
+ditto -c -k --keepParent "$APP" "$ZIP"
+
+DMG="$BUILD_DIR/Vocula.dmg"
+echo "▸ building the disk image…"
+./scripts/make-dmg.sh "$APP" "$DMG"
+
+# The ticket inside the .app does not cover the image carrying it, so the image
+# is a second submission with a staple of its own. Without it Gatekeeper has to
+# ask Apple about the image over the network before the user may open it.
+echo "▸ submitting the disk image…"
+notarise "$DMG" "$DMG" dmg
+
+echo "▸ Gatekeeper verdict on the image:"
+spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG" 2>&1 | sed 's/^/   /'
+
+echo "✅ done:"
+echo "   $DMG"
+echo "   $ZIP"
+echo "   Both carry their own ticket, so they open with no warning and with no"
+echo "   network connection."
