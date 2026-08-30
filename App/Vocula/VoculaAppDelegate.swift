@@ -79,6 +79,9 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       .activate()
       _exit(0)
     }
+    downloader.diagnose = { [weak self] kind, detail in
+      self?.coordinator.log(kind, detail)
+    }
     Task {
       if Self.isUITesting {
         coordinator.startMonitorOnly()

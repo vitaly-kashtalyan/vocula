@@ -147,6 +147,7 @@ public final class DiagnosticLog: @unchecked Sendable {
     "error": .identifier,
     "domain": .identifier,
     "code": .number,
+    "tls": .number,
     "step": .identifier,
     "wanted": .identifier,
     "default": .identifier,

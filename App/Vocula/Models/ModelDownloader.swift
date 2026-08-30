@@ -41,6 +41,7 @@ final class ModelDownloader: NSObject, ObservableObject {
   @Published private(set) var isDownloading = false
 
   let store: ModelStore
+  var diagnose: ((String, String) -> Void)?
   private let requiredModels: @Sendable () -> [ModelID]
   private var task: URLSessionDownloadTask?
   private var continuation: CheckedContinuation<URL, Error>?
@@ -138,6 +139,39 @@ final class ModelDownloader: NSObject, ObservableObject {
   }
 
   func download(_ id: ModelID) async throws {
+    do {
+      try await perform(id)
+    } catch is CancellationError {
+      throw CancellationError()
+    } catch {
+      diagnose?("model.download", failureDetail(error, for: id))
+      throw error
+    }
+  }
+
+  private func failureDetail(_ error: Error, for id: ModelID) -> String {
+    var outcome = "failed"
+    var cause: [String] = []
+    switch error as? ModelDownloadError {
+    case .checksumMismatch:
+      outcome = "checksum"
+    case .transport(let underlying):
+      let transport = underlying as NSError
+      cause = ["domain=\(transport.domain)", "code=\(transport.code)"]
+      // CFNetwork keeps the handshake's own OSStatus only here; every value of
+      // it collapses into the same `localizedDescription`.
+      if let status = transport.userInfo["_kCFStreamErrorCodeKey"] as? Int, status != 0 {
+        cause.append("tls=\(status)")
+      }
+    case .notEnoughSpace, .capacityUnavailable, .none:
+      break
+    }
+    let percent = Int((fraction[id] ?? 0) * 100)
+    return (["outcome=\(outcome)", "model=\(id.rawValue)", "pct=\(percent)"] + cause)
+      .joined(separator: " ")
+  }
+
+  private func perform(_ id: ModelID) async throws {
     guard !isDownloading else { return }
     let store = self.store
     isDownloading = true
@@ -157,6 +191,7 @@ final class ModelDownloader: NSObject, ObservableObject {
     }.value
 
     current = id
+    fraction[id] = 0
     let temporary: URL
     do {
       temporary = try await startTask(model, resumingWith: resumeData)

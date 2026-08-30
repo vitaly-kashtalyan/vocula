@@ -9,12 +9,17 @@ private final class StubProtocol: URLProtocol {
   nonisolated(unsafe) static var status = 200
   nonisolated(unsafe) static var body = Data()
   nonisolated(unsafe) static var delay: TimeInterval = 0
+  nonisolated(unsafe) static var failure: NSError?
 
   override class func canInit(with request: URLRequest) -> Bool { true }
   override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
   override func startLoading() {
     if Self.delay > 0 { Thread.sleep(forTimeInterval: Self.delay) }
+    if let failure = Self.failure {
+      client?.urlProtocol(self, didFailWithError: failure)
+      return
+    }
     let response = HTTPURLResponse(
       url: request.url!, statusCode: Self.status, httpVersion: "HTTP/1.1",
       headerFields: ["Content-Length": "\(Self.body.count)"])!
@@ -88,6 +93,35 @@ struct ModelDownloaderTests {
     let attributes = try FileManager.default
       .attributesOfItem(atPath: store.url(for: .largeV3Turbo).path)
     #expect(attributes[.posixPermissions] as? NSNumber == 0o600)
+  }
+
+  @Test("a TLS refusal reaches the diagnostic log with its own status code")
+  func tlsFailureIsDiagnosed() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = Data()
+    StubProtocol.failure = NSError(
+      domain: NSURLErrorDomain, code: NSURLErrorSecureConnectionFailed,
+      userInfo: ["_kCFStreamErrorCodeKey": -9836])
+    defer { StubProtocol.failure = nil }
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(lines.count == 1)
+    let (kind, detail) = try #require(lines.first)
+    #expect(kind == "model.download")
+    #expect(detail.contains("outcome=failed"))
+    #expect(detail.contains("model=largeV3Turbo"))
+    #expect(detail.contains("code=-1200"))
+    #expect(detail.contains("tls=-9836"))
+    // A field the allow-list does not know reaches the file as `<dropped>`.
+    #expect(DiagnosticLog.redact(detail) == detail)
   }
 
   @Test("an HTTP error is a transport failure, and nothing is installed")
