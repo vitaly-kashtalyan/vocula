@@ -60,6 +60,11 @@ VERSION_OVERRIDE=()
 # comment one line of it: the splice happens first. This one silently cut the
 # build off after -derivedDataPath, dropping the signing identity.
 # ${A[@]+...}: macOS ships bash 3.2, where an empty array under set -u is unbound.
+# CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO: Xcode injects
+# com.apple.security.get-task-allow into a plain build. Apple refuses it, and it
+# lets any process attach a debugger to the hardened binary and read its memory.
+# Apple names this setting as the fix for a workflow that does not export from
+# an archive.
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
   -derivedDataPath "$BUILD_DIR/dd" \
   ${VERSION_OVERRIDE[@]+"${VERSION_OVERRIDE[@]}"} \
@@ -110,7 +115,7 @@ notarise() {
     local submit="$1" staple="$2" log="$BUILD_DIR/notarytool-$3.txt"
     xcrun notarytool submit "$submit" "${NOTARY[@]}" --wait 2>&1 | tee "$log"
     local submission
-    submission=$(grep -E "^ *id: " "$log" | head -1 | sed -E 's/.*id: //')
+    submission=$(grep -E "^ *id: " "$log" | head -1 | sed -E 's/.*id: //' || true)
     grep -qE "^ *status: Accepted" "$log" || fail "Apple refused $(basename "$submit") \
 ($(grep -E '^ *status: ' "$log" | tail -1 | sed -E 's/.*status: //')).
    Read what it objected to:
