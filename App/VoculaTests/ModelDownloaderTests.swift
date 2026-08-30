@@ -10,6 +10,7 @@ private final class StubProtocol: URLProtocol {
   nonisolated(unsafe) static var body = Data()
   nonisolated(unsafe) static var delay: TimeInterval = 0
   nonisolated(unsafe) static var failure: NSError?
+  nonisolated(unsafe) static var hangs = false
 
   override class func canInit(with request: URLRequest) -> Bool { true }
   override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
@@ -24,6 +25,9 @@ private final class StubProtocol: URLProtocol {
       url: request.url!, statusCode: Self.status, httpVersion: "HTTP/1.1",
       headerFields: ["Content-Length": "\(Self.body.count)"])!
     client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+    // A transfer that never finishes: the only way a cancellation can be the
+    // thing that ends the task rather than racing its completion.
+    if Self.hangs { return }
     if !Self.body.isEmpty { client?.urlProtocol(self, didLoad: Self.body) }
     client?.urlProtocolDidFinishLoading(self)
   }
@@ -36,6 +40,10 @@ private func digest(_ data: Data) -> String {
 }
 
 private let payload = Data((0..<64_000).map { UInt8($0 % 251) })
+
+private func fields(_ detail: String) -> Set<String> {
+  Set(detail.split(separator: " ").map(String.init))
+}
 
 private func descriptor(sha256: String, byteSize: Int64) -> ModelDescriptor {
   ModelDescriptor(
@@ -116,12 +124,130 @@ struct ModelDownloaderTests {
     #expect(lines.count == 1)
     let (kind, detail) = try #require(lines.first)
     #expect(kind == "model.download")
-    #expect(detail.contains("outcome=failed"))
-    #expect(detail.contains("model=largeV3Turbo"))
-    #expect(detail.contains("code=-1200"))
-    #expect(detail.contains("tls=-9836"))
-    // A field the allow-list does not know reaches the file as `<dropped>`.
+    #expect(
+      fields(detail) == [
+        "outcome=failed", "model=largeV3Turbo", "pct=0",
+        "domain=\(NSURLErrorDomain)", "code=-1200", "tls=-9836",
+      ])
+    #expect(
+      DiagnosticLog.redact(detail) == detail,
+      "a field the allow-list does not know reaches the file as <dropped>")
+  }
+
+  @Test("an HTTP status is diagnosed as itself, with no TLS status invented")
+  func httpFailureIsDiagnosed() async throws {
+    StubProtocol.status = 404
+    StubProtocol.body = Data("<html>not found</html>".utf8)
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    let detail = try #require(lines.first?.1)
+    let seen = fields(detail)
+    #expect(seen.contains("outcome=failed"))
+    #expect(seen.contains("domain=http"))
+    #expect(seen.contains("code=404"))
+    #expect(!seen.contains { $0.hasPrefix("tls=") })
     #expect(DiagnosticLog.redact(detail) == detail)
+  }
+
+  @Test("a transport failure carrying no TLS status omits the field")
+  func transportFailureWithoutTLSStatus() async throws {
+    StubProtocol.failure = NSError(
+      domain: NSURLErrorDomain, code: NSURLErrorTimedOut, userInfo: [:])
+    defer { StubProtocol.failure = nil }
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    let seen = fields(try #require(lines.first?.1))
+    #expect(seen.contains("code=\(NSURLErrorTimedOut)"))
+    #expect(!seen.contains { $0.hasPrefix("tls=") })
+  }
+
+  @Test("a checksum mismatch is its own outcome, not a transport failure")
+  func checksumMismatchIsDiagnosed() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(
+        sha256: digest(Data("something else".utf8)),
+        byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    let detail = try #require(lines.first?.1)
+    let seen = fields(detail)
+    #expect(seen.contains("outcome=checksum"))
+    #expect(!seen.contains { $0.hasPrefix("domain=") })
+    #expect(DiagnosticLog.redact(detail) == detail)
+  }
+
+  @Test("a cancelled download is not written to the log")
+  func cancellationIsNotDiagnosed() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.hangs = true
+    defer { StubProtocol.hangs = false }
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    let transfer = Task { try await downloader.download(.largeV3Turbo) }
+    var yields = 0
+    while downloader.isDownloading == false, yields < 10_000 {
+      await Task.yield()
+      yields += 1
+    }
+    #expect(downloader.isDownloading, "the transfer never started")
+    // `isDownloading` is raised before the task exists, and `cancel()` is a
+    // silent no-op until it does, so the ask has to be repeated.
+    var attempts = 0
+    while downloader.isDownloading, attempts < 10_000 {
+      downloader.cancel()
+      await Task.yield()
+      attempts += 1
+    }
+
+    await #expect(throws: CancellationError.self) { try await transfer.value }
+    #expect(lines.isEmpty, "cancelling is routine, and the log records the anomaly")
+  }
+
+  @Test("a refusal for want of disk space says so, rather than saying nothing")
+  func noSpaceIsDiagnosed() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: .max))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await downloader.downloadOne(.largeV3Turbo)
+
+    let detail = try #require(lines.first?.1)
+    #expect(fields(detail).contains("outcome=noSpace"))
+    #expect(DiagnosticLog.redact(detail) == detail)
+    #expect(downloader.lastError != nil)
   }
 
   @Test("an HTTP error is a transport failure, and nothing is installed")

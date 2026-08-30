@@ -76,22 +76,30 @@ final class ModelDownloader: NSObject, ObservableObject {
     try? FileManager.default.removeItem(at: resumeURL(for: id))
   }
 
-  func downloadMissing() async {
-    lastError = nil
-    await refreshStatuses()
-    let ids = requiredModels()
+  private func spaceRefusal(for ids: [ModelID]) async -> String? {
     let store = self.store
     let verdict = await Task.detached(priority: .utility) {
       store.spaceVerdict(for: ids)
     }.value
     switch verdict {
     case .enough:
-      break
-    case .short:
-      lastError = ModelDownloadError.notEnoughSpace(verdict).errorDescription
-      return
+      return nil
+    case .short(let byBytes):
+      diagnose?(
+        "model.download", ["outcome=noSpace", "bytes=\(byBytes)"].joined(separator: " "))
+      return ModelDownloadError.notEnoughSpace(verdict).errorDescription
     case .unknown:
-      lastError = ModelDownloadError.capacityUnavailable.errorDescription
+      diagnose?("model.download", "outcome=noCapacity")
+      return ModelDownloadError.capacityUnavailable.errorDescription
+    }
+  }
+
+  func downloadMissing() async {
+    lastError = nil
+    await refreshStatuses()
+    let ids = requiredModels()
+    if let refusal = await spaceRefusal(for: ids) {
+      lastError = refusal
       return
     }
     for id in ids where statuses[id] != .ready {
@@ -112,18 +120,8 @@ final class ModelDownloader: NSObject, ObservableObject {
     lastError = nil
     await refreshStatuses()
     guard statuses[id] != .ready else { return }
-    let store = self.store
-    let verdict = await Task.detached(priority: .utility) {
-      store.spaceVerdict(for: [id])
-    }.value
-    switch verdict {
-    case .enough:
-      break
-    case .short:
-      lastError = ModelDownloadError.notEnoughSpace(verdict).errorDescription
-      return
-    case .unknown:
-      lastError = ModelDownloadError.capacityUnavailable.errorDescription
+    if let refusal = await spaceRefusal(for: [id]) {
+      lastError = refusal
       return
     }
     do { try await download(id) } catch is CancellationError {
@@ -141,10 +139,10 @@ final class ModelDownloader: NSObject, ObservableObject {
   func download(_ id: ModelID) async throws {
     do {
       try await perform(id)
-    } catch is CancellationError {
-      throw CancellationError()
     } catch {
-      diagnose?("model.download", failureDetail(error, for: id))
+      if !(error is CancellationError) {
+        diagnose?("model.download", failureDetail(error, for: id))
+      }
       throw error
     }
   }
