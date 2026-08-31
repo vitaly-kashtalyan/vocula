@@ -35,17 +35,11 @@ App/Local.xcconfig
 # Isolated git worktrees created for subagent-driven feature work.
 .worktrees/
 
-# Maintainer's notes. Kept on one machine, out of the tree. README.md is what a
-# person needs to build and run this.
+# Maintainer's notes and working files. Kept on one machine, out of the tree.
+# README.md is what a person needs to build and run this.
 CLAUDE.md
 BUSINESS.md
-docs/architecture.md
-
-# Scratch for the `/ticket` pipeline: one card's spec and implementation plan,
-# rewritten from nothing on every run. Ignored rather than committed because a
-# plan that survives its own PR reads like pending work — the same rule that
-# deletes it in the PR that implements it.
-docs/tickets/
+docs/
 
 # Export/import traffic for the translation loop. NOT `Localization/` — the
 # glossary lives there and is committed.
