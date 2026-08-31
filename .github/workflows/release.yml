@@ -42,10 +42,42 @@ jobs:
           git tag "v$VERSION"
           git push origin "v$VERSION"
 
+      - name: Refuse a build Sparkle would never offer
+        # CFBundleVersion is the commit count, and it CAN GO DOWN when the branch
+        # being built changes. Sparkle compares that number and nothing else, so a
+        # repeated or lower one means no update is ever offered again, to every
+        # installed copy, with no channel left to say so. Cheap here, impossible
+        # in the field.
+        run: |
+          set -euo pipefail
+          BUILD=$(git rev-list --count --first-parent HEAD)
+          FEED=https://github.com/vitaly-kashtalyan/vocula/releases/latest/download/appcast.xml
+          PUBLISHED=$(curl -fsSL "$FEED" 2>/dev/null \
+            | sed -n 's/.*sparkle:version="\([0-9]*\)".*/\1/p' | sort -n | tail -1 || true)
+          if [ -z "${PUBLISHED:-}" ]; then
+            echo "▸ no published appcast yet — first release, nothing to compare"
+          elif [ "$BUILD" -le "$PUBLISHED" ]; then
+            echo "❌ build $BUILD is not higher than the published $PUBLISHED." >&2
+            echo "   Sparkle would offer nothing, for ever, to everyone." >&2
+            exit 1
+          else
+            echo "▸ build $BUILD > published $PUBLISHED"
+          fi
+
       - name: Tools
         # Before the keychain is imported, never after: from then on the signing
-        # identity is unlocked and a formula could sign with it.
-        run: brew install xcodegen
+        # identity is unlocked and a formula could sign with it. generate_appcast
+        # runs WITH the Sparkle signing key in its environment, so it arrives the
+        # same way and pinned by checksum rather than by a mutable formula.
+        run: |
+          set -euo pipefail
+          brew install xcodegen
+          curl -fsSL -o "$RUNNER_TEMP/sparkle.tar.xz" \
+            https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz
+          echo "52bf9e88cdd972fc0c81501377a880e90d47031bd8ca5462488f843e2609e192  $RUNNER_TEMP/sparkle.tar.xz" \
+            | shasum -a 256 -c -
+          tar -xf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP" bin/generate_appcast
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       - name: Import the Developer ID certificate
         env:
@@ -107,6 +139,7 @@ jobs:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
+          SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           ASSETS=(build/notarize/Vocula.dmg build/notarize/Vocula.zip)
@@ -129,6 +162,28 @@ jobs:
             } > "$RUNNER_TEMP/notes.md"
             gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
           fi
+
+          # The appcast is generated HERE rather than before the release, because
+          # the release notes it carries do not exist until the release does. A
+          # buyer asked to accept an unnamed change to a paid app is what the
+          # alternative looks like.
+          #
+          # A directory of its own: build/notarize also holds submission.zip, a
+          # second copy of the same app, which generate_appcast would enumerate
+          # and advertise at a URL nothing ever uploads.
+          trap 'rm -f "$RUNNER_TEMP/eddsa.key"' EXIT
+          mkdir -p build/appcast
+          cp build/notarize/Vocula.zip build/appcast/
+          gh release view "$TAG" --json body -q .body > build/appcast/Vocula.html
+          printf '%s' "$SPARKLE_EDDSA_PRIVATE_KEY" > "$RUNNER_TEMP/eddsa.key"
+          # The enclosure is the TAGGED url, never latest: one following latest
+          # would point at a different build the moment the next release lands.
+          generate_appcast --ed-key-file "$RUNNER_TEMP/eddsa.key" \
+            --download-url-prefix "https://github.com/vitaly-kashtalyan/vocula/releases/download/$TAG/" \
+            build/appcast/
+          [ -f build/appcast/appcast.xml ] \
+            || { echo "❌ no appcast was generated" >&2; exit 1; }
+          gh release upload "$TAG" build/appcast/appcast.xml --clobber
 
       - name: Shred the credentials
         if: always()
