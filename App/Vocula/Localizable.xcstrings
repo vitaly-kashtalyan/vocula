@@ -13886,7 +13886,7 @@
       }
     },
     "onboarding.updatesFooter" : {
-      "comment" : "Footer under the update rows. States the network cost plainly. The interval is MEASURED, not assumed — see the ticket. Wraps over several lines.",
+      "comment" : "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {

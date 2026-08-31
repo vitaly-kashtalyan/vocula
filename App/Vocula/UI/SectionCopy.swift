@@ -213,7 +213,7 @@ enum OnboardingScreenCopy {
     defaultValue:
       "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so.",
     comment:
-      "Footer under the update rows. States the network cost plainly. The interval is MEASURED, not assumed — see the ticket. Wraps over several lines."
+      "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines."
   )
   static let settingsFooter = LocalizedStringResource(
     "onboarding.settingsFooter", defaultValue: "Dictation works without these.",

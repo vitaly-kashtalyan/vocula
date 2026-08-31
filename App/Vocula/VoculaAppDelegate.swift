@@ -63,6 +63,9 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     guard !isHostingTests, !isUITesting,
       let id = Bundle.main.bundleIdentifier
     else { return false }
+    // A quitting process is still listed. Sparkle relaunches the moment it has
+    // asked the old copy to quit, so without !isTerminated the new copy defers
+    // to a corpse and exits, leaving none running.
     return NSRunningApplication.runningApplications(withBundleIdentifier: id)
       .contains {
         $0.processIdentifier != ProcessInfo.processInfo.processIdentifier && !$0.isTerminated
