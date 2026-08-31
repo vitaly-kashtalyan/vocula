@@ -26,6 +26,17 @@ struct UpdaterConfigurationTests {
     #expect(info["SUEnableAutomaticChecks"] as? Bool == true)
   }
 
+  @Test("the silent-install checkbox Sparkle would otherwise offer is refused")
+  func noSilentInstallOffer() {
+    #expect(info["SUAllowsAutomaticUpdates"] as? Bool == false)
+  }
+
+  @Test("the signature is checked before the archive is unpacked, and the feed is signed")
+  func signedBeforeUnpacked() {
+    #expect(info["SUVerifyUpdateBeforeExtraction"] as? Bool == true)
+    #expect(info["SURequireSignedFeed"] as? Bool == true)
+  }
+
   @Test("automatic download, profiling and the interval are all ABSENT")
   func absentKeys() {
     #expect(info["SUAutomaticallyUpdate"] == nil)

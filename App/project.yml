@@ -49,6 +49,9 @@ targets:
         SUFeedURL: https://github.com/vitaly-kashtalyan/vocula/releases/latest/download/appcast.xml
         SUPublicEDKey: Ekqc9fb1bo7nWx70S5B0rfaP4w/gUX9i51XPw8tBiL0=
         SUEnableAutomaticChecks: true
+        SUAllowsAutomaticUpdates: false
+        SUVerifyUpdateBeforeExtraction: true
+        SURequireSignedFeed: true
         NSHumanReadableCopyright: >-
           Copyright © 2026 Vitali Kashtalyan. Licensed under the GNU General
           Public License, version 3. Source: github.com/vitaly-kashtalyan/vocula

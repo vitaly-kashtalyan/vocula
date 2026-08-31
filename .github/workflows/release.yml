@@ -171,14 +171,20 @@ jobs:
           # A directory of its own: build/notarize also holds submission.zip, a
           # second copy of the same app, which generate_appcast would enumerate
           # and advertise at a URL nothing ever uploads.
-          trap 'rm -f "$RUNNER_TEMP/eddsa.key"' EXIT
           mkdir -p build/appcast
           cp build/notarize/Vocula.zip build/appcast/
-          gh release view "$TAG" --json body -q .body > build/appcast/Vocula.html
-          printf '%s' "$SPARKLE_EDDSA_PRIVATE_KEY" > "$RUNNER_TEMP/eddsa.key"
+          # .md, and EMBEDDED. generate_appcast picks the format from the
+          # extension: .html would embed GitHub's Markdown verbatim and the buyer
+          # would read literal "## Fixed"; .md alone emits a releaseNotesLink to
+          # a file nothing uploads, and the pane 404s.
+          gh release view "$TAG" --json body -q .body > build/appcast/Vocula.md
           # The enclosure is the TAGGED url, never latest: one following latest
           # would point at a different build the moment the next release lands.
-          generate_appcast --ed-key-file "$RUNNER_TEMP/eddsa.key" \
+          # --ed-key-file - reads the key from stdin, so it never reaches disk.
+          printf '%s' "$SPARKLE_EDDSA_PRIVATE_KEY" | generate_appcast \
+            --ed-key-file - \
+            --embed-release-notes \
+            --link https://vocula.app \
             --download-url-prefix "https://github.com/vitaly-kashtalyan/vocula/releases/download/$TAG/" \
             build/appcast/
           [ -f build/appcast/appcast.xml ] \
