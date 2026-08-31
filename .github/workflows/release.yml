@@ -118,6 +118,16 @@ jobs:
               --verify-tag \
               --title "$TAG" \
               --generate-notes
+            # What changed goes first, for the reader who already has the app;
+            # the standing description goes under it, for the reader who does
+            # not. `gh` can only PREPEND to what it generates, so this is two
+            # calls rather than one flag.
+            {
+              gh release view "$TAG" --json body -q .body
+              printf '\n---\n\n'
+              cat Packaging/release-header.md
+            } > "$RUNNER_TEMP/notes.md"
+            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
           fi
 
       - name: Shred the credentials
