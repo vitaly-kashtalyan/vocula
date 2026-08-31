@@ -9,6 +9,9 @@ options:
 packages:
   Vocula:
     path: ..
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    revision: ac2def288cbff5cfc7df3ffef6abdf45b72bcb0a
 configFiles:
   Debug: Signing.xcconfig
   Release: Signing.xcconfig
@@ -33,6 +36,8 @@ targets:
         product: VoculaKit
       - package: Vocula
         product: VoculaWhisper
+      - package: Sparkle
+        product: Sparkle
     info:
       path: Vocula/Info.plist
       properties:
@@ -41,6 +46,9 @@ targets:
         LSUIElement: true
         NSMicrophoneUsageDescription: >-
           Vocula records audio only while you are dictating.
+        SUFeedURL: https://github.com/vitaly-kashtalyan/vocula/releases/latest/download/appcast.xml
+        SUPublicEDKey: Ekqc9fb1bo7nWx70S5B0rfaP4w/gUX9i51XPw8tBiL0=
+        SUEnableAutomaticChecks: true
         NSHumanReadableCopyright: >-
           Copyright © 2026 Vitali Kashtalyan. Licensed under the GNU General
           Public License, version 3. Source: github.com/vitaly-kashtalyan/vocula
