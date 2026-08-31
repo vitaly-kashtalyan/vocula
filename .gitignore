@@ -28,6 +28,9 @@ App/Local.xcconfig
 
 # Tooling scratch output.
 .playwright-mcp/
+# Personal runners at the ROOT; every script this repository ships is in
+# scripts/. Anchored, or this would sweep those out of the tree too.
+/*.sh
 
 # Isolated git worktrees created for subagent-driven feature work.
 .worktrees/

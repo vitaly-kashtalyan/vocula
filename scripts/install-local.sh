@@ -31,14 +31,21 @@ if pgrep -x Vocula >/dev/null; then
     exit 1
 fi
 
-if [ -d "$app" ]; then
-    # rsync --delete, never cp -R: cp MERGES onto an existing bundle and a leftover file breaks the seal.
-    rsync -a --delete "$built"/ "$app"/
-else
-    ditto "$built" "$app"
+# Writing INTO an installed bundle needs App Management on macOS 14, and a denial
+# lands part-way through, leaving a nested bundle unsigned. Creating one that is
+# not there is allowed.
+rm -rf "$app"
+if [ -e "$app" ]; then
+    echo "cannot replace $app." >&2
+    echo "Grant this terminal App Management in System Settings ->" >&2
+    echo "Privacy & Security -> App Management, then run this again." >&2
+    exit 1
 fi
-# Verify BEFORE launching: an invalid signature silently costs all three TCC grants.
-codesign --verify --strict "$app"
+ditto "$built" "$app"
+
+# Verify BEFORE launching: an invalid signature silently costs all three TCC
+# grants. --deep too: --strict alone does not descend into the nested bundles.
+codesign --verify --deep --strict "$app"
 echo "installed build $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' \
                        "$app/Contents/Info.plist")"
 open -a "$app"
