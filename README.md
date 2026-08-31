@@ -23,8 +23,10 @@ Dictation for macOS that runs entirely on your Mac, in any of 100 languages.</p>
 <!-- A screen recording of one dictation goes here, once there is one to record:
      hold the key, speak a sentence, watch it land in a text field. -->
 
-There is no account, no sign-in, and no network connection of any kind after the
-one-time model download — including for checking a licence.
+There is no account and no sign-in, and nothing you dictate ever leaves this
+Mac. The app talks to exactly two places, both on GitHub: it fetches the speech
+model once, and — while you leave the switch on — it asks once a day whether a
+newer version of Vocula exists. Your licence is checked here, offline.
 
 ## How it works
 
@@ -71,19 +73,29 @@ Nothing you say. Ever.
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
 | Model download | This project's GitHub releases, once, on first run. SHA-256 verified. |
+| Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
-network call in the shipping app is in one file, and this is the command that
-proves it:
+place the shipping app reaches the network is named in two files, and this is
+the command that proves there is no third:
 
 ```sh
-grep -rl "URLSession" App/Vocula Sources
-# App/Vocula/Models/ModelDownloader.swift
+git grep -l "URLSession\|SUFeedURL" -- App/Vocula App/project.yml Sources
+# App/Vocula/Models/ModelDownloader.swift    the speech model, once
+# App/project.yml                            SUFeedURL, the daily version check
 ```
 
-No telemetry, no analytics, no crash reporting, no update check, no licence
-server. The only third-party code in the app is whisper.cpp, pinned by URL and
-SHA-256 in `Package.swift`, so there is no analytics SDK for a call to hide in.
+That covers the code in this repository. The update check itself is performed
+by [Sparkle](https://github.com/sparkle-project/Sparkle), pinned by commit in
+`App/project.yml`, and it fetches one signed XML file from the same GitHub
+releases the models come from.
+
+No telemetry, no analytics, no crash reporting, no licence server. The two
+third-party components in the app are whisper.cpp and Sparkle, both pinned in
+`App/project.yml`, so there is no analytics SDK for a call to hide in. One thing
+the update check gives away by existing: GitHub counts downloads of every
+release asset, so the number of copies asking is visible to anyone who looks —
+including us. It is a count, and it is all it is.
 
 The exceptions, stated rather than buried: Settings → Microphone opens the input
 to draw a level meter, so you can see that it hears you before you rely on it —
@@ -96,12 +108,11 @@ length, along with what none of this protects you from.
 
 Download the signed, notarised build from
 [vocula.app](https://vocula.app), or [build it yourself](#build-it-yourself).
-Both are the same program.
 
 ## Buying a build
 
-The source builds into a working app. Nothing is held back, there is no reduced
-edition, and the licence check is in this repository like everything else —
+The source builds into a working app. Nothing is held back and there is no
+reduced edition; the licence check is in this repository like everything else —
 `LicenceVerifier` and the trial that gates it are a few files you can read, and
 delete.
 
@@ -137,15 +148,17 @@ silent recording, a refusal and a dead microphone all cost nothing.
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
 
-Apple Silicon is what it is developed and measured on. Both architectures build
-and the framework ships an Intel slice, but nothing about Intel has been
-measured — see [Known limitations](#known-limitations).
+Apple Silicon only. Transcription runs on the GPU, and an Intel integrated GPU
+is not a machine this can serve — the M1 is already noticeably slower than an
+M5. Both architectures still build and the framework ships an Intel slice, but
+Intel is not supported and is not claimed.
 
 ## Build it yourself
 
 Xcode 26 or later — the package needs the Swift 6.2 toolchain and the macOS 26
-SDK. The first build needs a network: the whisper.cpp XCFramework is fetched
-from its GitHub release and checked against the SHA-256 pinned in
+SDK. The first build needs a network for two dependencies: Sparkle, pinned by
+commit in `App/project.yml`, and the whisper.cpp XCFramework, fetched from its
+GitHub release and checked against the SHA-256 pinned in
 `Package.swift`.
 
 ```sh
@@ -176,7 +189,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -only-testing:VoculaAppTests
 ```
 
-831 tests: 645 in the kit, 173 in the hosted app bundle, 13 driving the real
+874 tests: 657 in the kit, 204 in the hosted app bundle, 13 driving the real
 interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.

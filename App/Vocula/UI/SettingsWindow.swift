@@ -110,6 +110,7 @@ struct SettingsWindowView: View {
   @AppStorage("sidebar.railed") private var railed = false
   @ObservedObject var navigation: SettingsNavigationModel
   @ObservedObject var onboarding: OnboardingModelObservable
+  let updater: UpdaterController
   let menu: MenuBarController
   let downloader: ModelDownloader
   let coordinator: AppCoordinator
@@ -210,7 +211,7 @@ struct SettingsWindowView: View {
     case .diagnostics:
       DiagnosticsSettingsView(menu: menu, coordinator: coordinator)
     case .permissions:
-      PermissionsSettingsSection(model: onboarding)
+      PermissionsSettingsSection(model: onboarding, updater: updater)
     case .models:
       ModelPickerView(downloader: downloader, onModelsReady: onModelsReady)
     case .languages:

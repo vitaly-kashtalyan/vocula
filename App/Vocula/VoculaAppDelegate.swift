@@ -4,6 +4,7 @@ import VoculaKit
 @MainActor
 final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   let menu = MenuBarController()
+  let updater = UpdaterController()
   let downloader: ModelDownloader
   lazy var coordinator = AppCoordinator(menu: menu)
   let settingsNavigation = SettingsNavigationModel()
@@ -62,8 +63,13 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     guard !isHostingTests, !isUITesting,
       let id = Bundle.main.bundleIdentifier
     else { return false }
+    // A quitting process is still listed. Sparkle relaunches the moment it has
+    // asked the old copy to quit, so without !isTerminated the new copy defers
+    // to a corpse and exits, leaving none running.
     return NSRunningApplication.runningApplications(withBundleIdentifier: id)
-      .contains { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }
+      .contains {
+        $0.processIdentifier != ProcessInfo.processInfo.processIdentifier && !$0.isTerminated
+      }
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
@@ -82,6 +88,9 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     downloader.diagnose = { [weak self] kind, detail in
       self?.coordinator.log(kind, detail)
     }
+    updater.diagnose = { [weak self] kind, detail in
+      self?.coordinator.log(kind, detail)
+    }
     Task {
       if Self.isUITesting {
         coordinator.startMonitorOnly()
@@ -93,7 +102,18 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       presentOnboardingIfNeeded()
       reopenSettingsIfAsked()
       openSettingsIfTheMenuBarIconIsHidden()
+      startUpdaterIfAllowed()
     }
+  }
+
+  private func startUpdaterIfAllowed() {
+    guard
+      UpdaterController.mayStart(
+        isSecondCopy: Self.isSecondCopy,
+        argumentsDisableUpdates: ProcessInfo.processInfo.arguments
+          .contains(UpdaterController.disableArgument))
+    else { return }
+    updater.start()
   }
 
   private func presentOnboardingIfNeeded() {

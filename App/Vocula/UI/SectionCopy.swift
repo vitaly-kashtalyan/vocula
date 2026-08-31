@@ -88,9 +88,9 @@ enum LicenceScreenCopy {
   static let unlimited = LocalizedStringResource(
     "licence.unlimited",
     defaultValue:
-      "Unlimited dictation, on every Mac of yours. Verified on this Mac, with no network connection of any kind — the same as everything else Vocula does, which is why there is no sign-in and no account.",
+      "Unlimited dictation, on every Mac of yours. Verified right here, with no network connection at all, which is why there is no sign-in and no account.",
     comment:
-      "States that verification is offline. This is a PRIVACY claim about the product and must keep saying that no network connection is made."
+      "States that LICENCE VERIFICATION is offline. This is a privacy claim about the product and must keep saying that checking the licence makes no network connection. Do NOT widen it to the whole app: Vocula fetches the speech model once and checks for its own updates daily."
   )
   static let personalLicence = LocalizedStringResource(
     "licence.personal",
@@ -131,8 +131,10 @@ enum LicenceScreenCopy {
   static let offlineCheck = LocalizedStringResource(
     "licence.offlineCheck",
     defaultValue:
-      "Vocula checks your key on this Mac, with no network connection of any kind — the same as everything else it does. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open.",
-    comment: "A PRIVACY claim about the product: verification is offline. Must keep saying so.")
+      "Vocula checks your key on this Mac, with no network connection at all. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open.",
+    comment:
+      "A privacy claim about the product: LICENCE VERIFICATION is offline, and must keep saying so. Do NOT widen it to the whole app — the model download and the update check both use the network."
+  )
   static let pasteButton = LocalizedStringResource(
     "licence.paste.button", defaultValue: "Paste Licence Key",
     comment: "Reads a licence key from the clipboard.")
@@ -183,6 +185,35 @@ enum OnboardingScreenCopy {
     "onboarding.rechecked", defaultValue: "Re-read each time Vocula comes forward",
     comment:
       "Footer under the permissions. Says why there is no Check again button: every permission is read afresh whenever the app becomes active."
+  )
+  static let updateAutomatically = LocalizedStringResource(
+    "onboarding.updateAutomatically", defaultValue: "Update automatically",
+    comment:
+      "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting."
+  )
+  static let checkForUpdates = LocalizedStringResource(
+    "onboarding.checkForUpdates", defaultValue: "Check Now",
+    comment: "Button that asks for an update check immediately."
+  )
+  static let lastChecked = LocalizedStringResource(
+    "onboarding.lastChecked", defaultValue: "Last checked",
+    comment:
+      "Row label; the value beside it is when a check last SUCCEEDED. A stale date is how someone whose updater is being blocked finds out, because a failed check says nothing on screen."
+  )
+  static let neverChecked = LocalizedStringResource(
+    "onboarding.neverChecked", defaultValue: "Never",
+    comment: "Value beside 'Last checked' when no check has ever succeeded on this Mac."
+  )
+  static let checkedToday = LocalizedStringResource(
+    "onboarding.checkedToday", defaultValue: "Today",
+    comment: "Value beside 'Last checked' when the last successful check was today."
+  )
+  static let updatesFooter = LocalizedStringResource(
+    "onboarding.updatesFooter",
+    defaultValue:
+      "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so.",
+    comment:
+      "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines."
   )
   static let settingsFooter = LocalizedStringResource(
     "onboarding.settingsFooter", defaultValue: "Dictation works without these.",
@@ -517,6 +548,11 @@ enum ModelScreenCopy {
       comment:
         "The argument is an engine's product NAME — Whisper, Parakeet — and is never translated.")
   }
+  static let updaterCredit = LocalizedStringResource(
+    "models.updaterCredit", defaultValue: "Updates",
+    comment:
+      "Row label in the third-party notices block on Settings → Models; the value beside it names the update framework and its licence. Not a model and not a recognition engine — it is listed here because this is where the app shows every third-party notice."
+  )
   static let fullLicenceTexts = LocalizedStringResource(
     "models.fullLicenceTexts", defaultValue: "Full licence texts…",
     comment: "Opens the bundled THIRD-PARTY.txt. Showing these is a licence obligation.")

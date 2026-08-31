@@ -1,0 +1,87 @@
+import Combine
+import Foundation
+import Sparkle
+
+@MainActor
+final class UpdaterController: NSObject, ObservableObject {
+  static let disableArgument = "-VoculaNoUpdates"
+
+  @Published private(set) var canCheck = false
+  @Published private(set) var automaticallyChecks = false
+
+  var diagnose: ((String, String) -> Void)?
+
+  private var controller: SPUStandardUpdaterController?
+
+  nonisolated static func mayStart(isSecondCopy: Bool, argumentsDisableUpdates: Bool) -> Bool {
+    guard !isSecondCopy else { return false }
+    return !argumentsDisableUpdates
+  }
+
+  var lastSuccessfulCheck: Date? { controller?.updater.lastUpdateCheckDate }
+
+  func setAutomaticallyChecks(_ on: Bool) {
+    controller?.updater.automaticallyChecksForUpdates = on
+  }
+
+  func start() {
+    guard controller == nil else { return }
+    let controller = SPUStandardUpdaterController(
+      startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
+    self.controller = controller
+    controller.updater.clearFeedURLFromUserDefaults()
+    controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
+    controller.updater.publisher(for: \.automaticallyChecksForUpdates)
+      .assign(to: &$automaticallyChecks)
+  }
+
+  func checkForUpdates() {
+    controller?.updater.checkForUpdates()
+  }
+}
+
+extension UpdaterController: SPUUpdaterDelegate {
+  // SUHost prefers UserDefaults over Info.plist for SUFeedURL, so any local
+  // process could redirect the feed. The delegate outranks both.
+  func feedURLString(for updater: SPUUpdater) -> String? {
+    Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
+  }
+
+  func updater(
+    _ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: (any Error)?
+  ) {
+    let failure = error as NSError?
+    guard let failure, !Self.isRoutine(failure) else { return }
+    var detail = ["outcome=failed", "domain=\(failure.domain)", "code=\(failure.code)"]
+    if let status = Self.handshakeStatus(of: failure) {
+      detail.append("tls=\(status)")
+    }
+    diagnose?("update.failed", detail.joined(separator: " "))
+  }
+
+  // Sparkle reports "there was no update" as an ERROR on this delegate method,
+  // and does not log it itself. Recording it would put a line in the diagnostic
+  // file on every routine check that found nothing.
+  private static func isRoutine(_ failure: NSError) -> Bool {
+    guard failure.domain == SUSparkleErrorDomain else { return false }
+    return [
+      SUError.noUpdateError,
+      SUError.installationCanceledError,
+      SUError.installationAuthorizeLaterError,
+    ].map { Int($0.rawValue) }.contains(failure.code)
+  }
+
+  // CFNetwork keeps the handshake's own OSStatus only here; every value of it
+  // collapses into the same `localizedDescription`. Sparkle wraps the transport
+  // error, so the key can be one level down.
+  private static func handshakeStatus(of failure: NSError) -> Int? {
+    let candidates = [failure, failure.userInfo[NSUnderlyingErrorKey] as? NSError].compactMap { $0 }
+    for candidate in candidates {
+      if let status = candidate.userInfo["_kCFStreamErrorCodeKey"] as? Int, status != 0 {
+        return status
+      }
+    }
+    return nil
+  }
+
+}

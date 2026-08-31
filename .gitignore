@@ -35,11 +35,16 @@ App/Local.xcconfig
 # Isolated git worktrees created for subagent-driven feature work.
 .worktrees/
 
-# Maintainer's notes. Kept on one machine, out of the tree. README.md is what a
-# person needs to build and run this.
-CLAUDE.md
-BUSINESS.md
-docs/architecture.md
+# Every markdown file at the ROOT is a maintainer's note until it is named here.
+# Anchored, so it cannot reach the tracked .md under .github/, Localization/ and
+# Packaging/. The four exceptions are what a stranger is owed: how to build it,
+# what it stores, that patches are not accepted, and where to report a hole.
+/*.md
+!/README.md
+!/PRIVACY.md
+!/CONTRIBUTING.md
+!/SECURITY.md
+docs/
 
 # Export/import traffic for the translation loop. NOT `Localization/` — the
 # glossary lives there and is committed.

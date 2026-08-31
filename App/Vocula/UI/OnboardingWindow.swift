@@ -90,6 +90,7 @@ final class OnboardingModelObservable: ObservableObject {
 
 struct PermissionsSettingsSection: View {
   @ObservedObject var model: OnboardingModelObservable
+  @ObservedObject var updater: UpdaterController
   @AppStorage(VoculaAppDelegate.menuBarIconVisibleKey) private var menuBarIconVisible = true
 
   private var permissions: [OnboardingRow] {
@@ -140,6 +141,42 @@ struct PermissionsSettingsSection: View {
       }
     } footer: {
       Text(OnboardingScreenCopy.settingsFooter)
+    }
+    updateSection
+  }
+
+  @ViewBuilder private var updateSection: some View {
+    Section {
+      Toggle(OnboardingScreenCopy.updateAutomatically, isOn: automaticUpdates)
+      LabeledContent {
+        lastCheckedValue
+      } label: {
+        Text(OnboardingScreenCopy.lastChecked)
+      }
+      // On the button, not the Section: canCheckForUpdates is false for the whole
+      // of a check, and false on a copy where the updater never started.
+      Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
+        .disabled(!updater.canCheck)
+    } footer: {
+      Text(OnboardingScreenCopy.updatesFooter)
+    }
+  }
+
+  private var automaticUpdates: Binding<Bool> {
+    Binding(
+      get: { updater.automaticallyChecks },
+      set: { updater.setAutomaticallyChecks($0) })
+  }
+
+  @ViewBuilder private var lastCheckedValue: some View {
+    if let checked = updater.lastSuccessfulCheck {
+      if Calendar.current.isDate(checked, inSameDayAs: Date()) {
+        Text(OnboardingScreenCopy.checkedToday)
+      } else {
+        Text(verbatim: checked.formatted(date: .abbreviated, time: .omitted))
+      }
+    } else {
+      Text(OnboardingScreenCopy.neverChecked)
     }
   }
 

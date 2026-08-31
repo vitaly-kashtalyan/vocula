@@ -8474,7 +8474,7 @@
       }
     },
     "licence.offlineCheck" : {
-      "comment" : "A PRIVACY claim about the product: verification is offline. Must keep saying so.",
+      "comment" : "A privacy claim about the product: LICENCE VERIFICATION is offline, and must keep saying so. Do NOT widen it to the whole app — the model download and the update check both use the network.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -8486,7 +8486,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Vocula checks your key on this Mac, with no network connection of any kind — the same as everything else it does. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open."
+            "value" : "Vocula checks your key on this Mac, with no network connection at all. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open."
           }
         },
         "es" : {
@@ -9218,7 +9218,7 @@
       }
     },
     "licence.unlimited" : {
-      "comment" : "States that verification is offline. This is a PRIVACY claim about the product and must keep saying that no network connection is made.",
+      "comment" : "States that LICENCE VERIFICATION is offline. This is a privacy claim about the product and must keep saying that checking the licence makes no network connection. Do NOT widen it to the whole app: Vocula fetches the speech model once and checks for its own updates daily.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -9230,7 +9230,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Unlimited dictation, on every Mac of yours. Verified on this Mac, with no network connection of any kind — the same as everything else Vocula does, which is why there is no sign-in and no account."
+            "value" : "Unlimited dictation, on every Mac of yours. Verified right here, with no network connection at all, which is why there is no sign-in and no account."
           }
         },
         "es" : {
@@ -12793,6 +12793,18 @@
         }
       }
     },
+    "models.updaterCredit" : {
+      "comment" : "Row label in the third-party notices block on Settings → Models; the value beside it names the update framework and its licence. Not a model and not a recognition engine — it is listed here because this is where the app shows every third-party notice.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updates"
+          }
+        }
+      }
+    },
     "onboarding.checkAgain" : {
       "comment" : "Re-reads every permission's current state.",
       "extractionState" : "extracted_with_value",
@@ -12849,6 +12861,30 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Перевірити ще раз"
+          }
+        }
+      }
+    },
+    "onboarding.checkForUpdates" : {
+      "comment" : "Button that asks for an update check immediately.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Check Now"
+          }
+        }
+      }
+    },
+    "onboarding.checkedToday" : {
+      "comment" : "Value beside 'Last checked' when the last successful check was today.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today"
           }
         }
       }
@@ -12973,6 +13009,18 @@
         }
       }
     },
+    "onboarding.lastChecked" : {
+      "comment" : "Row label; the value beside it is when a check last SUCCEEDED. A stale date is how someone whose updater is being blocked finds out, because a failed check says nothing on screen.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last checked"
+          }
+        }
+      }
+    },
     "onboarding.menuBarHidden.show" : {
       "comment" : "Button that puts the menu bar icon back. One word — it sits in a narrow row.",
       "extractionState" : "extracted_with_value",
@@ -13089,6 +13137,18 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Піктограму Vocula в рядку меню приховано"
+          }
+        }
+      }
+    },
+    "onboarding.neverChecked" : {
+      "comment" : "Value beside 'Last checked' when no check has ever succeeded on this Mac.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Never"
           }
         }
       }
@@ -13809,6 +13869,30 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Час друку"
+          }
+        }
+      }
+    },
+    "onboarding.updateAutomatically" : {
+      "comment" : "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Update automatically"
+          }
+        }
+      }
+    },
+    "onboarding.updatesFooter" : {
+      "comment" : "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so."
           }
         }
       }

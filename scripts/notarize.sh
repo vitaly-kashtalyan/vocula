@@ -97,7 +97,13 @@ echo "▸ Version $VERSION ($BUILD_NUMBER)"
 # tag behind — compared the OLD tag against the NEW version and could never
 # pass. Asking whether the expected tag is present has no ordering to get wrong.
 TAGS=$(git tag --points-at HEAD)
-if [ -n "$TAGS" ]; then
+if [ -z "$TAGS" ]; then
+  [ "$VERSION" = "${VOCULA_MARKETING_VERSION:-$VERSION}" ] || fail "the built version is
+   $VERSION but VOCULA_MARKETING_VERSION asked for $VOCULA_MARKETING_VERSION.
+   CFBundleShortVersionString must stay \$(MARKETING_VERSION); against a literal
+   the override is accepted and changes nothing."
+  echo "▸ no tag on HEAD — version checked against the override instead"
+else
   printf '%s\n' "$TAGS" | grep -qFx "v$VERSION" || fail "HEAD carries \
 $(printf '%s' "$TAGS" | tr '\n' ' ')— but not v$VERSION, which is what this build stamped.
    Raise MARKETING_VERSION in App/project.yml, or tag v$VERSION.
@@ -105,15 +111,52 @@ $(printf '%s' "$TAGS" | tr '\n' ' ')— but not v$VERSION, which is what this bu
   echo "▸ tag v$VERSION is on this commit"
 fi
 
+# Xcode re-signs Sparkle.framework but NOT the helpers inside it — it does that
+# only for archive + export. Apple's notary refuses ad-hoc nested code, and
+# `--verify --deep --strict` does not catch it: ad-hoc is a valid signature.
+TEAM=$(echo "$IDENTITY" | sed -E 's/.*\(([A-Z0-9]+)\)$/\1/')
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+if [ -d "$SPARKLE" ]; then
+  echo "▸ re-signing Sparkle's helpers…"
+  # Sparkle's own guide: unsandboxed apps skip the XPC services. Deleting them
+  # breaks the framework's seal, which the re-sign below repairs — so this must
+  # stay above the loop.
+  /bin/rm -rf "$SPARKLE/Versions/Current/XPCServices"
+  for nested in \
+    "$SPARKLE/Versions/Current/Autoupdate" \
+    "$SPARKLE/Versions/Current/Updater.app" \
+    "$SPARKLE"; do
+    [ -e "$nested" ] || fail "$(basename "$nested") is missing.
+   Sparkle moved its layout; re-signing would silently skip it and ship ad-hoc
+   nested code to the notary."
+    codesign --force --sign "$IDENTITY" --timestamp --options=runtime "$nested"
+  done
+fi
+
 echo "▸ verifying signature…"
 codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 | tail -3
 codesign -dv --verbose=4 "$APP" 2>&1 | grep -E "TeamIdentifier|flags" || true
+
+# --verify --deep passes on ad-hoc, so the team is asserted per nested bundle.
+echo "▸ verifying every nested bundle carries OUR team…"
+checked=0
+while IFS= read -r nested; do
+  checked=$((checked + 1))
+  team=$(codesign -dv --verbose=2 "$nested" 2>&1 | sed -n 's/^TeamIdentifier=//p')
+  [ "$team" = "$TEAM" ] \
+    || fail "$(basename "$nested") is signed by '${team:-nothing}', not $TEAM.
+   Apple's notary refuses ad-hoc nested code, and --verify --deep does not."
+  echo "  ✓ $(basename "$nested")"
+done < <(find "$APP/Contents" \
+  \( -name "*.framework" -o -name "*.app" -o -name "*.xpc" -o -name "Autoupdate" \) -print)
+[ "$checked" -ge 2 ] || fail "only $checked nested bundles were examined.
+   'Found no problem' and 'looked at nothing' must not print the same line."
 
 # The ticket is fetched for what was SUBMITTED and written into what is
 # SHIPPED, and for the app those are different files: stapler refuses a zip.
 notarise() {
     local submit="$1" staple="$2" log="$BUILD_DIR/notarytool-$3.txt"
-    xcrun notarytool submit "$submit" "${NOTARY[@]}" --wait 2>&1 | tee "$log"
+    xcrun notarytool submit "$submit" "${NOTARY[@]}" --wait 2>&1 | tee "$log" || true
     local submission
     submission=$(grep -E "^ *id: " "$log" | head -1 | sed -E 's/.*id: //' || true)
     grep -qE "^ *status: Accepted" "$log" || fail "Apple refused $(basename "$submit") \

@@ -44,6 +44,12 @@ for name in app.vocula.mac app.vocula.Vocula; do
   else absent "$SUPPORT/$name"; fi
 done
 
+# Sparkle unpacks an update here before installing it, so a copy that has ever
+# been offered one leaves tens of megabytes behind. The line at the end of this
+# script claims everything reachable is gone; that claim has to stay true.
+CACHES="$HOME/Library/Caches/app.vocula.mac"
+if [ -d "$CACHES" ]; then rm -rf "$CACHES"; gone "$CACHES"; else absent "$CACHES"; fi
+
 for domain in app.vocula.mac app.vocula.mac.uitest app.vocula.Vocula app.vocula.Probe; do
   if defaults read "$domain" >/dev/null 2>&1; then
     defaults delete "$domain"; gone "defaults domain $domain"
