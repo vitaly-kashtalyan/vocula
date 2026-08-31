@@ -8474,7 +8474,7 @@
       }
     },
     "licence.offlineCheck" : {
-      "comment" : "A PRIVACY claim about the product: verification is offline. Must keep saying so.",
+      "comment" : "A privacy claim about the product: LICENCE VERIFICATION is offline, and must keep saying so. Do NOT widen it to the whole app — the model download and the update check both use the network.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -8486,7 +8486,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Vocula checks your key on this Mac, with no network connection of any kind — the same as everything else it does. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open."
+            "value" : "Vocula checks your key on this Mac, with no network connection at all. That is why there is no sign-in, no account, and no limit on how many of your own Macs one licence will open."
           }
         },
         "es" : {
@@ -9218,7 +9218,7 @@
       }
     },
     "licence.unlimited" : {
-      "comment" : "States that verification is offline. This is a PRIVACY claim about the product and must keep saying that no network connection is made.",
+      "comment" : "States that LICENCE VERIFICATION is offline. This is a privacy claim about the product and must keep saying that checking the licence makes no network connection. Do NOT widen it to the whole app: Vocula fetches the speech model once and checks for its own updates daily.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -9230,7 +9230,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Unlimited dictation, on every Mac of yours. Verified on this Mac, with no network connection of any kind — the same as everything else Vocula does, which is why there is no sign-in and no account."
+            "value" : "Unlimited dictation, on every Mac of yours. Verified right here, with no network connection at all, which is why there is no sign-in and no account."
           }
         },
         "es" : {
@@ -12789,6 +12789,18 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%@ · partly downloaded"
+          }
+        }
+      }
+    },
+    "models.updaterCredit" : {
+      "comment" : "Row label in the third-party notices block on Settings → Models; the value beside it names the update framework and its licence. Not a model and not a recognition engine — it is listed here because this is where the app shows every third-party notice.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updates"
           }
         }
       }

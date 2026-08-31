@@ -146,6 +146,12 @@ private struct AttributionSection: View {
             .accessibilityIdentifier("models.engineCredit.\(family.rawValue)")
         }
       }
+      LabeledContent {
+        Text(verbatim: ModelFamily.updaterCredit)
+      } label: {
+        Text(ModelScreenCopy.updaterCredit)
+          .accessibilityIdentifier("models.engineCredit.sparkle")
+      }
       if let licences = Self.bundledLicences {
         Button(ModelScreenCopy.fullLicenceTexts) { NSWorkspace.shared.open(licences) }
       }

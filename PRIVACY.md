@@ -27,7 +27,8 @@ opening a headset takes it out of stereo.
 no setting to keep it, and no file it could be recovered from.
 
 Recognition runs entirely on this Mac, using a model that was downloaded once.
-No audio, no text and no metadata leave the machine at any point.
+No audio, no text and no metadata about what you dictate leave the machine at
+any point.
 
 ## Putting the text in place
 
@@ -107,14 +108,32 @@ takes you to it.
 
 ## What leaves this Mac
 
-One thing, once: the recognition models are downloaded from this project's own
-GitHub releases the first time you use the app, over HTTPS. Each file is
-verified against a checksum built into the app, and a file that does not match
-it is deleted rather than used. After that the app works with no network at
-all.
+Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-There are no accounts, no telemetry, no analytics, no crash reporting and no
-update checks. Nothing is ever sent without you asking for it.
+**The recognition models, once**, the first time you use the app. Each file is
+verified against a checksum built into the app, and a file that does not match
+it is deleted rather than used.
+
+**A version check, once a day**, while the switch on Settings → Permissions is
+on — it ships on, and you can turn it off there. It asks for one small signed
+XML file and nothing else. What GitHub learns from it is what any web server
+learns from any request: your IP address, the app's name and version in the
+User-Agent, and the shape of the TLS connection. Nothing about you, your
+settings or your dictation travels with it. Sparkle can also attach a profile of
+your Mac — the macOS version, the CPU, the model, the memory — and this app does
+not enable that; the key that would is absent from its Info.plist.
+
+Two consequences worth stating rather than burying. GitHub publishes a download
+count for every release asset, so the number of copies asking is visible to
+anyone who cares to look, including us — it is a count of requests and nothing
+more, and we neither collect it nor act on it. And when you accept an update,
+the binary you audited is replaced by one you have not; it is signed with the
+same certificate and verified against a key compiled into the copy you already
+trust, and it is built from this same public source, but it is a different file
+than the one you checked.
+
+Nothing is downloaded and nothing is installed until you say so. There are no
+accounts, no telemetry, no analytics, no crash reporting and no licence server.
 
 There is one way you can send something yourself: **Report a problem…** opens
 *your* mail client with the diagnostic log attached. That log holds app and macOS
@@ -144,7 +163,9 @@ off; the measures here protect one that is running.
 
 Delete the app, then delete
 `~/Library/Application Support/app.vocula.mac/` — that folder holds the
-history, the diagnostic log and the downloaded models. The Keychain key can be
+history, the diagnostic log and the downloaded models — and
+`~/Library/Caches/app.vocula.mac/`, where an update is unpacked before it is
+installed. The Keychain key can be
 removed in Keychain Access; without the history files it opens nothing.
 
 Settings and permissions are remembered elsewhere, and deleting the app does not
