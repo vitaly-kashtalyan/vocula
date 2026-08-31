@@ -48,6 +48,7 @@ struct VoculaApp: App {
         SettingsWindowView(
           navigation: settingsNavigation,
           onboarding: onboarding,
+          updater: appDelegate.updater,
           menu: appDelegate.menu,
           downloader: appDelegate.downloader,
           coordinator: appDelegate.coordinator,

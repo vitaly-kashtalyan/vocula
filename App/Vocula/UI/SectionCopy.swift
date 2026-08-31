@@ -184,6 +184,35 @@ enum OnboardingScreenCopy {
     comment:
       "Footer under the permissions. Says why there is no Check again button: every permission is read afresh whenever the app becomes active."
   )
+  static let updateAutomatically = LocalizedStringResource(
+    "onboarding.updateAutomatically", defaultValue: "Update automatically",
+    comment:
+      "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting."
+  )
+  static let checkForUpdates = LocalizedStringResource(
+    "onboarding.checkForUpdates", defaultValue: "Check Now",
+    comment: "Button that asks for an update check immediately."
+  )
+  static let lastChecked = LocalizedStringResource(
+    "onboarding.lastChecked", defaultValue: "Last checked",
+    comment:
+      "Row label; the value beside it is when a check last SUCCEEDED. A stale date is how someone whose updater is being blocked finds out, because a failed check says nothing on screen."
+  )
+  static let neverChecked = LocalizedStringResource(
+    "onboarding.neverChecked", defaultValue: "Never",
+    comment: "Value beside 'Last checked' when no check has ever succeeded on this Mac."
+  )
+  static let checkedToday = LocalizedStringResource(
+    "onboarding.checkedToday", defaultValue: "Today",
+    comment: "Value beside 'Last checked' when the last successful check was today."
+  )
+  static let updatesFooter = LocalizedStringResource(
+    "onboarding.updatesFooter",
+    defaultValue:
+      "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so.",
+    comment:
+      "Footer under the update rows. States the network cost plainly. The interval is MEASURED, not assumed — see the ticket. Wraps over several lines."
+  )
   static let settingsFooter = LocalizedStringResource(
     "onboarding.settingsFooter", defaultValue: "Dictation works without these.",
     comment:

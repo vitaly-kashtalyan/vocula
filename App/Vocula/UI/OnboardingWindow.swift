@@ -88,8 +88,24 @@ final class OnboardingModelObservable: ObservableObject {
   }
 }
 
+enum UpdateRows {
+  enum LastCheck: Equatable {
+    case never
+    case today
+    case on(Date)
+  }
+
+  static func isEnabled(canCheck: Bool) -> Bool { canCheck }
+
+  static func lastCheck(_ date: Date?, now: Date) -> LastCheck {
+    guard let date else { return .never }
+    return Calendar.current.isDate(date, inSameDayAs: now) ? .today : .on(date)
+  }
+}
+
 struct PermissionsSettingsSection: View {
   @ObservedObject var model: OnboardingModelObservable
+  @ObservedObject var updater: UpdaterController
   @AppStorage(VoculaAppDelegate.menuBarIconVisibleKey) private var menuBarIconVisible = true
 
   private var permissions: [OnboardingRow] {
@@ -140,6 +156,34 @@ struct PermissionsSettingsSection: View {
       }
     } footer: {
       Text(OnboardingScreenCopy.settingsFooter)
+    }
+    updateSection
+  }
+
+  @ViewBuilder private var updateSection: some View {
+    Section {
+      Toggle(OnboardingScreenCopy.updateAutomatically, isOn: automaticUpdates)
+      LabeledContent {
+        lastCheckedValue
+      } label: {
+        Text(OnboardingScreenCopy.lastChecked)
+      }
+      Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
+    } footer: {
+      Text(OnboardingScreenCopy.updatesFooter)
+    }
+    .disabled(!UpdateRows.isEnabled(canCheck: updater.canCheck))
+  }
+
+  private var automaticUpdates: Binding<Bool> {
+    Binding(get: { updater.automaticallyChecks }, set: { updater.automaticallyChecks = $0 })
+  }
+
+  @ViewBuilder private var lastCheckedValue: some View {
+    switch UpdateRows.lastCheck(updater.lastSuccessfulCheck, now: Date()) {
+    case .never: Text(OnboardingScreenCopy.neverChecked)
+    case .today: Text(OnboardingScreenCopy.checkedToday)
+    case .on(let date): Text(verbatim: date.formatted(date: .abbreviated, time: .omitted))
     }
   }
 

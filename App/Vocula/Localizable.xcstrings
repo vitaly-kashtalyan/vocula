@@ -12853,6 +12853,30 @@
         }
       }
     },
+    "onboarding.checkForUpdates" : {
+      "comment" : "Button that asks for an update check immediately.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Check Now"
+          }
+        }
+      }
+    },
+    "onboarding.checkedToday" : {
+      "comment" : "Value beside 'Last checked' when the last successful check was today.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today"
+          }
+        }
+      }
+    },
     "onboarding.figureSource.accessibility" : {
       "comment" : "VoiceOver label for the button opening the typing-rate citation.",
       "extractionState" : "extracted_with_value",
@@ -12973,6 +12997,18 @@
         }
       }
     },
+    "onboarding.lastChecked" : {
+      "comment" : "Row label; the value beside it is when a check last SUCCEEDED. A stale date is how someone whose updater is being blocked finds out, because a failed check says nothing on screen.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last checked"
+          }
+        }
+      }
+    },
     "onboarding.menuBarHidden.show" : {
       "comment" : "Button that puts the menu bar icon back. One word — it sits in a narrow row.",
       "extractionState" : "extracted_with_value",
@@ -13089,6 +13125,18 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Піктограму Vocula в рядку меню приховано"
+          }
+        }
+      }
+    },
+    "onboarding.neverChecked" : {
+      "comment" : "Value beside 'Last checked' when no check has ever succeeded on this Mac.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Never"
           }
         }
       }
@@ -13809,6 +13857,30 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Час друку"
+          }
+        }
+      }
+    },
+    "onboarding.updateAutomatically" : {
+      "comment" : "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Update automatically"
+          }
+        }
+      }
+    },
+    "onboarding.updatesFooter" : {
+      "comment" : "Footer under the update rows. States the network cost plainly. The interval is MEASURED, not assumed — see the ticket. Wraps over several lines.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so."
           }
         }
       }
