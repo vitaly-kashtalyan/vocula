@@ -128,6 +128,8 @@ private struct ModelPickerRow: View {
 }
 
 private struct AttributionSection: View {
+  private static let updaterCredit = "Sparkle 2.9.6 — MIT"
+
   var body: some View {
     Section {
       ForEach(ModelManifest.current, id: \.id) { model in
@@ -147,7 +149,7 @@ private struct AttributionSection: View {
         }
       }
       LabeledContent {
-        Text(verbatim: ModelFamily.updaterCredit)
+        Text(verbatim: Self.updaterCredit)
       } label: {
         Text(ModelScreenCopy.updaterCredit)
           .accessibilityIdentifier("models.engineCredit.sparkle")

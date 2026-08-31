@@ -16,8 +16,6 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
     }
   }
 
-  public static let updaterCredit = "Sparkle 2.9.6 — MIT"
-
   public var engineCredit: String {
     switch self {
     case .whisper:

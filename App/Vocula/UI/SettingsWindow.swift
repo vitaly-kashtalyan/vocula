@@ -110,7 +110,7 @@ struct SettingsWindowView: View {
   @AppStorage("sidebar.railed") private var railed = false
   @ObservedObject var navigation: SettingsNavigationModel
   @ObservedObject var onboarding: OnboardingModelObservable
-  @ObservedObject var updater: UpdaterController
+  let updater: UpdaterController
   let menu: MenuBarController
   let downloader: ModelDownloader
   let coordinator: AppCoordinator

@@ -19,6 +19,7 @@ jobs:
     runs-on: macos-26
 
     env:
+      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
       VOCULA_NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
       VOCULA_NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
 
@@ -39,9 +40,6 @@ jobs:
           echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           echo "▸ releasing $VERSION"
 
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
-
       - name: Refuse a build Sparkle would never offer
         # CFBundleVersion is the commit count, and it CAN GO DOWN when the branch
         # being built changes. Sparkle compares that number and nothing else, so a
@@ -52,8 +50,15 @@ jobs:
           set -euo pipefail
           BUILD=$(git rev-list --count --first-parent HEAD)
           FEED=https://github.com/vitaly-kashtalyan/vocula/releases/latest/download/appcast.xml
-          PUBLISHED=$(curl -fsSL "$FEED" 2>/dev/null \
-            | sed -n 's/.*sparkle:version="\([0-9]*\)".*/\1/p' | sort -n | tail -1 || true)
+          CODE=$(curl -sSL -o "$RUNNER_TEMP/feed.xml" -w '%{http_code}' "$FEED" || echo 000)
+          case "$CODE" in
+            200) PUBLISHED=$(sed -n 's/.*sparkle:version="\([0-9]*\)".*/\1/p' \
+                   "$RUNNER_TEMP/feed.xml" | sort -n | tail -1) ;;
+            404) PUBLISHED="" ;;
+            *) echo "could not read the live appcast (HTTP $CODE)." >&2
+               echo "A network error must not read as 'first release'." >&2
+               exit 1 ;;
+          esac
           if [ -z "${PUBLISHED:-}" ]; then
             echo "▸ no published appcast yet — first release, nothing to compare"
           elif [ "$BUILD" -le "$PUBLISHED" ]; then
@@ -142,54 +147,50 @@ jobs:
           SPARKLE_EDDSA_PRIVATE_KEY: ${{ secrets.SPARKLE_EDDSA_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          ASSETS=(build/notarize/Vocula.dmg build/notarize/Vocula.zip)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "${ASSETS[@]}" --clobber
-          else
-            gh release create "$TAG" "${ASSETS[@]}" \
-              --draft \
-              --verify-tag \
-              --title "$TAG" \
-              --generate-notes
-            # What changed goes first, for the reader who already has the app;
-            # the standing description goes under it, for the reader who does
-            # not. `gh` can only PREPEND to what it generates, so this is two
-            # calls rather than one flag.
-            {
-              gh release view "$TAG" --json body -q .body
-              printf '\n---\n\n'
-              cat Packaging/release-header.md
-            } > "$RUNNER_TEMP/notes.md"
-            gh release edit "$TAG" --notes-file "$RUNNER_TEMP/notes.md"
-          fi
+          BUILD=$(git rev-list --count --first-parent HEAD)
+          APPCAST="$RUNNER_TEMP/appcast"
+          mkdir -p "$APPCAST"
+          cp build/notarize/Vocula.zip "$APPCAST/"
 
-          # The appcast is generated HERE rather than before the release, because
-          # the release notes it carries do not exist until the release does. A
-          # buyer asked to accept an unnamed change to a paid app is what the
-          # alternative looks like.
-          #
-          # A directory of its own: build/notarize also holds submission.zip, a
-          # second copy of the same app, which generate_appcast would enumerate
-          # and advertise at a URL nothing ever uploads.
-          mkdir -p build/appcast
-          cp build/notarize/Vocula.zip build/appcast/
-          # .md, and EMBEDDED. generate_appcast picks the format from the
-          # extension: .html would embed GitHub's Markdown verbatim and the buyer
-          # would read literal "## Fixed"; .md alone emits a releaseNotesLink to
-          # a file nothing uploads, and the pane 404s.
-          gh release view "$TAG" --json body -q .body > build/appcast/Vocula.md
-          # The enclosure is the TAGGED url, never latest: one following latest
-          # would point at a different build the moment the next release lands.
-          # --ed-key-file - reads the key from stdin, so it never reaches disk.
+          # The changelog alone reaches the in-app update pane. The standing
+          # description below it is written for a stranger on a release page and
+          # would tell a buyer mid-update to drag a DMG they are not downloading.
+          gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+            -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" --jq .body \
+            > "$APPCAST/Vocula.md"
+          {
+            cat "$APPCAST/Vocula.md"
+            printf '\n---\n\n'
+            cat Packaging/release-header.md
+          } > "$RUNNER_TEMP/notes.md"
+
+          # .md AND --embed-release-notes: generate_appcast picks the format from
+          # the extension, and .md alone emits a link to a file nothing uploads.
           printf '%s' "$SPARKLE_EDDSA_PRIVATE_KEY" | generate_appcast \
             --ed-key-file - \
             --embed-release-notes \
             --link https://vocula.app \
             --download-url-prefix "https://github.com/vitaly-kashtalyan/vocula/releases/download/$TAG/" \
-            build/appcast/
-          [ -f build/appcast/appcast.xml ] \
-            || { echo "❌ no appcast was generated" >&2; exit 1; }
-          gh release upload "$TAG" build/appcast/appcast.xml --clobber
+            "$APPCAST"
+
+          # A key mismatch is a WARNING to generate_appcast: it emits an unsigned
+          # enclosure and exits 0. Installed copies then fail feed validation, and
+          # 20 days later Sparkle stops requiring a feed signature at all.
+          FEED_XML="$APPCAST/appcast.xml"
+          [ -f "$FEED_XML" ] || { echo "no appcast was generated" >&2; exit 1; }
+          grep -q 'sparkle:edSignature=' "$FEED_XML" \
+            || { echo "the enclosure is unsigned: wrong or truncated key" >&2; exit 1; }
+          grep -q 'sparkle-signatures:' "$FEED_XML" \
+            || { echo "the feed itself is unsigned" >&2; exit 1; }
+          grep -q "releases/download/$TAG/Vocula.zip" "$FEED_XML" \
+            || { echo "the enclosure does not point at this release" >&2; exit 1; }
+          grep -q "sparkle:version=\"$BUILD\"" "$FEED_XML" \
+            || { echo "the feed advertises a build this run did not make" >&2; exit 1; }
+
+          gh release create "$TAG" \
+            build/notarize/Vocula.dmg build/notarize/Vocula.zip "$FEED_XML" \
+            --draft --target "$GITHUB_SHA" --title "$TAG" \
+            --notes-file "$RUNNER_TEMP/notes.md"
 
       - name: Shred the credentials
         if: always()

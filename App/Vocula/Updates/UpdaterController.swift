@@ -29,6 +29,7 @@ final class UpdaterController: NSObject, ObservableObject {
     let controller = SPUStandardUpdaterController(
       startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
     self.controller = controller
+    controller.updater.clearFeedURLFromUserDefaults()
     controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
     controller.updater.publisher(for: \.automaticallyChecksForUpdates)
       .assign(to: &$automaticallyChecks)
@@ -40,6 +41,12 @@ final class UpdaterController: NSObject, ObservableObject {
 }
 
 extension UpdaterController: SPUUpdaterDelegate {
+  // SUHost prefers UserDefaults over Info.plist for SUFeedURL, so any local
+  // process could redirect the feed. The delegate outranks both.
+  func feedURLString(for updater: SPUUpdater) -> String? {
+    Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
+  }
+
   func updater(
     _ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: (any Error)?
   ) {

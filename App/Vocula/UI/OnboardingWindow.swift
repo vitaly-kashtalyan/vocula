@@ -88,19 +88,6 @@ final class OnboardingModelObservable: ObservableObject {
   }
 }
 
-enum UpdateRows {
-  enum LastCheck: Equatable {
-    case never
-    case today
-    case on(Date)
-  }
-
-  static func lastCheck(_ date: Date?, now: Date) -> LastCheck {
-    guard let date else { return .never }
-    return Calendar.current.isDate(date, inSameDayAs: now) ? .today : .on(date)
-  }
-}
-
 struct PermissionsSettingsSection: View {
   @ObservedObject var model: OnboardingModelObservable
   @ObservedObject var updater: UpdaterController
@@ -166,9 +153,6 @@ struct PermissionsSettingsSection: View {
       } label: {
         Text(OnboardingScreenCopy.lastChecked)
       }
-      // Only the button: canCheckForUpdates goes false for the whole of a check,
-      // so disabling the Section would grey out the switch mid-check and would
-      // show `off` on a copy where the updater never started at all.
       Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
         .disabled(!updater.canCheck)
     } footer: {
@@ -183,10 +167,14 @@ struct PermissionsSettingsSection: View {
   }
 
   @ViewBuilder private var lastCheckedValue: some View {
-    switch UpdateRows.lastCheck(updater.lastSuccessfulCheck, now: Date()) {
-    case .never: Text(OnboardingScreenCopy.neverChecked)
-    case .today: Text(OnboardingScreenCopy.checkedToday)
-    case .on(let date): Text(verbatim: date.formatted(date: .abbreviated, time: .omitted))
+    if let checked = updater.lastSuccessfulCheck {
+      if Calendar.current.isDate(checked, inSameDayAs: Date()) {
+        Text(OnboardingScreenCopy.checkedToday)
+      } else {
+        Text(verbatim: checked.formatted(date: .abbreviated, time: .omitted))
+      }
+    } else {
+      Text(OnboardingScreenCopy.neverChecked)
     }
   }
 
