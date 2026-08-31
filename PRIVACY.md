@@ -107,9 +107,11 @@ takes you to it.
 
 ## What leaves this Mac
 
-One thing, once: the recognition models are downloaded from Hugging Face the
-first time you use the app, over HTTPS. Each file is verified against a checksum
-built into the app. After that the app works with no network at all.
+One thing, once: the recognition models are downloaded from this project's own
+GitHub releases the first time you use the app, over HTTPS. Each file is
+verified against a checksum built into the app, and a file that does not match
+it is deleted rather than used. After that the app works with no network at
+all.
 
 There are no accounts, no telemetry, no analytics, no crash reporting and no
 update checks. Nothing is ever sent without you asking for it.

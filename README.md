@@ -70,7 +70,7 @@ Nothing you say. Ever.
 | Speech detection and transcription | This Mac, on the GPU. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | Hugging Face, once, on first run. SHA-256 verified. |
+| Model download | This project's GitHub releases, once, on first run. SHA-256 verified. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
 network call in the shipping app is in one file, and this is the command that
