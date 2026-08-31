@@ -4,6 +4,7 @@ import VoculaKit
 @MainActor
 final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   let menu = MenuBarController()
+  let updater = UpdaterController()
   let downloader: ModelDownloader
   lazy var coordinator = AppCoordinator(menu: menu)
   let settingsNavigation = SettingsNavigationModel()
@@ -63,7 +64,9 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       let id = Bundle.main.bundleIdentifier
     else { return false }
     return NSRunningApplication.runningApplications(withBundleIdentifier: id)
-      .contains { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }
+      .contains {
+        $0.processIdentifier != ProcessInfo.processInfo.processIdentifier && !$0.isTerminated
+      }
   }
 
   func applicationDidFinishLaunching(_ notification: Notification) {
@@ -82,6 +85,13 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     downloader.diagnose = { [weak self] kind, detail in
       self?.coordinator.log(kind, detail)
     }
+    updater.diagnose = { [weak self] kind, detail in
+      self?.coordinator.log(kind, detail)
+    }
+    updater.gestureIsOpen = { [weak self] in
+      guard let self else { return false }
+      return self.menu.iconState == .recording || self.menu.iconState == .working
+    }
     Task {
       if Self.isUITesting {
         coordinator.startMonitorOnly()
@@ -93,7 +103,18 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       presentOnboardingIfNeeded()
       reopenSettingsIfAsked()
       openSettingsIfTheMenuBarIconIsHidden()
+      startUpdaterIfAllowed()
     }
+  }
+
+  private func startUpdaterIfAllowed() {
+    guard
+      UpdaterController.mayStart(
+        isSecondCopy: Self.isSecondCopy,
+        argumentsDisableUpdates: ProcessInfo.processInfo.arguments
+          .contains(UpdaterController.disableArgument))
+    else { return }
+    updater.start()
   }
 
   private func presentOnboardingIfNeeded() {

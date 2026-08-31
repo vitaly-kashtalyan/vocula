@@ -79,6 +79,7 @@ public final class DiagnosticLog: @unchecked Sendable {
 
   private static let allowedKinds: Set<String> = [
     "session.start", "session.stop", "session.cancel", "session.failed",
+    "update.failed",
     "gesture.longHold",
     "gesture.rapidRetap",
     "session.blocked",

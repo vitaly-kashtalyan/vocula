@@ -41,7 +41,7 @@ except Exception:
 print(events[-1]["timestamp"] if events else -1)
 PY
 )
-open "$APP"
+open "$APP" --args -VoculaNoUpdates
 sleep 6
 pgrep -f "Vocula.app/Contents/MacOS/Vocula" >/dev/null \
   && pass "the app is running" || { fail "the app did not stay up"; exit 1; }
