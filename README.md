@@ -189,7 +189,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -only-testing:VoculaAppTests
 ```
 
-873 tests: 657 in the kit, 203 in the hosted app bundle, 13 driving the real
+874 tests: 657 in the kit, 204 in the hosted app bundle, 13 driving the real
 interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
