@@ -5,13 +5,11 @@ import Sparkle
 @MainActor
 final class UpdaterController: NSObject, ObservableObject {
   static let disableArgument = "-VoculaNoUpdates"
-  static let feedOverrideKey = "updates.feedURL"
 
   @Published private(set) var canCheck = false
-  @Published private(set) var lastSuccessfulCheck: Date?
+  @Published private(set) var automaticallyChecks = false
 
   var diagnose: ((String, String) -> Void)?
-  var gestureIsOpen: () -> Bool = { false }
 
   private var controller: SPUStandardUpdaterController?
 
@@ -20,18 +18,20 @@ final class UpdaterController: NSObject, ObservableObject {
     return !argumentsDisableUpdates
   }
 
-  var automaticallyChecks: Bool {
-    get { controller?.updater.automaticallyChecksForUpdates ?? false }
-    set { controller?.updater.automaticallyChecksForUpdates = newValue }
+  var lastSuccessfulCheck: Date? { controller?.updater.lastUpdateCheckDate }
+
+  func setAutomaticallyChecks(_ on: Bool) {
+    controller?.updater.automaticallyChecksForUpdates = on
   }
 
   func start() {
+    guard controller == nil else { return }
     let controller = SPUStandardUpdaterController(
       startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
     self.controller = controller
-    controller.updater.publisher(for: \.canCheckForUpdates)
-      .receive(on: DispatchQueue.main)
-      .assign(to: &$canCheck)
+    controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
+    controller.updater.publisher(for: \.automaticallyChecksForUpdates)
+      .assign(to: &$automaticallyChecks)
   }
 
   func checkForUpdates() {
@@ -40,23 +40,28 @@ final class UpdaterController: NSObject, ObservableObject {
 }
 
 extension UpdaterController: SPUUpdaterDelegate {
-  func feedURLString(for updater: SPUUpdater) -> String? {
-    UserDefaults.standard.string(forKey: Self.feedOverrideKey)
-  }
-
   func updater(
     _ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: (any Error)?
   ) {
-    guard let error else {
-      lastSuccessfulCheck = Date()
-      return
-    }
-    let failure = error as NSError
+    let failure = error as NSError?
+    guard let failure, !Self.isRoutine(failure) else { return }
     var detail = ["outcome=failed", "domain=\(failure.domain)", "code=\(failure.code)"]
     if let status = Self.handshakeStatus(of: failure) {
       detail.append("tls=\(status)")
     }
     diagnose?("update.failed", detail.joined(separator: " "))
+  }
+
+  // Sparkle reports "there was no update" as an ERROR on this delegate method,
+  // and does not log it itself. Recording it would put a line in the diagnostic
+  // file on every routine check that found nothing.
+  private static func isRoutine(_ failure: NSError) -> Bool {
+    guard failure.domain == SUSparkleErrorDomain else { return false }
+    return [
+      SUError.noUpdateError,
+      SUError.installationCanceledError,
+      SUError.installationAuthorizeLaterError,
+    ].map { Int($0.rawValue) }.contains(failure.code)
   }
 
   // CFNetwork keeps the handshake's own OSStatus only here; every value of it
@@ -72,15 +77,4 @@ extension UpdaterController: SPUUpdaterDelegate {
     return nil
   }
 
-  func updater(
-    _ updater: SPUUpdater, shouldPostponeRelaunchForUpdate item: SUAppcastItem,
-    untilInvokingBlock installHandler: @escaping () -> Void
-  ) -> Bool {
-    guard gestureIsOpen() else { return false }
-    Task { @MainActor in
-      while gestureIsOpen() { try? await Task.sleep(for: .milliseconds(100)) }
-      installHandler()
-    }
-    return true
-  }
 }

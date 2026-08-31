@@ -105,9 +105,43 @@ $(printf '%s' "$TAGS" | tr '\n' ' ')— but not v$VERSION, which is what this bu
   echo "▸ tag v$VERSION is on this commit"
 fi
 
+# Xcode re-signs Sparkle.framework with our certificate but NOT the helpers
+# inside it — it does that only for archive + export, and this script builds
+# instead, deliberately, for CODE_SIGN_INJECT_BASE_ENTITLEMENTS. Apple's notary
+# refuses ad-hoc nested code, and `--verify --deep --strict` does NOT catch it:
+# an ad-hoc signature is a valid signature.
+TEAM=$(echo "$IDENTITY" | sed -E 's/.*\(([A-Z0-9]+)\)$/\1/')
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
+if [ -d "$SPARKLE" ]; then
+  echo "▸ re-signing Sparkle's helpers…"
+  # Unsandboxed apps do not need the XPC services and Sparkle's own guide says
+  # to skip them. Deleting them breaks the framework's seal, which the re-sign
+  # below repairs anyway — one pass, two problems, and two fewer bundles for the
+  # notary to inspect.
+  /bin/rm -rf "$SPARKLE/Versions/B/XPCServices"
+  for nested in \
+    "$SPARKLE/Versions/B/Autoupdate" \
+    "$SPARKLE/Versions/B/Updater.app" \
+    "$SPARKLE"; do
+    [ -e "$nested" ] || continue
+    codesign --force --sign "$IDENTITY" --timestamp --options=runtime "$nested"
+  done
+fi
+
 echo "▸ verifying signature…"
 codesign --verify --deep --strict --verbose=2 "$APP" 2>&1 | tail -3
 codesign -dv --verbose=4 "$APP" 2>&1 | grep -E "TeamIdentifier|flags" || true
+
+# --verify --deep passes on ad-hoc, so the team is asserted per nested bundle.
+echo "▸ verifying every nested bundle carries OUR team…"
+while IFS= read -r nested; do
+  team=$(codesign -dv --verbose=2 "$nested" 2>&1 | sed -n 's/^TeamIdentifier=//p')
+  [ "$team" = "$TEAM" ] \
+    || fail "$(basename "$nested") is signed by '${team:-nothing}', not $TEAM.
+   Apple's notary refuses ad-hoc nested code, and --verify --deep does not."
+  echo "  ✓ $(basename "$nested")"
+done < <(find "$APP/Contents/Frameworks" -maxdepth 4 \
+  \( -name "*.framework" -o -name "*.app" -o -name "*.xpc" -o -name "Autoupdate" \) -print)
 
 # The ticket is fetched for what was SUBMITTED and written into what is
 # SHIPPED, and for the app those are different files: stapler refuses a zip.

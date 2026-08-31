@@ -95,8 +95,6 @@ enum UpdateRows {
     case on(Date)
   }
 
-  static func isEnabled(canCheck: Bool) -> Bool { canCheck }
-
   static func lastCheck(_ date: Date?, now: Date) -> LastCheck {
     guard let date else { return .never }
     return Calendar.current.isDate(date, inSameDayAs: now) ? .today : .on(date)
@@ -168,15 +166,20 @@ struct PermissionsSettingsSection: View {
       } label: {
         Text(OnboardingScreenCopy.lastChecked)
       }
+      // Only the button: canCheckForUpdates goes false for the whole of a check,
+      // so disabling the Section would grey out the switch mid-check and would
+      // show `off` on a copy where the updater never started at all.
       Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
+        .disabled(!updater.canCheck)
     } footer: {
       Text(OnboardingScreenCopy.updatesFooter)
     }
-    .disabled(!UpdateRows.isEnabled(canCheck: updater.canCheck))
   }
 
   private var automaticUpdates: Binding<Bool> {
-    Binding(get: { updater.automaticallyChecks }, set: { updater.automaticallyChecks = $0 })
+    Binding(
+      get: { updater.automaticallyChecks },
+      set: { updater.setAutomaticallyChecks($0) })
   }
 
   @ViewBuilder private var lastCheckedValue: some View {

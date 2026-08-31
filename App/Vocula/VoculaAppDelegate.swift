@@ -88,10 +88,6 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     updater.diagnose = { [weak self] kind, detail in
       self?.coordinator.log(kind, detail)
     }
-    updater.gestureIsOpen = { [weak self] in
-      guard let self else { return false }
-      return self.menu.iconState == .recording || self.menu.iconState == .working
-    }
     Task {
       if Self.isUITesting {
         coordinator.startMonitorOnly()
