@@ -19,7 +19,6 @@ jobs:
     runs-on: macos-26
 
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.app/Contents/Developer
       VOCULA_NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
       VOCULA_NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
 
@@ -28,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Work out the version, and tag it
+      - name: Work out the version
         run: |
           set -euo pipefail
           LINE=$(grep -E '^ +MARKETING_VERSION:' App/project.yml | head -1 | sed -E 's/.*"(.*)".*/\1/')
@@ -52,7 +51,7 @@ jobs:
           FEED=https://github.com/vitaly-kashtalyan/vocula/releases/latest/download/appcast.xml
           CODE=$(curl -sSL -o "$RUNNER_TEMP/feed.xml" -w '%{http_code}' "$FEED" || echo 000)
           case "$CODE" in
-            200) PUBLISHED=$(sed -n 's/.*sparkle:version="\([0-9]*\)".*/\1/p' \
+            200) PUBLISHED=$(sed -n 's|.*<sparkle:version>\([0-9]*\)</sparkle:version>.*|\1|p' \
                    "$RUNNER_TEMP/feed.xml" | sort -n | tail -1) ;;
             404) PUBLISHED="" ;;
             *) echo "could not read the live appcast (HTTP $CODE)." >&2
@@ -76,6 +75,7 @@ jobs:
         # same way and pinned by checksum rather than by a mutable formula.
         run: |
           set -euo pipefail
+          xcode-select -p && ls -d /Applications/Xcode*.app
           brew install xcodegen
           curl -fsSL -o "$RUNNER_TEMP/sparkle.tar.xz" \
             https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz
@@ -148,6 +148,9 @@ jobs:
         run: |
           set -euo pipefail
           BUILD=$(git rev-list --count --first-parent HEAD)
+          # Its own directory: build/notarize also holds submission.zip, a second
+          # copy of the same app, which generate_appcast would advertise at a URL
+          # nothing uploads.
           APPCAST="$RUNNER_TEMP/appcast"
           mkdir -p "$APPCAST"
           cp build/notarize/Vocula.zip "$APPCAST/"
@@ -171,6 +174,7 @@ jobs:
             --embed-release-notes \
             --link https://vocula.app \
             --download-url-prefix "https://github.com/vitaly-kashtalyan/vocula/releases/download/$TAG/" \
+            `# tagged, never latest: latest would follow the NEXT release` \
             "$APPCAST"
 
           # A key mismatch is a WARNING to generate_appcast: it emits an unsigned
@@ -184,7 +188,7 @@ jobs:
             || { echo "the feed itself is unsigned" >&2; exit 1; }
           grep -q "releases/download/$TAG/Vocula.zip" "$FEED_XML" \
             || { echo "the enclosure does not point at this release" >&2; exit 1; }
-          grep -q "sparkle:version=\"$BUILD\"" "$FEED_XML" \
+          grep -q "<sparkle:version>$BUILD</sparkle:version>" "$FEED_XML" \
             || { echo "the feed advertises a build this run did not make" >&2; exit 1; }
 
           gh release create "$TAG" \

@@ -153,6 +153,8 @@ struct PermissionsSettingsSection: View {
       } label: {
         Text(OnboardingScreenCopy.lastChecked)
       }
+      // On the button, not the Section: canCheckForUpdates is false for the whole
+      // of a check, and false on a copy where the updater never started.
       Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
         .disabled(!updater.canCheck)
     } footer: {

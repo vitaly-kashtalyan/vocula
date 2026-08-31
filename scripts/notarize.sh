@@ -97,7 +97,13 @@ echo "▸ Version $VERSION ($BUILD_NUMBER)"
 # tag behind — compared the OLD tag against the NEW version and could never
 # pass. Asking whether the expected tag is present has no ordering to get wrong.
 TAGS=$(git tag --points-at HEAD)
-if [ -n "$TAGS" ]; then
+if [ -z "$TAGS" ]; then
+  [ "$VERSION" = "${VOCULA_MARKETING_VERSION:-$VERSION}" ] || fail "the built version is
+   $VERSION but VOCULA_MARKETING_VERSION asked for $VOCULA_MARKETING_VERSION.
+   CFBundleShortVersionString must stay \$(MARKETING_VERSION); against a literal
+   the override is accepted and changes nothing."
+  echo "▸ no tag on HEAD — version checked against the override instead"
+else
   printf '%s\n' "$TAGS" | grep -qFx "v$VERSION" || fail "HEAD carries \
 $(printf '%s' "$TAGS" | tr '\n' ' ')— but not v$VERSION, which is what this build stamped.
    Raise MARKETING_VERSION in App/project.yml, or tag v$VERSION.
@@ -112,7 +118,9 @@ TEAM=$(echo "$IDENTITY" | sed -E 's/.*\(([A-Z0-9]+)\)$/\1/')
 SPARKLE="$APP/Contents/Frameworks/Sparkle.framework"
 if [ -d "$SPARKLE" ]; then
   echo "▸ re-signing Sparkle's helpers…"
-  # Sparkle's own guide: unsandboxed apps skip the XPC services.
+  # Sparkle's own guide: unsandboxed apps skip the XPC services. Deleting them
+  # breaks the framework's seal, which the re-sign below repairs — so this must
+  # stay above the loop.
   /bin/rm -rf "$SPARKLE/Versions/Current/XPCServices"
   for nested in \
     "$SPARKLE/Versions/Current/Autoupdate" \
