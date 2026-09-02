@@ -53,6 +53,53 @@ struct HistoryWindowModelTests {
     #expect(model.records.count == 2)
   }
 
+  @Test("opening the screen again lands on the newest day, not the one last read")
+  func openingAgainLeavesTheOldDay() async {
+    let (model, _) = await seeded()
+    await model.select("2026-08-14")
+    await model.openNewestDay()
+    #expect(model.selectedDay == "2026-08-18")
+    #expect(model.records.count == 2)
+  }
+
+  @Test("a refresh while the screen is open keeps the day being read")
+  func refreshKeepsTheDayBeingRead() async {
+    let (model, _) = await seeded()
+    await model.select("2026-08-14")
+    await model.reload()
+    #expect(model.selectedDay == "2026-08-14")
+    #expect(model.records.map(\.session) == [1])
+  }
+
+  @Test("an activation refresh arriving while the screen opens still lands on the newest day")
+  func openingWinsOverAConcurrentRefresh() async {
+    let (model, _) = await seeded()
+    await model.select("2026-08-14")
+    async let opening: Void = model.openNewestDay()
+    async let refreshing: Void = model.reload()
+    _ = await (opening, refreshing)
+    #expect(model.selectedDay == "2026-08-18")
+    #expect(model.records.count == 2)
+  }
+
+  @Test("a day whose records arrive late never lands on top of a newer choice")
+  func supersededSelectionIsDropped() async {
+    let (_, disk) = await seeded()
+    let slow = SlowDayHistory(
+      byDay: [
+        "2026-08-14": await disk.records(on: "2026-08-14"),
+        "2026-08-18": await disk.records(on: "2026-08-18"),
+      ], slowDay: "2026-08-18")
+    let model = HistoryWindowModel(store: slow)
+    await model.reload()
+    let stale = Task { await model.select("2026-08-18") }
+    let chosen = Task { await model.select("2026-08-14") }
+    await stale.value
+    await chosen.value
+    #expect(model.selectedDay == "2026-08-14")
+    #expect(model.records.map(\.session) == [1])
+  }
+
   @Test("a day carries what was dictated, not just how many records")
   func daysCarryWords() async {
     let (model, store) = await seeded()
@@ -100,4 +147,38 @@ struct HistoryWindowModelTests {
     #expect(model.selectedDay == nil)
     #expect(model.errorNotice == nil)
   }
+}
+
+private actor SlowDayHistory: HistoryStoring {
+  private let byDay: [String: [DictationRecord]]
+  private let slowDay: String
+
+  init(byDay: [String: [DictationRecord]], slowDay: String) {
+    self.byDay = byDay
+    self.slowDay = slowDay
+  }
+
+  func days() async -> [HistoryDay] {
+    byDay.map { HistoryDay(key: $0.key, count: $0.value.count) }.sorted { $0.key > $1.key }
+  }
+
+  func records(on day: String) async -> [DictationRecord] {
+    if day == slowDay { try? await Task.sleep(for: .milliseconds(80)) }
+    return byDay[day] ?? []
+  }
+
+  func fetch(limit: Int) async -> [DictationRecord] { [] }
+  func deleteDay(_ day: String) async throws -> Int { 0 }
+  func delete(_ id: UUID) async -> Bool { false }
+  func deleteAll() async throws -> Int { 0 }
+  func deleteOlderThan(_ date: Date) async throws -> Int { 0 }
+  func createDraft(
+    session: Int, startedAt: Date, durationMilliseconds: Int,
+    targetBundleID: String?, modelID: String?
+  ) async -> UUID? { nil }
+  func markTruncated(_ id: UUID) async {}
+  func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async {}
+  func attachRawText(_ id: UUID, _ text: String, language: String) async {}
+  func attachFinalText(_ id: UUID, _ text: String) async {}
+  func setState(_ id: UUID, _ state: SessionState, reason: String?) async {}
 }

@@ -16,10 +16,12 @@ final class HistoryWindowModel: ObservableObject {
   @Published private(set) var dayByKey: [String: HistoryDay] = [:]
   @Published private(set) var selectedDay: String?
   @Published private(set) var records: [DictationRecord] = []
-  @Published var notice: String?
   @Published var errorNotice: String?
 
   private let store: HistoryStoring
+  private var selectionToken = 0
+  private var opensNewestDay = false
+  private var pendingDay: String?
 
   init(store: HistoryStoring) { self.store = store }
 
@@ -30,12 +32,18 @@ final class HistoryWindowModel: ObservableObject {
   }
 
   func select(_ day: String?) async {
-    selectedDay = day
+    selectionToken += 1
+    let token = selectionToken
+    pendingDay = day
     guard let day else {
+      selectedDay = nil
       records = []
       return
     }
-    records = await store.records(on: day)
+    let fetched = await store.records(on: day)
+    guard token == selectionToken else { return }
+    selectedDay = day
+    records = fetched
   }
 
   func deleteAll() async {
@@ -59,11 +67,26 @@ final class HistoryWindowModel: ObservableObject {
     await reload()
   }
 
-  func reload() async {
-    days = await store.days()
+  func openNewestDay() async {
+    opensNewestDay = true
+    errorNotice = nil
+    await reload()
+  }
+
+  func refreshDays() async {
+    let loaded = await store.days()
+    guard !Task.isCancelled else { return }
+    days = loaded
     dayByKey = Dictionary(days.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
     grid = HistoryGrid.build(days: days)
-    await select(HistoryDay.resolve(selected: selectedDay, in: days))
+  }
+
+  func reload() async {
+    await refreshDays()
+    guard !Task.isCancelled else { return }
+    let keeping = !opensNewestDay
+    opensNewestDay = false
+    await select(HistoryDay.resolve(selected: keeping ? pendingDay : nil, in: days))
   }
 
   func delete(_ record: DictationRecord) async {
@@ -86,11 +109,8 @@ struct HistoryView: View {
   @State private var confirmingDay = false
 
   var body: some View {
-    if model.notice != nil || model.errorNotice != nil {
+    if model.errorNotice != nil {
       Section {
-        if let notice = model.notice {
-          Text(verbatim: notice).foregroundStyle(.secondary)
-        }
         if let errorNotice = model.errorNotice {
           Label {
             Text(verbatim: errorNotice)
@@ -313,6 +333,7 @@ struct HistoryHeatmap: View {
   private func cellView(_ item: HistoryGrid.Cell) -> some View {
     if let key = item.key {
       let day = dayByKey[key]
+      let text = label(key, day)
       Button {
         select(key)
       } label: {
@@ -327,9 +348,9 @@ struct HistoryHeatmap: View {
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
-      .help(Text(verbatim: label(key, day)))
+      .help(Text(verbatim: text))
       .accessibilityIdentifier("history.day.\(key)")
-      .accessibilityLabel(Text(verbatim: label(key, day)))
+      .accessibilityLabel(Text(verbatim: text))
       .accessibilityAddTraits(key == selected ? .isSelected : [])
       .accessibilityHidden(day == nil)
     } else {

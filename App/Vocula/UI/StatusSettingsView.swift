@@ -44,7 +44,7 @@ struct StatusSettingsView: View {
       .task { await readDevices() }
       .refreshOnActivate { Task { await readDevices() } }
     Section { footer.dashboardRow() }
-      .task { await historyModel.reload() }
+      .task { await historyModel.refreshDays() }
       .task {
         if downloader.statuses.isEmpty { await downloader.refreshStatuses() }
       }
