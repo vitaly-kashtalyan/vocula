@@ -53,6 +53,24 @@ struct HistoryWindowModelTests {
     #expect(model.records.count == 2)
   }
 
+  @Test("opening the screen again lands on the newest day, not the one last read")
+  func openingAgainLeavesTheOldDay() async {
+    let (model, _) = await seeded()
+    await model.select("2026-08-14")
+    await model.openNewestDay()
+    #expect(model.selectedDay == "2026-08-18")
+    #expect(model.records.count == 2)
+  }
+
+  @Test("a refresh while the screen is open keeps the day being read")
+  func refreshKeepsTheDayBeingRead() async {
+    let (model, _) = await seeded()
+    await model.select("2026-08-14")
+    await model.reload()
+    #expect(model.selectedDay == "2026-08-14")
+    #expect(model.records.map(\.session) == [1])
+  }
+
   @Test("a day carries what was dictated, not just how many records")
   func daysCarryWords() async {
     let (model, store) = await seeded()

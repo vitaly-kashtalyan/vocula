@@ -59,11 +59,20 @@ final class HistoryWindowModel: ObservableObject {
     await reload()
   }
 
+  func openNewestDay() async {
+    await load(keepingSelection: false)
+  }
+
   func reload() async {
+    await load(keepingSelection: true)
+  }
+
+  private func load(keepingSelection: Bool) async {
     days = await store.days()
     dayByKey = Dictionary(days.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
     grid = HistoryGrid.build(days: days)
-    await select(HistoryDay.resolve(selected: selectedDay, in: days))
+    await select(
+      HistoryDay.resolve(selected: keepingSelection ? selectedDay : nil, in: days))
   }
 
   func delete(_ record: DictationRecord) async {

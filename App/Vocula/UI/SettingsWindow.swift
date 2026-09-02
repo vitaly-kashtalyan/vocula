@@ -287,7 +287,7 @@ private struct HistorySettingsSection: View {
   var body: some View {
     PrivacyDefaultsView(summary: summary)
     HistoryView(model: model)
-      .task { await model.reload() }
+      .task { await model.openNewestDay() }
       .refreshOnActivate { Task { await model.reload() } }
   }
 }
