@@ -47,6 +47,11 @@ extension UpdaterController: SPUUpdaterDelegate {
     Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
   }
 
+  // Sparkle relaunches with no arguments, so the request cannot travel in argv.
+  func updaterWillRelaunchApplication(_ updater: SPUUpdater) {
+    Relaunch.request(.permissions)
+  }
+
   func updater(
     _ updater: SPUUpdater, didFinishUpdateCycleFor updateCheck: SPUUpdateCheck, error: (any Error)?
   ) {

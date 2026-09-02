@@ -62,4 +62,17 @@ struct RelaunchSectionTests {
     #expect(SettingsSection(rawValue: "appearances") == nil)
     #expect(SettingsSection(rawValue: "") == nil)
   }
+
+  @Test("a stored request is answered once, and taken with it")
+  func aStoredRequestIsConsumed() throws {
+    let domain = "app.vocula.mac.relaunchtest"
+    let defaults = try #require(UserDefaults(suiteName: domain))
+    defaults.removePersistentDomain(forName: domain)
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    #expect(Relaunch.takeRequestedSection(defaults) == nil)
+    Relaunch.request(.permissions, in: defaults)
+    #expect(Relaunch.takeRequestedSection(defaults) == .permissions)
+    #expect(Relaunch.takeRequestedSection(defaults) == nil)
+  }
 }
