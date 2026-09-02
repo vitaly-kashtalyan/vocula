@@ -4,6 +4,19 @@ import VoculaKit
 enum Relaunch {
   static let sectionArgument = "VoculaReopenSection"
 
+  // synchronize: applicationWillTerminate ends in _exit(0), which runs no atexit
+  // handler, and CFPreferences' flush is one.
+  static func request(_ section: SettingsSection, in defaults: UserDefaults = .standard) {
+    defaults.set(section.rawValue, forKey: sectionArgument)
+    defaults.synchronize()
+  }
+
+  static func takeRequestedSection(_ defaults: UserDefaults) -> SettingsSection? {
+    let raw = defaults.string(forKey: sectionArgument)
+    defaults.removeObject(forKey: sectionArgument)
+    return raw.flatMap(SettingsSection.init(rawValue:))
+  }
+
   static func now(reopening section: SettingsSection?) {
     let path = Bundle.main.bundleURL.path
     let reopen = section.map { ["--args", "-\(sectionArgument)", $0.rawValue] } ?? []

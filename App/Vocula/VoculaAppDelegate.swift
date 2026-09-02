@@ -126,11 +126,10 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   }
 
   private func reopenSettingsIfAsked() {
-    guard !Self.isUITesting,
-      let raw = UserDefaults.standard.string(forKey: Relaunch.sectionArgument),
-      let section = SettingsSection(rawValue: raw)
+    guard !Self.isUITesting, let open = openSettings,
+      let section = Relaunch.takeRequestedSection(.standard)
     else { return }
-    openSettings?(section)
+    open(section)
   }
 
   var openSettings: ((SettingsSection) -> Void)?

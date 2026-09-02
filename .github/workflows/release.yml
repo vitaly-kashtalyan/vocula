@@ -158,8 +158,12 @@ jobs:
           # The changelog alone reaches the in-app update pane. The standing
           # description below it is written for a stranger on a release page and
           # would tell a buyer mid-update to drag a DMG they are not downloading.
+          #
+          # sed: Sparkle renders this as markdown, where generate-notes' leading
+          # HTML comment is not hidden but printed.
           gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
             -f tag_name="$TAG" -f target_commitish="$GITHUB_SHA" --jq .body \
+            | sed '1{/^<!--.*-->$/d;}' \
             > "$APPCAST/Vocula.md"
           {
             cat "$APPCAST/Vocula.md"
@@ -180,6 +184,9 @@ jobs:
           # A key mismatch is a WARNING to generate_appcast: it emits an unsigned
           # enclosure and exits 0. Installed copies then fail feed validation, and
           # 20 days later Sparkle stops requiring a feed signature at all.
+          ! grep -q '^<!--' "$APPCAST/Vocula.md" \
+            || { echo "the generator comment survived into the update pane" >&2; exit 1; }
+
           FEED_XML="$APPCAST/appcast.xml"
           [ -f "$FEED_XML" ] || { echo "no appcast was generated" >&2; exit 1; }
           grep -q 'sparkle:edSignature=' "$FEED_XML" \
