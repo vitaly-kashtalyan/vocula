@@ -126,9 +126,13 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   }
 
   private func reopenSettingsIfAsked() {
-    guard !Self.isUITesting, let open = openSettings,
-      let section = Relaunch.takeRequestedSection(.standard)
-    else { return }
+    guard !Self.isUITesting, let open = openSettings else { return }
+    let afterAnUpdate =
+      Self.isSecondCopy
+      ? nil
+      : Relaunch.sectionAfterAVersionChange(
+        current: Bundle.main.build, upgradedFromAnUntrackedBuild: !wasFirstLaunch)
+    guard let section = Relaunch.takeRequestedSection(.standard) ?? afterAnUpdate else { return }
     open(section)
   }
 
