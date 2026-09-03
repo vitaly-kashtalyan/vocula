@@ -14,11 +14,14 @@ enum Relaunch {
   static let lastVersionKey = "app.lastLaunchedVersion"
 
   static func sectionAfterAVersionChange(
-    current: String, in defaults: UserDefaults = .standard
+    current: String?, upgradedFromAnUntrackedBuild: Bool, in defaults: UserDefaults = .standard
   ) -> SettingsSection? {
-    defer { defaults.set(current, forKey: lastVersionKey) }
-    guard let last = defaults.string(forKey: lastVersionKey), last != current else { return nil }
-    return .permissions
+    guard let current else { return nil }
+    let last = defaults.string(forKey: lastVersionKey)
+    defaults.set(current, forKey: lastVersionKey)
+    defaults.synchronize()
+    guard let last else { return upgradedFromAnUntrackedBuild ? .permissions : nil }
+    return last == current ? nil : .permissions
   }
 
   static func takeRequestedSection(_ defaults: UserDefaults) -> SettingsSection? {

@@ -5,9 +5,9 @@ extension Bundle {
     infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
   }
 
-  var buildNumber: String {
-    infoDictionary?["CFBundleVersion"] as? String ?? "—"
-  }
+  var build: String? { infoDictionary?["CFBundleVersion"] as? String }
+
+  var buildNumber: String { build ?? "—" }
 
   var versionLine: String { "Vocula \(shortVersion)" }
 

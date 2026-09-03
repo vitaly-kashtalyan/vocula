@@ -76,27 +76,76 @@ struct RelaunchSectionTests {
     #expect(Relaunch.takeRequestedSection(defaults) == nil)
   }
 
-  @Test("a build the machine has not run before opens the window, once")
-  func aChangedVersionLands() throws {
-    let domain = "app.vocula.mac.versiontest"
-    let defaults = try #require(UserDefaults(suiteName: domain))
-    defaults.removePersistentDomain(forName: domain)
+  @Test("an upgrade from a build that never recorded still lands, once")
+  func anUntrackedUpgradeLands() throws {
+    let (defaults, domain) = try suite("upgrade")
     defer { defaults.removePersistentDomain(forName: domain) }
 
-    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == nil)
-    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == nil)
-    #expect(Relaunch.sectionAfterAVersionChange(current: "11", in: defaults) == .permissions)
-    #expect(Relaunch.sectionAfterAVersionChange(current: "11", in: defaults) == nil)
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "11", upgradedFromAnUntrackedBuild: true, in: defaults) == .permissions)
+    #expect(defaults.string(forKey: Relaunch.lastVersionKey) == "11")
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "11", upgradedFromAnUntrackedBuild: true, in: defaults) == nil)
+  }
+
+  @Test("a first install records the build and opens nothing")
+  func aFirstInstallIsSilent() throws {
+    let (defaults, domain) = try suite("fresh")
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "11", upgradedFromAnUntrackedBuild: false, in: defaults) == nil)
+    #expect(defaults.string(forKey: Relaunch.lastVersionKey) == "11")
+  }
+
+  @Test("a build the machine has not run before opens the window, once")
+  func aChangedVersionLands() throws {
+    let (defaults, domain) = try suite("version")
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    _ = Relaunch.sectionAfterAVersionChange(
+      current: "10", upgradedFromAnUntrackedBuild: false, in: defaults)
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "10", upgradedFromAnUntrackedBuild: false, in: defaults) == nil)
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "11", upgradedFromAnUntrackedBuild: false, in: defaults) == .permissions)
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "11", upgradedFromAnUntrackedBuild: false, in: defaults) == nil)
   }
 
   @Test("a downgrade is a version change too, and is not special-cased")
   func aDowngradeLands() throws {
-    let domain = "app.vocula.mac.versiontest.down"
-    let defaults = try #require(UserDefaults(suiteName: domain))
-    defaults.removePersistentDomain(forName: domain)
+    let (defaults, domain) = try suite("downgrade")
     defer { defaults.removePersistentDomain(forName: domain) }
 
-    _ = Relaunch.sectionAfterAVersionChange(current: "11", in: defaults)
-    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == .permissions)
+    _ = Relaunch.sectionAfterAVersionChange(
+      current: "11", upgradedFromAnUntrackedBuild: false, in: defaults)
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: "10", upgradedFromAnUntrackedBuild: false, in: defaults) == .permissions)
+  }
+
+  @Test("a build that will not say its version records nothing and lands nowhere")
+  func anUnreadableVersionIsInert() throws {
+    let (defaults, domain) = try suite("unreadable")
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    #expect(
+      Relaunch.sectionAfterAVersionChange(
+        current: nil, upgradedFromAnUntrackedBuild: true, in: defaults) == nil)
+    #expect(defaults.string(forKey: Relaunch.lastVersionKey) == nil)
+  }
+
+  private func suite(_ name: String) throws -> (UserDefaults, String) {
+    let domain = "app.vocula.mac.\(name)test"
+    let defaults = try #require(UserDefaults(suiteName: domain))
+    defaults.removePersistentDomain(forName: domain)
+    return (defaults, domain)
   }
 }
