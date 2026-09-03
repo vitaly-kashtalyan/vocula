@@ -82,14 +82,14 @@ final class HistoryWindowModel: ObservableObject {
   }
 
   func reload() async {
-    let newestWhenChosen = days.first?.key
+    let previousNewest = days.first?.key
     await refreshDays()
     guard !Task.isCancelled else { return }
     let keeping = !opensNewestDay
     opensNewestDay = false
     await select(
       HistoryDay.resolve(
-        selected: keeping ? pendingDay : nil, newestWhenChosen: newestWhenChosen, in: days))
+        selected: keeping ? pendingDay : nil, previousNewest: previousNewest, in: days))
   }
 
   func delete(_ record: DictationRecord) async {

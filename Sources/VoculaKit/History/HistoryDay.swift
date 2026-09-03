@@ -54,9 +54,11 @@ public struct HistoryDay: Sendable, Equatable, Identifiable {
   }
 
   public static func resolve(
-    selected: String?, newestWhenChosen: String?, in days: [HistoryDay]
+    selected: String?, previousNewest: String?, in days: [HistoryDay]
   ) -> String? {
-    guard let selected, selected != newestWhenChosen else { return days.first?.key }
-    return days.contains(where: { $0.key == selected }) ? selected : days.first?.key
+    guard let selected, selected != previousNewest,
+      days.contains(where: { $0.key == selected })
+    else { return days.first?.key }
+    return selected
   }
 }
