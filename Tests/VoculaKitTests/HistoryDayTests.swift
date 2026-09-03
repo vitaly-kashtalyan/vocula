@@ -36,9 +36,29 @@ struct HistoryDayTests {
   @Test("a day that has gone falls back to the newest that is left")
   func vanishedDayFallsBack() {
     let days = [day("2026-08-19"), day("2026-08-14")]
-    #expect(HistoryDay.resolve(selected: "2026-08-18", in: days) == "2026-08-19")
-    #expect(HistoryDay.resolve(selected: "2026-08-14", in: days) == "2026-08-14")
-    #expect(HistoryDay.resolve(selected: nil, in: []) == nil)
+    #expect(
+      HistoryDay.resolve(selected: "2026-08-18", newestWhenChosen: "2026-08-18", in: days)
+        == "2026-08-19")
+    #expect(
+      HistoryDay.resolve(selected: "2026-08-14", newestWhenChosen: "2026-08-18", in: days)
+        == "2026-08-14")
+    #expect(HistoryDay.resolve(selected: nil, newestWhenChosen: nil, in: []) == nil)
+  }
+
+  @Test("a reader on the live day follows it when a newer one appears")
+  func theLiveDayIsFollowed() {
+    let days = [day("2026-08-19"), day("2026-08-18")]
+    #expect(
+      HistoryDay.resolve(selected: "2026-08-18", newestWhenChosen: "2026-08-18", in: days)
+        == "2026-08-19")
+  }
+
+  @Test("a reader who went back to an older day is left on it")
+  func anOlderDayIsKept() {
+    let days = [day("2026-08-19"), day("2026-08-18"), day("2026-08-14")]
+    #expect(
+      HistoryDay.resolve(selected: "2026-08-14", newestWhenChosen: "2026-08-18", in: days)
+        == "2026-08-14")
   }
 }
 

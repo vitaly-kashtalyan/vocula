@@ -100,6 +100,28 @@ struct HistoryWindowModelTests {
     #expect(model.records.map(\.session) == [1])
   }
 
+  @Test("a screen left open on the live day follows it when the day rolls over")
+  func theLiveDayIsFollowedOnRefresh() async {
+    let (model, store) = await seeded()
+    #expect(model.selectedDay == "2026-08-18")
+    _ = await store.createDraft(
+      session: 4, startedAt: day("2026-08-19"),
+      durationMilliseconds: 100, targetBundleID: nil)
+    await model.reload()
+    #expect(model.selectedDay == "2026-08-19")
+  }
+
+  @Test("a screen left open on an OLDER day is not dragged forward with it")
+  func anOlderDayIsKeptOnRefresh() async {
+    let (model, store) = await seeded()
+    await model.select("2026-08-14")
+    _ = await store.createDraft(
+      session: 4, startedAt: day("2026-08-19"),
+      durationMilliseconds: 100, targetBundleID: nil)
+    await model.reload()
+    #expect(model.selectedDay == "2026-08-14")
+  }
+
   @Test("a day carries what was dictated, not just how many records")
   func daysCarryWords() async {
     let (model, store) = await seeded()
