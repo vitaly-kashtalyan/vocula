@@ -11,6 +11,16 @@ enum Relaunch {
     defaults.synchronize()
   }
 
+  static let lastVersionKey = "app.lastLaunchedVersion"
+
+  static func sectionAfterAVersionChange(
+    current: String, in defaults: UserDefaults = .standard
+  ) -> SettingsSection? {
+    defer { defaults.set(current, forKey: lastVersionKey) }
+    guard let last = defaults.string(forKey: lastVersionKey), last != current else { return nil }
+    return .permissions
+  }
+
   static func takeRequestedSection(_ defaults: UserDefaults) -> SettingsSection? {
     let raw = defaults.string(forKey: sectionArgument)
     defaults.removeObject(forKey: sectionArgument)

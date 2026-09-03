@@ -125,10 +125,13 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     present()
   }
 
+  private static let bundleVersion =
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+
   private func reopenSettingsIfAsked() {
-    guard !Self.isUITesting, let open = openSettings,
-      let section = Relaunch.takeRequestedSection(.standard)
-    else { return }
+    guard !Self.isUITesting, let open = openSettings else { return }
+    let afterAnUpdate = Relaunch.sectionAfterAVersionChange(current: Self.bundleVersion)
+    guard let section = Relaunch.takeRequestedSection(.standard) ?? afterAnUpdate else { return }
     open(section)
   }
 

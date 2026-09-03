@@ -75,4 +75,28 @@ struct RelaunchSectionTests {
     #expect(Relaunch.takeRequestedSection(defaults) == .permissions)
     #expect(Relaunch.takeRequestedSection(defaults) == nil)
   }
+
+  @Test("a build the machine has not run before opens the window, once")
+  func aChangedVersionLands() throws {
+    let domain = "app.vocula.mac.versiontest"
+    let defaults = try #require(UserDefaults(suiteName: domain))
+    defaults.removePersistentDomain(forName: domain)
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == nil)
+    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == nil)
+    #expect(Relaunch.sectionAfterAVersionChange(current: "11", in: defaults) == .permissions)
+    #expect(Relaunch.sectionAfterAVersionChange(current: "11", in: defaults) == nil)
+  }
+
+  @Test("a downgrade is a version change too, and is not special-cased")
+  func aDowngradeLands() throws {
+    let domain = "app.vocula.mac.versiontest.down"
+    let defaults = try #require(UserDefaults(suiteName: domain))
+    defaults.removePersistentDomain(forName: domain)
+    defer { defaults.removePersistentDomain(forName: domain) }
+
+    _ = Relaunch.sectionAfterAVersionChange(current: "11", in: defaults)
+    #expect(Relaunch.sectionAfterAVersionChange(current: "10", in: defaults) == .permissions)
+  }
 }
