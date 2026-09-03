@@ -14,13 +14,19 @@ final class UpdaterController: NSObject, ObservableObject {
 
   private var controller: SPUStandardUpdaterController?
 
-  nonisolated static let pretendUpdateArgument = "VoculaPretendUpdate"
+  nonisolated static let pretendUpdateArgument = "-VoculaPretendUpdate"
 
   // A found update cannot be produced without a served feed, so the one state
-  // no test could otherwise reach is substituted here. Second copies only.
+  // no test could otherwise reach is substituted here. Second copies only, and
+  // read from argv rather than UserDefaults: UserDefaults would also answer a
+  // stale `defaults write`, and screenshots.sh runs as a second copy without
+  // withholding Permissions, so a promo shot would carry a fake update row.
   nonisolated static var pretendedUpdate: String? {
     guard VoculaAppDelegate.isSecondCopy else { return nil }
-    return UserDefaults.standard.string(forKey: pretendUpdateArgument)
+    let arguments = ProcessInfo.processInfo.arguments
+    guard let flag = arguments.firstIndex(of: pretendUpdateArgument) else { return nil }
+    let value = arguments.index(after: flag)
+    return value < arguments.endIndex ? arguments[value] : nil
   }
 
   nonisolated static func mayStart(isSecondCopy: Bool, argumentsDisableUpdates: Bool) -> Bool {
@@ -65,6 +71,17 @@ extension UpdaterController: SPUUpdaterDelegate {
   }
 
   func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+    availableVersion = nil
+  }
+
+  // Skip is a decision and Dismiss is a postponement, so only one of them takes
+  // the row away. Neither reaches updaterDidNotFindUpdate: both abort the cycle
+  // with a nil error, which didFinishUpdateCycleFor deliberately ignores.
+  func updater(
+    _ updater: SPUUpdater, userDidMake choice: SPUUserUpdateChoice,
+    forUpdate updateItem: SUAppcastItem, state: SPUUserUpdateState
+  ) {
+    guard choice == .skip else { return }
     availableVersion = nil
   }
 

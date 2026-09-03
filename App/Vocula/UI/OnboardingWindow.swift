@@ -151,6 +151,7 @@ struct PermissionsSettingsSection: View {
       if let version = updater.availableVersion {
         LabeledContent {
           Button(OnboardingScreenCopy.installUpdate) { updater.checkForUpdates() }
+            .disabled(!updater.canCheck)
             .accessibilityIdentifier("updates.install")
         } label: {
           Text(OnboardingScreenCopy.updateAvailable(version))
