@@ -53,8 +53,12 @@ public struct HistoryDay: Sendable, Equatable, Identifiable {
         .rounded())
   }
 
-  public static func resolve(selected: String?, in days: [HistoryDay]) -> String? {
-    if let selected, days.contains(where: { $0.key == selected }) { return selected }
-    return days.first?.key
+  public static func resolve(
+    selected: String?, previousNewest: String?, in days: [HistoryDay]
+  ) -> String? {
+    guard let selected, selected != previousNewest,
+      days.contains(where: { $0.key == selected })
+    else { return days.first?.key }
+    return selected
   }
 }
