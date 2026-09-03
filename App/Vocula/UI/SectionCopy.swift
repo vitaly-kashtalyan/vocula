@@ -208,6 +208,18 @@ enum OnboardingScreenCopy {
     "onboarding.checkedToday", defaultValue: "Today",
     comment: "Value beside 'Last checked' when the last successful check was today."
   )
+  static func updateAvailable(_ version: String) -> LocalizedStringResource {
+    LocalizedStringResource(
+      "onboarding.updateAvailable", defaultValue: "Version \(version) is available",
+      comment:
+        "Row label on the Permissions screen once a check has FOUND a newer version, in place of 'Last checked'. The argument is the new version number. It is the only place the app says an update is waiting after the update window has been closed, so it must read as news rather than as a status."
+    )
+  }
+  static let installUpdate = LocalizedStringResource(
+    "onboarding.installUpdate", defaultValue: "Install…",
+    comment:
+      "Button beside 'Version X is available'. It reopens the update window, which is what downloads and installs. The ellipsis is there because more is asked before anything happens."
+  )
   static let updatesFooter = LocalizedStringResource(
     "onboarding.updatesFooter",
     defaultValue:

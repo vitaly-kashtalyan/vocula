@@ -8,6 +8,7 @@ final class UpdaterController: NSObject, ObservableObject {
 
   @Published private(set) var canCheck = false
   @Published private(set) var automaticallyChecks = false
+  @Published private(set) var availableVersion: String?
 
   var diagnose: ((String, String) -> Void)?
 
@@ -45,6 +46,17 @@ extension UpdaterController: SPUUpdaterDelegate {
   // process could redirect the feed. The delegate outranks both.
   func feedURLString(for updater: SPUUpdater) -> String? {
     Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
+  }
+
+  // Closing the update window tells Sparkle nothing, so without holding what the
+  // check found, a dismissed window leaves the screen reading "checked today"
+  // over a version that is waiting.
+  func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+    availableVersion = item.displayVersionString
+  }
+
+  func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+    availableVersion = nil
   }
 
   // Sparkle relaunches with no arguments, so the request cannot travel in argv.
