@@ -8,11 +8,20 @@ final class UpdaterController: NSObject, ObservableObject {
 
   @Published private(set) var canCheck = false
   @Published private(set) var automaticallyChecks = false
-  @Published private(set) var availableVersion: String?
+  @Published private(set) var availableVersion: String? = UpdaterController.pretendedUpdate
 
   var diagnose: ((String, String) -> Void)?
 
   private var controller: SPUStandardUpdaterController?
+
+  nonisolated static let pretendUpdateArgument = "VoculaPretendUpdate"
+
+  // A found update cannot be produced without a served feed, so the one state
+  // no test could otherwise reach is substituted here. Second copies only.
+  nonisolated static var pretendedUpdate: String? {
+    guard VoculaAppDelegate.isSecondCopy else { return nil }
+    return UserDefaults.standard.string(forKey: pretendUpdateArgument)
+  }
 
   nonisolated static func mayStart(isSecondCopy: Bool, argumentsDisableUpdates: Bool) -> Bool {
     guard !isSecondCopy else { return false }
