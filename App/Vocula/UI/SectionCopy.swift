@@ -187,9 +187,9 @@ enum OnboardingScreenCopy {
       "Footer under the permissions. Says why there is no Check again button: every permission is read afresh whenever the app becomes active."
   )
   static let updateAutomatically = LocalizedStringResource(
-    "onboarding.updateAutomatically", defaultValue: "Update automatically",
+    "onboarding.updateAutomatically", defaultValue: "Check for updates automatically",
     comment:
-      "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting."
+      "Switch on the Permissions screen, beside 'Open at login'. It only makes Vocula ASK whether a newer version exists — nothing downloads or installs without the reader, which the footer under it promises. Do not render it as a promise to update: that is the wording this replaced, and eight translations inherited the contradiction. Not a macOS permission — it is our setting."
   )
   static let checkForUpdates = LocalizedStringResource(
     "onboarding.checkForUpdates", defaultValue: "Check Now",

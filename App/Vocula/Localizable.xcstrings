@@ -14462,49 +14462,49 @@
       }
     },
     "onboarding.updateAutomatically" : {
-      "comment" : "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting.",
+      "comment" : "Switch on the Permissions screen, beside 'Open at login'. It only makes Vocula ASK whether a newer version exists — nothing downloads or installs without the reader, which the footer under it promises. Do not render it as a promise to update: that is the wording this replaced, and eight translations inherited the contradiction. Not a macOS permission — it is our setting.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Automatisch aktualisieren"
+            "value" : "Automatisch nach Updates suchen"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Update automatically"
+            "value" : "Check for updates automatically"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Actualizar automáticamente"
+            "value" : "Comprobar actualizaciones automáticamente"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Mettre à jour automatiquement"
+            "value" : "Vérifier les mises à jour automatiquement"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aggiorna automaticamente"
+            "value" : "Cerca aggiornamenti automaticamente"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Uaktualnienia automatyczne"
+            "value" : "Sprawdzaj uaktualnienia automatycznie"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Atualizar automaticamente"
+            "value" : "Verificar atualizações automaticamente"
           }
         },
         "ru" : {
@@ -14516,7 +14516,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Оновлювати автоматично"
+            "value" : "Перевіряти оновлення автоматично"
           }
         }
       }
