@@ -686,13 +686,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ est désormais %2$@"
+            "value" : "%1$@ : désormais %2$@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ ora è %2$@"
+            "value" : "%1$@: ora %2$@"
           }
         },
         "pl" : {
@@ -1952,7 +1952,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · nichts"
+            "value" : "%@ · keine Diktate"
           }
         },
         "en" : {
@@ -1964,19 +1964,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · nada"
+            "value" : "%@ · sin registros"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · rien"
+            "value" : "%@ · aucune dictée"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · niente"
+            "value" : "%@ · nessuna dettatura"
           }
         },
         "pl" : {
@@ -1994,7 +1994,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · ничего"
+            "value" : "%@ · пусто"
           }
         },
         "uk" : {
@@ -3008,31 +3008,31 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sin voz · segmentos %1$lld · p de trama %2$@ · pico %3$@"
+            "value" : "Sin voz · segmentos %1$lld · prob. de trama %2$@ · pico %3$@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Pas de parole · segments %1$lld · p trame %2$@ · crête %3$@"
+            "value" : "Pas de parole · segments %1$lld · p de trame %2$@ · crête %3$@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nessun parlato · segmenti %1$lld · p frame %2$@ · picco %3$@"
+            "value" : "Nessun parlato · segmenti %1$lld · p del frame %2$@ · picco %3$@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak mowy · segmenty %1$lld · p ramki %2$@ · szczyt %3$@"
+            "value" : "Brak mowy · segmenty: %1$lld · p ramki %2$@ · szczyt %3$@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sem fala · segmentos %1$lld · p do quadro %2$@ · pico %3$@"
+            "value" : "Sem fala · segmentos %1$lld · p do frame %2$@ · pico %3$@"
           }
         },
         "ru" : {
@@ -3044,7 +3044,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Немає мовлення · сегменти %1$lld · p кадра %2$@ · пік %3$@"
+            "value" : "Немає мовлення · сегменти %1$lld · p кадру %2$@ · пік %3$@"
           }
         }
       }
@@ -12722,7 +12722,7 @@
       }
     },
     "models.load" : {
-      "comment" : "Brings an already-downloaded model into memory. A VERB.",
+      "comment" : "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12920,31 +12920,31 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ · %2$@ · dañado, descárgalo de nuevo"
+            "value" : "%1$@ · %2$@ · dañado, cárgalo de nuevo"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ · %2$@ · endommagé, retéléchargez-le"
+            "value" : "%1$@ · %2$@ · endommagé, chargez-le de nouveau"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ · %2$@ · danneggiato, scaricalo di nuovo"
+            "value" : "%1$@ · %2$@ · danneggiato, caricalo di nuovo"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ · %2$@ · uszkodzony, pobierz ponownie"
+            "value" : "%1$@ · %2$@ · uszkodzony, wczytaj ponownie"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ · %2$@ · danificado, baixe de novo"
+            "value" : "%1$@ · %2$@ · danificado, carregue de novo"
           }
         },
         "ru" : {
@@ -13076,7 +13076,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%@ · завантажена частково"
+            "value" : "%@ · частково завантажена"
           }
         }
       }
@@ -13088,7 +13088,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktualisierungen"
+            "value" : "Updates"
           }
         },
         "en" : {
@@ -13118,7 +13118,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktualizacje"
+            "value" : "Uaktualnienia"
           }
         },
         "pt-BR" : {
@@ -13688,7 +13688,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nie"
+            "value" : "Noch nie"
           }
         },
         "en" : {
@@ -14498,7 +14498,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Aktualizuj automatycznie"
+            "value" : "Uaktualnienia automatyczne"
           }
         },
         "pt-BR" : {
@@ -14510,7 +14510,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Обновлять автоматически"
+            "value" : "Проверять обновления автоматически"
           }
         },
         "uk" : {
@@ -14552,7 +14552,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La versione %@ è disponibile"
+            "value" : "È disponibile la versione %@"
           }
         },
         "pl" : {
@@ -14576,7 +14576,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Доступна версія %@"
+            "value" : "Вийшла версія %@"
           }
         }
       }
@@ -14588,7 +14588,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Solange dies eingeschaltet ist, fragt Vocula einmal am Tag bei GitHub nach, ob es eine neuere Version gibt. Nichts über Sie oder Ihr Diktat wird dabei gesendet, und nichts wird geladen oder installiert, bevor Sie es sagen."
+            "value" : "Solange dies eingeschaltet ist, fragt Vocula einmal am Tag bei GitHub nach, ob es eine neuere Version gibt. Dabei wird nichts über Sie oder Ihre Diktate gesendet, und nichts wird geladen oder installiert, bevor Sie es selbst starten."
           }
         },
         "en" : {
@@ -14606,37 +14606,37 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Tant que ceci est activé, Vocula demande à GitHub une fois par jour s’il existe une version plus récente. Rien vous concernant ni concernant vos dictées n’est envoyé, et rien n’est téléchargé ni installé tant que vous ne le dites pas."
+            "value" : "Tant que ceci est activé, Vocula demande à GitHub une fois par jour s’il existe une version plus récente. Rien sur vous ni sur vos dictées n’est envoyé, et rien n’est téléchargé ni installé sans que vous le demandiez."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Finché questa opzione è attiva, Vocula chiede a GitHub una volta al giorno se esiste una versione più recente. Non viene inviato nulla su di te o sulle tue dettature, e nulla viene scaricato o installato finché non lo dici tu."
+            "value" : "Finché questa opzione è attiva, Vocula chiede a GitHub una volta al giorno se esiste una versione più recente. Non viene inviato nulla che riguardi te o le tue dettature e nulla viene scaricato o installato finché non lo dici tu."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dopóki jest to włączone, Vocula raz dziennie pyta GitHub, czy istnieje nowsza wersja. Nic o Tobie ani o Twoim dyktowaniu nie jest przy tym wysyłane i nic nie zostaje pobrane ani zainstalowane, dopóki tego nie powiesz."
+            "value" : "Gdy jest to włączone, Vocula raz dziennie pyta GitHub, czy istnieje nowsza wersja. Nic o Tobie ani o Twoim dyktowaniu nie jest przy tym wysyłane i nic nie zostaje pobrane ani zainstalowane, dopóki tego nie potwierdzisz."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Enquanto isto estiver ligado, o Vocula pergunta ao GitHub uma vez por dia se existe uma versão mais recente. Nada sobre você ou sobre seus ditados é enviado junto, e nada é baixado ou instalado até você mandar."
+            "value" : "Enquanto isto estiver ativo, o Vocula pergunta ao GitHub uma vez por dia se existe uma versão mais recente. Nada sobre você ou seus ditados é enviado junto, e nada é baixado ou instalado até você pedir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Пока это включено, Vocula раз в день спрашивает у GitHub, есть ли более новая версия. Ничего о вас и о ваших диктовках при этом не отправляется, и ничего не загружается и не устанавливается, пока вы не разрешите."
+            "value" : "Когда это включено, Vocula раз в день спрашивает у GitHub, нет ли версии новее. Ничего о вас и о ваших диктовках при этом не отправляется, и ничего не загрузится и не установится, пока вы не разрешите."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Поки це ввімкнено, Vocula раз на день запитує в GitHub, чи є новіша версія. Нічого про вас чи про ваші диктування при цьому не надсилається, і нічого не завантажується та не встановлюється, поки ви не дозволите."
+            "value" : "Поки це ввімкнено, Vocula раз на день запитує в GitHub, чи є новіша версія. Нічого про вас чи про ваші диктування не надсилається, і нічого не завантажується та не встановлюється, поки ви не дозволите."
           }
         }
       }

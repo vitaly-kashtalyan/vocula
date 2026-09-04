@@ -550,7 +550,9 @@ enum ModelScreenCopy {
     comment: "A PRIVACY claim: nothing is sent for recognition. Must keep saying so.")
   static let load = LocalizedStringResource(
     "models.load", defaultValue: "Load",
-    comment: "Brings an already-downloaded model into memory. A VERB.")
+    comment:
+      "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about."
+  )
   static let licences = LocalizedStringResource(
     "models.licences", defaultValue: "Licences",
     comment: "Heading over the third-party licence notices.")
