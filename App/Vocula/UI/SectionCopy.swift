@@ -218,7 +218,7 @@ enum OnboardingScreenCopy {
   static let installUpdate = LocalizedStringResource(
     "onboarding.installUpdate", defaultValue: "Install…",
     comment:
-      "Button beside 'Version X is available'. It reopens the update window, which is what downloads and installs. The ellipsis is there because more is asked before anything happens."
+      "Button beside 'Version X is available'. It starts a FRESH check — Sparkle offers no way to redisplay an alert that was dismissed — which normally lands straight back on the install alert, because the version is already known. So it can spin, and it needs the network. The ellipsis is there because more is asked before anything happens."
   )
   static let updatesFooter = LocalizedStringResource(
     "onboarding.updatesFooter",

@@ -5785,66 +5785,6 @@
         }
       }
     },
-    "keyboard.state.nothingArrived" : {
-      "comment" : "Row state: nothing reached the tap at all.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kommt nie an"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Never arrives"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nunca llega"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "N’arrive jamais"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non arriva mai"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nigdy nie dochodzi"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nunca chega"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не доходит"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не доходить"
-          }
-        }
-      }
-    },
     "keyboard.state.notTested" : {
       "comment" : "Row state before the live check has been run.",
       "extractionState" : "extracted_with_value",
@@ -5901,6 +5841,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не перевірено"
+          }
+        }
+      }
+    },
+    "keyboard.state.nothingArrived" : {
+      "comment" : "Row state: nothing reached the tap at all.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kommt nie an"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Never arrives"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nunca llega"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "N’arrive jamais"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non arriva mai"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nigdy nie dochodzi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nunca chega"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не доходит"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не доходить"
           }
         }
       }
@@ -8437,66 +8437,6 @@
         }
       }
     },
-    "licence.notActivated" : {
-      "comment" : "Status shown when no licence key is present.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nicht aktiviert"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not activated"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sin activar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non activée"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non attivata"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nieaktywowana"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Não ativada"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не активирована"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не активована"
-          }
-        }
-      }
-    },
     "licence.notAKey" : {
       "comment" : "Shown when the pasted text does not verify. 120 is the key's own length.",
       "extractionState" : "extracted_with_value",
@@ -8553,6 +8493,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Це не ліцензійний ключ Vocula. Вставлене показано вище — перевірте, чи скопійовано ключ повністю; у ньому близько 120 символів, і поштова програма могла перенести його на кілька рядків, це нормально."
+          }
+        }
+      }
+    },
+    "licence.notActivated" : {
+      "comment" : "Status shown when no licence key is present.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht aktiviert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not activated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin activar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non activée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non attivata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieaktywowana"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não ativada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не активирована"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не активована"
           }
         }
       }
@@ -11401,66 +11401,6 @@
         }
       }
     },
-    "microphone.inputVolume" : {
-      "comment" : "Row label for the system input level slider.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Eingabelautstärke"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Input volume"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volumen de entrada"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume d’entrée"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume di ingresso"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Głośność wejścia"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume de entrada"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Громкость входа"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Гучність входу"
-          }
-        }
-      }
-    },
     "microphone.inUse" : {
       "comment" : "Badge on the device currently being recorded from. Shown upper-cased by the style;",
       "extractionState" : "extracted_with_value",
@@ -11517,6 +11457,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "АКТИВНИЙ"
+          }
+        }
+      }
+    },
+    "microphone.inputVolume" : {
+      "comment" : "Row label for the system input level slider.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eingabelautstärke"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Input volume"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volumen de entrada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume d’entrée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume di ingresso"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Głośność wejścia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Громкость входа"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Гучність входу"
           }
         }
       }
@@ -11701,6 +11701,66 @@
         }
       }
     },
+    "microphone.noVolumeControl" : {
+      "comment" : "Shown where the slider would be for a device that offers none.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This device has no volume control of its own."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo no tiene control de volumen propio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cet appareil n’a pas de réglage de volume propre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questo dispositivo non ha un controllo del volume proprio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie ma własnej regulacji głośności."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo não tem controle de volume próprio."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У этого устройства нет собственной регулировки громкости."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У цього пристрою немає власного регулювання гучності."
+          }
+        }
+      }
+    },
     "microphone.notConnected" : {
       "comment" : "Marks a ranked device that is absent right now. Lower case: it follows the device's name on the same line.",
       "extractionState" : "extracted_with_value",
@@ -11817,66 +11877,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не слухає. Відкриття цього пристрою вивело б гарнітуру зі стерео, тож натисніть «Перевірити», щоб побачити рівень."
-          }
-        }
-      }
-    },
-    "microphone.noVolumeControl" : {
-      "comment" : "Shown where the slider would be for a device that offers none.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This device has no volume control of its own."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo no tiene control de volumen propio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Cet appareil n’a pas de réglage de volume propre."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Questo dispositivo non ha un controllo del volume proprio."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "To urządzenie nie ma własnej regulacji głośności."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo não tem controle de volume próprio."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У этого устройства нет собственной регулировки громкости."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У цього пристрою немає власного регулювання гучності."
           }
         }
       }
@@ -13201,66 +13201,6 @@
         }
       }
     },
-    "onboarding.checkedToday" : {
-      "comment" : "Value beside 'Last checked' when the last successful check was today.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Heute"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Today"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hoy"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aujourd’hui"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Oggi"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dzisiaj"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hoje"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Сегодня"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Сьогодні"
-          }
-        }
-      }
-    },
     "onboarding.checkForUpdates" : {
       "comment" : "Button that asks for an update check immediately.",
       "extractionState" : "extracted_with_value",
@@ -13317,6 +13257,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Перевірити зараз"
+          }
+        }
+      }
+    },
+    "onboarding.checkedToday" : {
+      "comment" : "Value beside 'Last checked' when the last successful check was today.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Heute"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aujourd’hui"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oggi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dzisiaj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoje"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сегодня"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сьогодні"
           }
         }
       }
@@ -13382,7 +13382,7 @@
       }
     },
     "onboarding.installUpdate" : {
-      "comment" : "Button beside 'Version X is available'. It reopens the update window, which is what downloads and installs. The ellipsis is there because more is asked before anything happens.",
+      "comment" : "Button beside 'Version X is available'. It starts a FRESH check — Sparkle offers no way to redisplay an alert that was dismissed — which normally lands straight back on the install alert, because the version is already known. So it can spin, and it needs the network. The ellipsis is there because more is asked before anything happens.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
