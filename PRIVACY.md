@@ -132,8 +132,10 @@ same certificate and verified against a key compiled into the copy you already
 trust, and it is built from this same public source, but it is a different file
 than the one you checked.
 
-Nothing is downloaded and nothing is installed until you say so. There are no
-accounts, no telemetry, no analytics, no crash reporting and no licence server.
+Once you have switched that on, an update is downloaded in the background, so
+that installing it does not depend on the network being there at the moment you
+press. Nothing is installed until you say so. There are no accounts, no
+telemetry, no analytics, no crash reporting and no licence server.
 
 There is one way you can send something yourself: **Report a problem…** opens
 *your* mail client with the diagnostic log attached. That log holds app and macOS

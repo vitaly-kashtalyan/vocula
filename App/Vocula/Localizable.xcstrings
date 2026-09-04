@@ -5785,66 +5785,6 @@
         }
       }
     },
-    "keyboard.state.notTested" : {
-      "comment" : "Row state before the live check has been run.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nicht geprüft"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not tested"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sin probar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non testée"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non testato"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Niesprawdzony"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Não testada"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не проверено"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не перевірено"
-          }
-        }
-      }
-    },
     "keyboard.state.nothingArrived" : {
       "comment" : "Row state: nothing reached the tap at all.",
       "extractionState" : "extracted_with_value",
@@ -5901,6 +5841,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не доходить"
+          }
+        }
+      }
+    },
+    "keyboard.state.notTested" : {
+      "comment" : "Row state before the live check has been run.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht geprüft"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not tested"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin probar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non testée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non testato"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niesprawdzony"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não testada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не проверено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не перевірено"
           }
         }
       }
@@ -8437,66 +8437,6 @@
         }
       }
     },
-    "licence.notAKey" : {
-      "comment" : "Shown when the pasted text does not verify. 120 is the key's own length.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Das ist kein Vocula-Lizenzschlüssel. Was eingefügt wurde, steht oben — prüfen Sie, ob der ganze Schlüssel kopiert wurde; er ist etwa 120 Zeichen lang, und Ihr Mailprogramm hat ihn womöglich über mehrere Zeilen umbrochen, was in Ordnung ist."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "That is not a Vocula licence key. What was pasted is above — check that the whole key was copied; it is about 120 characters and your mail client may have wrapped it across several lines, which is fine."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Esa no es una clave de licencia de Vocula. Lo pegado aparece arriba: comprueba que se copió la clave entera; tiene unos 120 caracteres y tu cliente de correo puede haberla partido en varias líneas, lo cual no importa."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ce n’est pas une clé de licence Vocula. Ce qui a été collé figure ci-dessus — vérifiez que la clé entière a été copiée ; elle fait environ 120 caractères et votre client de messagerie a pu la répartir sur plusieurs lignes, ce qui n’est pas grave."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Questa non è una chiave di licenza Vocula. Quanto incollato è qui sopra: verifica che sia stata copiata l’intera chiave; è lunga circa 120 caratteri e il tuo client di posta potrebbe averla mandata a capo su più righe, il che va bene."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "To nie jest klucz licencyjny Voculi. Wklejone znajduje się powyżej — sprawdź, czy skopiowano cały klucz; ma około 120 znaków, a Twój program pocztowy mógł go złamać na kilka wierszy, co jest w porządku."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Essa não é uma chave de licença do Vocula. O que foi colado está acima — verifique se a chave inteira foi copiada; ela tem cerca de 120 caracteres e seu cliente de e-mail pode tê-la quebrado em várias linhas, o que não é problema."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Это не лицензионный ключ Vocula. Вставленное показано выше — проверьте, скопирован ли ключ целиком; в нём около 120 символов, и почтовая программа могла перенести его на несколько строк, это нормально."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Це не ліцензійний ключ Vocula. Вставлене показано вище — перевірте, чи скопійовано ключ повністю; у ньому близько 120 символів, і поштова програма могла перенести його на кілька рядків, це нормально."
-          }
-        }
-      }
-    },
     "licence.notActivated" : {
       "comment" : "Status shown when no licence key is present.",
       "extractionState" : "extracted_with_value",
@@ -8553,6 +8493,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не активована"
+          }
+        }
+      }
+    },
+    "licence.notAKey" : {
+      "comment" : "Shown when the pasted text does not verify. 120 is the key's own length.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das ist kein Vocula-Lizenzschlüssel. Was eingefügt wurde, steht oben — prüfen Sie, ob der ganze Schlüssel kopiert wurde; er ist etwa 120 Zeichen lang, und Ihr Mailprogramm hat ihn womöglich über mehrere Zeilen umbrochen, was in Ordnung ist."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That is not a Vocula licence key. What was pasted is above — check that the whole key was copied; it is about 120 characters and your mail client may have wrapped it across several lines, which is fine."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esa no es una clave de licencia de Vocula. Lo pegado aparece arriba: comprueba que se copió la clave entera; tiene unos 120 caracteres y tu cliente de correo puede haberla partido en varias líneas, lo cual no importa."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce n’est pas une clé de licence Vocula. Ce qui a été collé figure ci-dessus — vérifiez que la clé entière a été copiée ; elle fait environ 120 caractères et votre client de messagerie a pu la répartir sur plusieurs lignes, ce qui n’est pas grave."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questa non è una chiave di licenza Vocula. Quanto incollato è qui sopra: verifica che sia stata copiata l’intera chiave; è lunga circa 120 caratteri e il tuo client di posta potrebbe averla mandata a capo su più righe, il che va bene."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To nie jest klucz licencyjny Voculi. Wklejone znajduje się powyżej — sprawdź, czy skopiowano cały klucz; ma około 120 znaków, a Twój program pocztowy mógł go złamać na kilka wierszy, co jest w porządku."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Essa não é uma chave de licença do Vocula. O que foi colado está acima — verifique se a chave inteira foi copiada; ela tem cerca de 120 caracteres e seu cliente de e-mail pode tê-la quebrado em várias linhas, o que não é problema."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Это не лицензионный ключ Vocula. Вставленное показано выше — проверьте, скопирован ли ключ целиком; в нём около 120 символов, и почтовая программа могла перенести его на несколько строк, это нормально."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Це не ліцензійний ключ Vocula. Вставлене показано вище — перевірте, чи скопійовано ключ повністю; у ньому близько 120 символів, і поштова програма могла перенести його на кілька рядків, це нормально."
           }
         }
       }
@@ -11401,66 +11401,6 @@
         }
       }
     },
-    "microphone.inUse" : {
-      "comment" : "Badge on the device currently being recorded from. Shown upper-cased by the style;",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "AKTIV"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "IN USE"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "EN USO"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "EN COURS"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "IN USO"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "W UŻYCIU"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "EM USO"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "АКТИВЕН"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "АКТИВНИЙ"
-          }
-        }
-      }
-    },
     "microphone.inputVolume" : {
       "comment" : "Row label for the system input level slider.",
       "extractionState" : "extracted_with_value",
@@ -11517,6 +11457,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Гучність входу"
+          }
+        }
+      }
+    },
+    "microphone.inUse" : {
+      "comment" : "Badge on the device currently being recorded from. Shown upper-cased by the style;",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "AKTIV"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "IN USE"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "EN USO"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "EN COURS"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "IN USO"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W UŻYCIU"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "EM USO"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "АКТИВЕН"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "АКТИВНИЙ"
           }
         }
       }
@@ -11701,66 +11701,6 @@
         }
       }
     },
-    "microphone.noVolumeControl" : {
-      "comment" : "Shown where the slider would be for a device that offers none.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This device has no volume control of its own."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo no tiene control de volumen propio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Cet appareil n’a pas de réglage de volume propre."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Questo dispositivo non ha un controllo del volume proprio."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "To urządzenie nie ma własnej regulacji głośności."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo não tem controle de volume próprio."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У этого устройства нет собственной регулировки громкости."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У цього пристрою немає власного регулювання гучності."
-          }
-        }
-      }
-    },
     "microphone.notConnected" : {
       "comment" : "Marks a ranked device that is absent right now. Lower case: it follows the device's name on the same line.",
       "extractionState" : "extracted_with_value",
@@ -11877,6 +11817,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не слухає. Відкриття цього пристрою вивело б гарнітуру зі стерео, тож натисніть «Перевірити», щоб побачити рівень."
+          }
+        }
+      }
+    },
+    "microphone.noVolumeControl" : {
+      "comment" : "Shown where the slider would be for a device that offers none.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This device has no volume control of its own."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo no tiene control de volumen propio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cet appareil n’a pas de réglage de volume propre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questo dispositivo non ha un controllo del volume proprio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie ma własnej regulacji głośności."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo não tem controle de volume próprio."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У этого устройства нет собственной регулировки громкости."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У цього пристрою немає власного регулювання гучності."
           }
         }
       }
@@ -13201,66 +13201,6 @@
         }
       }
     },
-    "onboarding.checkForUpdates" : {
-      "comment" : "Button that asks for an update check immediately.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Jetzt prüfen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Check Now"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Comprobar ahora"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Vérifier maintenant"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Verifica ora"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sprawdź teraz"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Verificar agora"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Проверить сейчас"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Перевірити зараз"
-          }
-        }
-      }
-    },
     "onboarding.checkedToday" : {
       "comment" : "Value beside 'Last checked' when the last successful check was today.",
       "extractionState" : "extracted_with_value",
@@ -13317,6 +13257,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Сьогодні"
+          }
+        }
+      }
+    },
+    "onboarding.checkForUpdates" : {
+      "comment" : "Button that asks for an update check immediately.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jetzt prüfen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Check Now"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comprobar ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vérifier maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verifica ora"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprawdź teraz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verificar agora"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Проверить сейчас"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Перевірити зараз"
           }
         }
       }
@@ -14462,61 +14462,61 @@
       }
     },
     "onboarding.updateAutomatically" : {
-      "comment" : "Switch on the Permissions screen, beside 'Open at login'. It only makes Vocula ASK whether a newer version exists — nothing downloads or installs without the reader, which the footer under it promises. Do not render it as a promise to update: that is the wording this replaced, and eight translations inherited the contradiction. Not a macOS permission — it is our setting.",
+      "comment" : "Switch on the Permissions screen, beside 'Open at login'. Apple's own wording for this setting. Vocula asks GitHub once a day and fetches the update in the background, so Install is a local act that cannot fail for want of a network. It still INSTALLS nothing on its own — that needs the reader, and the footer says so. Not a macOS permission; it is our setting.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Automatisch nach Updates suchen"
+            "value" : "Neue Updates laden, wenn verfügbar"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Check for updates automatically"
+            "value" : "Download new updates when available"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Comprobar actualizaciones automáticamente"
+            "value" : "Descargar las nuevas actualizaciones cuando estén disponibles"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vérifier les mises à jour automatiquement"
+            "value" : "Télécharger les nouvelles mises à jour lorsqu’elles sont disponibles"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Cerca aggiornamenti automaticamente"
+            "value" : "Scarica i nuovi aggiornamenti quando disponibili"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sprawdzaj uaktualnienia automatycznie"
+            "value" : "Pobieraj nowe uaktualnienia, gdy będą dostępne"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Verificar atualizações automaticamente"
+            "value" : "Baixar novas atualizações quando disponíveis"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Проверять обновления автоматически"
+            "value" : "Загружать новые обновления, когда они доступны"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Перевіряти оновлення автоматично"
+            "value" : "Завантажувати нові оновлення, коли вони доступні"
           }
         }
       }
@@ -14582,61 +14582,61 @@
       }
     },
     "onboarding.updatesFooter" : {
-      "comment" : "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines.",
+      "comment" : "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day and a download of a few megabytes. The second sentence is a privacy promise and must keep saying that nothing about the reader is sent and that INSTALLING still needs them. Wraps over several lines.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Solange dies eingeschaltet ist, fragt Vocula einmal am Tag bei GitHub nach, ob es eine neuere Version gibt. Dabei wird nichts über Sie oder Ihre Diktate gesendet, und nichts wird geladen oder installiert, bevor Sie es selbst starten."
+            "value" : "Solange dies eingeschaltet ist, fragt Vocula einmal am Tag bei GitHub nach, ob es eine neuere Version gibt, und lädt sie im Hintergrund, damit sie bereit ist, wenn Sie es sind. Dabei wird nichts über Sie oder Ihre Diktate gesendet, und nichts wird installiert, bevor Sie es selbst starten."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so."
+            "value" : "While this is on, Vocula asks GitHub once a day whether a newer version exists and fetches it in the background, so it is ready when you are. Nothing about you or your dictation is sent with it, and nothing is installed until you say so."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Mientras esto esté activado, Vocula pregunta a GitHub una vez al día si existe una versión más reciente. No se envía nada sobre ti ni sobre tus dictados, y no se descarga ni se instala nada hasta que tú lo digas."
+            "value" : "Mientras esto esté activado, Vocula pregunta a GitHub una vez al día si existe una versión más reciente y la descarga en segundo plano, para que esté lista cuando tú lo estés. No se envía nada sobre ti ni sobre tus dictados, y no se instala nada hasta que tú lo digas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Tant que ceci est activé, Vocula demande à GitHub une fois par jour s’il existe une version plus récente. Rien sur vous ni sur vos dictées n’est envoyé, et rien n’est téléchargé ni installé sans que vous le demandiez."
+            "value" : "Tant que ceci est activé, Vocula demande à GitHub une fois par jour s’il existe une version plus récente et la télécharge en arrière-plan, pour qu’elle soit prête quand vous l’êtes. Rien sur vous ni sur vos dictées n’est envoyé, et rien n’est installé sans que vous le demandiez."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Finché questa opzione è attiva, Vocula chiede a GitHub una volta al giorno se esiste una versione più recente. Non viene inviato nulla che riguardi te o le tue dettature e nulla viene scaricato o installato finché non lo dici tu."
+            "value" : "Finché questa opzione è attiva, Vocula chiede a GitHub una volta al giorno se esiste una versione più recente e la scarica in background, così è pronta quando lo sei tu. Non viene inviato nulla che riguardi te o le tue dettature e nulla viene installato finché non lo dici tu."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Gdy jest to włączone, Vocula raz dziennie pyta GitHub, czy istnieje nowsza wersja. Nic o Tobie ani o Twoim dyktowaniu nie jest przy tym wysyłane i nic nie zostaje pobrane ani zainstalowane, dopóki tego nie potwierdzisz."
+            "value" : "Gdy jest to włączone, Vocula raz dziennie pyta GitHub, czy istnieje nowsza wersja, i pobiera ją w tle, aby była gotowa, gdy Ty będziesz. Nic o Tobie ani o Twoim dyktowaniu nie jest przy tym wysyłane i nic nie zostaje zainstalowane, dopóki tego nie potwierdzisz."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Enquanto isto estiver ativo, o Vocula pergunta ao GitHub uma vez por dia se existe uma versão mais recente. Nada sobre você ou seus ditados é enviado junto, e nada é baixado ou instalado até você pedir."
+            "value" : "Enquanto isto estiver ativo, o Vocula pergunta ao GitHub uma vez por dia se existe uma versão mais recente e a baixa em segundo plano, para estar pronta quando você estiver. Nada sobre você ou seus ditados é enviado junto, e nada é instalado até você pedir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Когда это включено, Vocula раз в день спрашивает у GitHub, нет ли версии новее. Ничего о вас и о ваших диктовках при этом не отправляется, и ничего не загрузится и не установится, пока вы не разрешите."
+            "value" : "Когда это включено, Vocula раз в день спрашивает у GitHub, нет ли версии новее, и загружает её в фоне, чтобы она была готова, когда будете готовы вы. Ничего о вас и о ваших диктовках при этом не отправляется, и ничего не установится, пока вы не разрешите."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Поки це ввімкнено, Vocula раз на день запитує в GitHub, чи є новіша версія. Нічого про вас чи про ваші диктування не надсилається, і нічого не завантажується та не встановлюється, поки ви не дозволите."
+            "value" : "Поки це ввімкнено, Vocula раз на день запитує в GitHub, чи є новіша версія, і завантажує її у фоні, щоб вона була готова, коли будете готові ви. Нічого про вас чи про ваші диктування не надсилається, і нічого не встановлюється, поки ви не дозволите."
           }
         }
       }
