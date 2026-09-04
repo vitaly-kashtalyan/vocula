@@ -155,6 +155,7 @@ struct PermissionsSettingsSection: View {
             .accessibilityIdentifier("updates.install")
         } label: {
           Text(OnboardingScreenCopy.updateAvailable(version))
+            .accessibilityIdentifier("updates.available")
         }
       } else {
         LabeledContent {
@@ -164,6 +165,7 @@ struct PermissionsSettingsSection: View {
             // whole of a check, and false where the updater never started.
             Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
               .disabled(!updater.canCheck)
+              .accessibilityIdentifier("updates.check")
           }
         } label: {
           Text(OnboardingScreenCopy.lastChecked)

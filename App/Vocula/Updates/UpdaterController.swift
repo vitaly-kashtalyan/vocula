@@ -14,19 +14,18 @@ final class UpdaterController: NSObject, ObservableObject {
 
   private var controller: SPUStandardUpdaterController?
 
-  nonisolated static let pretendUpdateArgument = "-VoculaPretendUpdate"
-
   // A found update cannot be produced without a served feed, so the one state
-  // no test could otherwise reach is substituted here. Second copies only, and
-  // read from argv rather than UserDefaults: UserDefaults would also answer a
-  // stale `defaults write`, and screenshots.sh runs as a second copy without
-  // withholding Permissions, so a promo shot would carry a fake update row.
+  // no test could otherwise reach is substituted here.
   nonisolated static var pretendedUpdate: String? {
     guard VoculaAppDelegate.isSecondCopy else { return nil }
     let arguments = ProcessInfo.processInfo.arguments
-    guard let flag = arguments.firstIndex(of: pretendUpdateArgument) else { return nil }
+    guard let flag = arguments.firstIndex(of: "-VoculaPretendUpdate") else { return nil }
     let value = arguments.index(after: flag)
     return value < arguments.endIndex ? arguments[value] : nil
+  }
+
+  nonisolated static func clearsFoundUpdate(_ choice: SPUUserUpdateChoice) -> Bool {
+    choice == .skip
   }
 
   nonisolated static func mayStart(isSecondCopy: Bool, argumentsDisableUpdates: Bool) -> Bool {
@@ -63,9 +62,7 @@ extension UpdaterController: SPUUpdaterDelegate {
     Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
   }
 
-  // Closing the update window tells Sparkle nothing, so without holding what the
-  // check found, a dismissed window leaves the screen reading "checked today"
-  // over a version that is waiting.
+  // Closing the update window tells Sparkle nothing.
   func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
     availableVersion = item.displayVersionString
   }
@@ -74,14 +71,13 @@ extension UpdaterController: SPUUpdaterDelegate {
     availableVersion = nil
   }
 
-  // Skip is a decision and Dismiss is a postponement, so only one of them takes
-  // the row away. Neither reaches updaterDidNotFindUpdate: both abort the cycle
-  // with a nil error, which didFinishUpdateCycleFor deliberately ignores.
+  // Neither choice reaches updaterDidNotFindUpdate: both abort the cycle with a
+  // nil error, which didFinishUpdateCycleFor deliberately ignores.
   func updater(
     _ updater: SPUUpdater, userDidMake choice: SPUUserUpdateChoice,
     forUpdate updateItem: SUAppcastItem, state: SPUUserUpdateState
   ) {
-    guard choice == .skip else { return }
+    guard Self.clearsFoundUpdate(choice) else { return }
     availableVersion = nil
   }
 
