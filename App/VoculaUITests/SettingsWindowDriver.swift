@@ -1,16 +1,16 @@
 import XCTest
 
 extension XCTestCase {
-  func launch() throws -> XCUIApplication {
+  func launch(arguments: [String] = []) throws -> XCUIApplication {
     try XCTSkipUnless(
       ProcessInfo.processInfo.environment["VOCULA_UI_TESTS"] == "1",
       "UI tests drive the real screen. Set VOCULA_UI_TESTS=1 to run them.")
-    return launchUnchecked()
+    return launchUnchecked(arguments: arguments)
   }
 
-  private func launchUnchecked() -> XCUIApplication {
+  private func launchUnchecked(arguments: [String]) -> XCUIApplication {
     let app = XCUIApplication()
-    app.launchArguments = ["-VoculaUITest"]
+    app.launchArguments = ["-VoculaUITest"] + arguments
     if let language = ProcessInfo.processInfo.environment["VOCULA_UI_LANG"] {
       app.launchArguments += ["-AppleLanguages", "(\(language))"]
     }
@@ -27,8 +27,8 @@ extension XCTestCase {
     return app.windows.firstMatch
   }
 
-  func launchAndOpenSettings() throws -> XCUIElement {
-    openSettings(in: try launch())
+  func launchAndOpenSettings(arguments: [String] = []) throws -> XCUIElement {
+    openSettings(in: try launch(arguments: arguments))
   }
 
   @discardableResult
@@ -79,8 +79,8 @@ enum Sidebar {
 }
 
 extension XCTestCase {
-  func openSection(_ section: String) throws -> XCUIElement {
-    let window = try launchAndOpenSettings()
+  func openSection(_ section: String, arguments: [String] = []) throws -> XCUIElement {
+    let window = try launchAndOpenSettings(arguments: arguments)
     XCTAssertTrue(
       clickRow(section, in: window),
       "no sidebar row identified “\(Sidebar.row(section))”")

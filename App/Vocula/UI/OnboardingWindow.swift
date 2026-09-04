@@ -148,15 +148,29 @@ struct PermissionsSettingsSection: View {
   @ViewBuilder private var updateSection: some View {
     Section {
       Toggle(OnboardingScreenCopy.updateAutomatically, isOn: automaticUpdates)
-      LabeledContent {
-        lastCheckedValue
-      } label: {
-        Text(OnboardingScreenCopy.lastChecked)
+      if let version = updater.availableVersion {
+        LabeledContent {
+          Button(OnboardingScreenCopy.installUpdate) { updater.checkForUpdates() }
+            .disabled(!updater.canCheck)
+            .accessibilityIdentifier("updates.install")
+        } label: {
+          Text(OnboardingScreenCopy.updateAvailable(version))
+            .accessibilityIdentifier("updates.available")
+        }
+      } else {
+        LabeledContent {
+          HStack {
+            lastCheckedValue
+            // On the button, not the Section: canCheckForUpdates is false for the
+            // whole of a check, and false where the updater never started.
+            Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
+              .disabled(!updater.canCheck)
+              .accessibilityIdentifier("updates.check")
+          }
+        } label: {
+          Text(OnboardingScreenCopy.lastChecked)
+        }
       }
-      // On the button, not the Section: canCheckForUpdates is false for the whole
-      // of a check, and false on a copy where the updater never started.
-      Button(OnboardingScreenCopy.checkForUpdates) { updater.checkForUpdates() }
-        .disabled(!updater.canCheck)
     } footer: {
       Text(OnboardingScreenCopy.updatesFooter)
     }

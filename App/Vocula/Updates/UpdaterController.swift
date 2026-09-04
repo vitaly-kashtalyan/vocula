@@ -8,10 +8,25 @@ final class UpdaterController: NSObject, ObservableObject {
 
   @Published private(set) var canCheck = false
   @Published private(set) var automaticallyChecks = false
+  @Published private(set) var availableVersion: String? = UpdaterController.pretendedUpdate
 
   var diagnose: ((String, String) -> Void)?
 
   private var controller: SPUStandardUpdaterController?
+
+  // A found update cannot be produced without a served feed, so the one state
+  // no test could otherwise reach is substituted here.
+  nonisolated static var pretendedUpdate: String? {
+    guard VoculaAppDelegate.isSecondCopy else { return nil }
+    let arguments = ProcessInfo.processInfo.arguments
+    guard let flag = arguments.firstIndex(of: "-VoculaPretendUpdate") else { return nil }
+    let value = arguments.index(after: flag)
+    return value < arguments.endIndex ? arguments[value] : nil
+  }
+
+  nonisolated static func clearsFoundUpdate(_ choice: SPUUserUpdateChoice) -> Bool {
+    choice == .skip
+  }
 
   nonisolated static func mayStart(isSecondCopy: Bool, argumentsDisableUpdates: Bool) -> Bool {
     guard !isSecondCopy else { return false }
@@ -45,6 +60,25 @@ extension UpdaterController: SPUUpdaterDelegate {
   // process could redirect the feed. The delegate outranks both.
   func feedURLString(for updater: SPUUpdater) -> String? {
     Bundle.main.object(forInfoDictionaryKey: "SUFeedURL") as? String
+  }
+
+  // Closing the update window tells Sparkle nothing.
+  func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
+    availableVersion = item.displayVersionString
+  }
+
+  func updaterDidNotFindUpdate(_ updater: SPUUpdater) {
+    availableVersion = nil
+  }
+
+  // Neither choice reaches updaterDidNotFindUpdate: both abort the cycle with a
+  // nil error, which didFinishUpdateCycleFor deliberately ignores.
+  func updater(
+    _ updater: SPUUpdater, userDidMake choice: SPUUserUpdateChoice,
+    forUpdate updateItem: SUAppcastItem, state: SPUUserUpdateState
+  ) {
+    guard Self.clearsFoundUpdate(choice) else { return }
+    availableVersion = nil
   }
 
   // Sparkle relaunches with no arguments, so the request cannot travel in argv.

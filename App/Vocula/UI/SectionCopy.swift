@@ -187,9 +187,9 @@ enum OnboardingScreenCopy {
       "Footer under the permissions. Says why there is no Check again button: every permission is read afresh whenever the app becomes active."
   )
   static let updateAutomatically = LocalizedStringResource(
-    "onboarding.updateAutomatically", defaultValue: "Update automatically",
+    "onboarding.updateAutomatically", defaultValue: "Check for updates automatically",
     comment:
-      "Switch on the Permissions screen, beside 'Open at login'. Lets Vocula check for its own updates. Not a macOS permission — it is our setting."
+      "Switch on the Permissions screen, beside 'Open at login'. It only makes Vocula ASK whether a newer version exists — nothing downloads or installs without the reader, which the footer under it promises. Do not render it as a promise to update: that is the wording this replaced, and eight translations inherited the contradiction. Not a macOS permission — it is our setting."
   )
   static let checkForUpdates = LocalizedStringResource(
     "onboarding.checkForUpdates", defaultValue: "Check Now",
@@ -207,6 +207,18 @@ enum OnboardingScreenCopy {
   static let checkedToday = LocalizedStringResource(
     "onboarding.checkedToday", defaultValue: "Today",
     comment: "Value beside 'Last checked' when the last successful check was today."
+  )
+  static func updateAvailable(_ version: String) -> LocalizedStringResource {
+    LocalizedStringResource(
+      "onboarding.updateAvailable", defaultValue: "Version \(version) is available",
+      comment:
+        "Row label on the Permissions screen once a check has FOUND a newer version, in place of 'Last checked'. The argument is the new version number. It is the only place the app says an update is waiting after the update window has been closed, so it must read as news rather than as a status."
+    )
+  }
+  static let installUpdate = LocalizedStringResource(
+    "onboarding.installUpdate", defaultValue: "Install…",
+    comment:
+      "Button beside 'Version X is available'. It starts a FRESH check — Sparkle offers no way to redisplay an alert that was dismissed — which normally lands straight back on the install alert, because the version is already known. So it can spin, and it needs the network. The ellipsis is there because more is asked before anything happens."
   )
   static let updatesFooter = LocalizedStringResource(
     "onboarding.updatesFooter",
@@ -538,7 +550,9 @@ enum ModelScreenCopy {
     comment: "A PRIVACY claim: nothing is sent for recognition. Must keep saying so.")
   static let load = LocalizedStringResource(
     "models.load", defaultValue: "Load",
-    comment: "Brings an already-downloaded model into memory. A VERB.")
+    comment:
+      "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about."
+  )
   static let licences = LocalizedStringResource(
     "models.licences", defaultValue: "Licences",
     comment: "Heading over the third-party licence notices.")
