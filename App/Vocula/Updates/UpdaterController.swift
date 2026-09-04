@@ -45,6 +45,9 @@ final class UpdaterController: NSObject, ObservableObject {
       startingUpdater: true, updaterDelegate: self, userDriverDelegate: nil)
     self.controller = controller
     controller.updater.clearFeedURLFromUserDefaults()
+    // Fetched ahead so Install is local: the check that found the update needed
+    // the network, the press hours later may not have it.
+    controller.updater.automaticallyDownloadsUpdates = true
     controller.updater.publisher(for: \.canCheckForUpdates).assign(to: &$canCheck)
     controller.updater.publisher(for: \.automaticallyChecksForUpdates)
       .assign(to: &$automaticallyChecks)

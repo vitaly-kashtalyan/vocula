@@ -187,9 +187,9 @@ enum OnboardingScreenCopy {
       "Footer under the permissions. Says why there is no Check again button: every permission is read afresh whenever the app becomes active."
   )
   static let updateAutomatically = LocalizedStringResource(
-    "onboarding.updateAutomatically", defaultValue: "Check for updates automatically",
+    "onboarding.updateAutomatically", defaultValue: "Download new updates when available",
     comment:
-      "Switch on the Permissions screen, beside 'Open at login'. It only makes Vocula ASK whether a newer version exists — nothing downloads or installs without the reader, which the footer under it promises. Do not render it as a promise to update: that is the wording this replaced, and eight translations inherited the contradiction. Not a macOS permission — it is our setting."
+      "Switch on the Permissions screen, beside 'Open at login'. Apple's own wording for this setting. Vocula asks GitHub once a day and fetches the update in the background, so Install is a local act that cannot fail for want of a network. It still INSTALLS nothing on its own — that needs the reader, and the footer says so. Not a macOS permission; it is our setting."
   )
   static let checkForUpdates = LocalizedStringResource(
     "onboarding.checkForUpdates", defaultValue: "Check Now",
@@ -223,9 +223,9 @@ enum OnboardingScreenCopy {
   static let updatesFooter = LocalizedStringResource(
     "onboarding.updatesFooter",
     defaultValue:
-      "While this is on, Vocula asks GitHub once a day whether a newer version exists. Nothing about you or your dictation is sent with it, and nothing is downloaded or installed until you say so.",
+      "While this is on, Vocula asks GitHub once a day whether a newer version exists and fetches it in the background, so it is ready when you are. Nothing about you or your dictation is sent with it, and nothing is installed until you say so.",
     comment:
-      "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day. Wraps over several lines."
+      "Footer under the update rows. It tells the reader what leaving the switch on costs them: one small request a day and a download of a few megabytes. The second sentence is a privacy promise and must keep saying that nothing about the reader is sent and that INSTALLING still needs them. Wraps over several lines."
   )
   static let settingsFooter = LocalizedStringResource(
     "onboarding.settingsFooter", defaultValue: "Dictation works without these.",
