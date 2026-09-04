@@ -14468,7 +14468,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Neue Updates laden, wenn verfügbar"
+            "value" : "Neue Updates bei Verfügbarkeit laden"
           }
         },
         "en" : {
@@ -14480,7 +14480,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Descargar las nuevas actualizaciones cuando estén disponibles"
+            "value" : "Descargar actualizaciones nuevas cuando estén disponibles"
           }
         },
         "fr" : {
@@ -14498,7 +14498,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Pobieraj nowe uaktualnienia, gdy będą dostępne"
+            "value" : "Pobieraj nowe uaktualnienia, gdy są dostępne"
           }
         },
         "pt-BR" : {
@@ -14510,7 +14510,7 @@
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Загружать новые обновления, когда они доступны"
+            "value" : "Загружать обновления, если они доступны"
           }
         },
         "uk" : {
