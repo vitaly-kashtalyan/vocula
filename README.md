@@ -134,7 +134,7 @@ Building it yourself is free, and of course always will be.
 `App/Signing.xcconfig` ships ad-hoc by default precisely so that a stranger with
 no Apple account can clone this repository and get a running app.
 
-A build from source runs unlimited for seven days, then ten inserted dictations
+A build from source runs unlimited for thirty days, then ten inserted dictations
 a day until a key is pasted into Settings → Licence. A dictation only counts
 against that if the text actually reached your caret: a cancelled gesture, a
 silent recording, a refusal and a dead microphone all cost nothing.

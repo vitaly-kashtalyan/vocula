@@ -14,7 +14,7 @@ public enum Entitlement: Equatable, Sendable {
 }
 
 public enum TrialPolicy {
-  public static let trialDays = 7
+  public static let trialDays = 30
   public static let dictationsPerDayAfterTrial = 10
 
   public static func entitlement(
