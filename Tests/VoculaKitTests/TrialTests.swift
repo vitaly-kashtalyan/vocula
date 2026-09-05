@@ -26,30 +26,31 @@ struct TrialTests {
     calendar.date(from: DateComponents(year: 2026, month: 8, day: n, hour: hour))!
   }
 
-  @Test("the trial is seven days, counted in local days")
+  @Test("the trial is thirty days, counted in local days")
   func trialLength() {
+    #expect(TrialPolicy.trialDays == 30)
     let start = day(1)
-    for elapsed in 0..<7 {
+    for elapsed in 0..<TrialPolicy.trialDays {
       #expect(
         TrialPolicy.entitlement(
           licensed: false, firstRun: start,
           now: day(1 + elapsed), usedToday: 0,
           calendar: calendar)
-          == .trial(daysLeft: 7 - elapsed))
+          == .trial(daysLeft: TrialPolicy.trialDays - elapsed))
     }
     #expect(
       TrialPolicy.entitlement(
-        licensed: false, firstRun: start, now: day(8),
+        licensed: false, firstRun: start, now: day(1 + TrialPolicy.trialDays),
         usedToday: 0, calendar: calendar)
         == .limited(remainingToday: 10))
   }
 
-  @Test("the last hour of the seventh day is still the trial")
+  @Test("the last hour of the final day is still the trial")
   func lastHour() {
     #expect(
       TrialPolicy.entitlement(
         licensed: false, firstRun: day(1, hour: 1),
-        now: day(7, hour: 23), usedToday: 0,
+        now: day(TrialPolicy.trialDays, hour: 23), usedToday: 0,
         calendar: calendar)
         == .trial(daysLeft: 1))
   }
@@ -58,7 +59,7 @@ struct TrialTests {
   func dailyLimit() {
     func remaining(after used: Int) -> Entitlement {
       TrialPolicy.entitlement(
-        licensed: false, firstRun: day(1), now: day(30),
+        licensed: false, firstRun: day(1), now: day(40),
         usedToday: used, calendar: calendar)
     }
     #expect(remaining(after: 0) == .limited(remainingToday: 10))
@@ -97,16 +98,16 @@ struct TrialTests {
     let ledger = UsageLedger(defaults: defaults, calendar: calendar) { clock.now }
     ledger.startTrialIfNeeded()
 
-    clock.now = day(20)
+    clock.now = day(40)
     ledger.advance()
     #expect(ledger.entitlement(licensed: false) == .limited(remainingToday: 10))
 
     clock.now = day(2)
-    #expect(ledger.now() == day(20), "the clock moved backwards and was believed")
+    #expect(ledger.now() == day(40), "the clock moved backwards and was believed")
     #expect(ledger.entitlement(licensed: false) == .limited(remainingToday: 10))
 
-    clock.now = day(25)
-    #expect(ledger.now() == day(25))
+    clock.now = day(45)
+    #expect(ledger.now() == day(45))
   }
 
   @Test("the day's count survives a clock rolled back")
@@ -152,7 +153,7 @@ struct TrialTests {
     #expect(ledger.firstRun() == day(5))
     clock.now = day(9)
     #expect(ledger.firstRun() == day(5))
-    #expect(ledger.entitlement(licensed: false) == .trial(daysLeft: 3))
+    #expect(ledger.entitlement(licensed: false) == .trial(daysLeft: TrialPolicy.trialDays - 4))
   }
 
   @Test("the day key is the Gregorian one whatever calendar the region uses")
