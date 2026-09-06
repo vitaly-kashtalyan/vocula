@@ -194,6 +194,7 @@ private func makeController(
   clipboard: FakeClipboard = FakeClipboard(),
   paste: FakePaste = FakePaste(),
   history: FakeHistory = FakeHistory(),
+  filter: any TextFiltering = PassthroughFilter(),
   timings: Timings = .default,
   abandonGesture: @escaping @Sendable () -> Void = {},
   diagnose: @escaping @Sendable (String, String) -> Void = { _, _ in }
@@ -204,7 +205,7 @@ private func makeController(
       inserter: TextInserter(
         clipboard: clipboard, paste: paste,
         timings: timings, sleep: { _ in }),
-      filter: PassthroughFilter(),
+      filter: filter,
       history: history, timings: timings, languages: { .default },
       abandonGesture: abandonGesture, diagnose: diagnose))
 }
@@ -1011,14 +1012,8 @@ struct DictationControllerTests {
     let engine = FakeEngine()
     engine.text = "Thanks for\nwatching"
     let clipboard = FakeClipboard()
-    let controller = DictationController(
-      dependencies: .init(
-        audio: FakeAudio(), detector: FakeDetector(), engine: engine, probe: FakeProbe(),
-        inserter: TextInserter(
-          clipboard: clipboard, paste: FakePaste(),
-          timings: .default, sleep: { _ in }),
-        filter: DroppingFilter(), history: FakeHistory(),
-        timings: .default, languages: { .default }))
+    let controller = makeController(
+      engine: engine, clipboard: clipboard, filter: DroppingFilter())
     await controller.handle(.start(session: 1))
     await controller.handle(.stop(session: 1, reason: .releasedHold))
     await controller.drain()
@@ -1032,14 +1027,8 @@ struct DictationControllerTests {
     engine.text = "thanks for\nwatching"
     let clipboard = FakeClipboard()
     let history = FakeHistory()
-    let controller = DictationController(
-      dependencies: .init(
-        audio: FakeAudio(), detector: FakeDetector(), engine: engine, probe: FakeProbe(),
-        inserter: TextInserter(
-          clipboard: clipboard, paste: FakePaste(),
-          timings: .default, sleep: { _ in }),
-        filter: TextFilter(), history: history,
-        timings: .default, languages: { .default }))
+    let controller = makeController(
+      engine: engine, clipboard: clipboard, history: history, filter: TextFilter())
     await controller.handle(.start(session: 1))
     await controller.handle(.stop(session: 1, reason: .releasedHold))
     await controller.drain()
