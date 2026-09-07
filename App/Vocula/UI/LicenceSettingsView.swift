@@ -87,7 +87,7 @@ struct LicenceSettingsView: View {
     }
 
     Section {
-      Link(LicenceScreenCopy.buy, destination: URL(string: "https://vocula.app")!)
+      Link(LicenceScreenCopy.buy, destination: URL(string: "https://vocula.app/pricing/")!)
         .accessibilityIdentifier("licence.buy")
     }
   }
