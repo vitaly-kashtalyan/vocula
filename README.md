@@ -51,6 +51,8 @@ one gesture that always works beats two where one sometimes does.
           │
    [ whisper.cpp ]        Metal GPU — 0.02–0.03× realtime, measured
           │
+   [ one line ]           newlines and tabs become spaces, so a paste cannot run
+          │
    [ TextFilter ]         drops output that is nothing but *[Music]* tags
           │
    [ TargetGuard ]        refuses password fields, and secure input raised mid-session
@@ -189,7 +191,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -only-testing:VoculaAppTests
 ```
 
-874 tests: 657 in the kit, 204 in the hosted app bundle, 13 driving the real
+897 tests: 665 in the kit, 219 in the hosted app bundle, 13 driving the real
 interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
@@ -204,8 +206,12 @@ Stated here rather than discovered later.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
-- **Insertion into a terminal executes what was said.** Nothing in the design
-  prevents this.
+- **A dictated command lands at a shell prompt; it does not run itself.** The
+  transcript is folded to one line before it is pasted, so nothing in it carries
+  a Return. A modal editor is the exception that remains: in vim's normal mode
+  the letters are commands, and what protects you there is the terminal's
+  bracketed paste rather than anything this app does. Measured: Terminal.app
+  performs it, tmux does not.
 - **Word counts split on whitespace**, which is honest for the languages this
   has been measured in and wrong for Chinese.
 - **The interface is translated into nine languages and reviewed in one.**

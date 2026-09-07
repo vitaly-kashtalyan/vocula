@@ -416,10 +416,11 @@ public actor DictationController {
       return nil
     }
     await dependencies.history.setState(id, .transcribed, reason: nil)
-    rememberTranscript(transcription.text, session: session)
+    let spoken = SingleLine.collapse(transcription.text)
+    rememberTranscript(spoken, session: session)
 
     let filtered = dependencies.filter.evaluate(
-      transcription.text,
+      spoken,
       language: transcription.language)
     guard !filtered.wasDroppedAsHallucination else {
       await conclude(id, session: session, .rejected, reason: RefusalCopy.hallucination)

@@ -194,6 +194,7 @@ private func makeController(
   clipboard: FakeClipboard = FakeClipboard(),
   paste: FakePaste = FakePaste(),
   history: FakeHistory = FakeHistory(),
+  filter: any TextFiltering = PassthroughFilter(),
   timings: Timings = .default,
   abandonGesture: @escaping @Sendable () -> Void = {},
   diagnose: @escaping @Sendable (String, String) -> Void = { _, _ in }
@@ -204,7 +205,7 @@ private func makeController(
       inserter: TextInserter(
         clipboard: clipboard, paste: paste,
         timings: timings, sleep: { _ in }),
-      filter: PassthroughFilter(),
+      filter: filter,
       history: history, timings: timings, languages: { .default },
       abandonGesture: abandonGesture, diagnose: diagnose))
 }
@@ -984,6 +985,57 @@ struct DictationControllerTests {
     #expect(seen.sawListening)
   }
 
+  @Test("a transcript with a line break is pasted as one line")
+  func lineBreakIsPastedAsOneLine() async {
+    let engine = FakeEngine()
+    engine.text = "rm -rf /\n:q!\nsafe"
+    let clipboard = FakeClipboard()
+    let history = FakeHistory()
+    let controller = makeController(engine: engine, clipboard: clipboard, history: history)
+    await controller.handle(.start(session: 1))
+    await controller.handle(.stop(session: 1, reason: .releasedHold))
+    await controller.drain()
+    let id = await history.drafts[1]!
+    #expect(clipboard.writes.first == "rm -rf / :q! safe")
+    #expect(await history.rawTexts[id] == "rm -rf /\n:q!\nsafe")
+    #expect(await history.finalTexts[id] == "rm -rf / :q! safe")
+    #expect(await controller.lastTranscript == "rm -rf / :q! safe")
+  }
+
+  @Test("a dropped hallucination still leaves a single-line last transcript")
+  func droppedHallucinationRemembersOneLine() async {
+    struct DroppingFilter: TextFiltering {
+      func evaluate(_ text: String, language: String?) -> FilterResult {
+        FilterResult(text: "", wasDroppedAsHallucination: true)
+      }
+    }
+    let engine = FakeEngine()
+    engine.text = "Thanks for\nwatching"
+    let clipboard = FakeClipboard()
+    let controller = makeController(
+      engine: engine, clipboard: clipboard, filter: DroppingFilter())
+    await controller.handle(.start(session: 1))
+    await controller.handle(.stop(session: 1, reason: .releasedHold))
+    await controller.drain()
+    #expect(clipboard.writes.isEmpty)
+    #expect(await controller.lastTranscript == "Thanks for watching")
+  }
+
+  @Test("a stop phrase broken across lines is caught after collapsing")
+  func multiLineStopPhraseIsCaught() async {
+    let engine = FakeEngine()
+    engine.text = "thanks for\nwatching"
+    let clipboard = FakeClipboard()
+    let history = FakeHistory()
+    let controller = makeController(
+      engine: engine, clipboard: clipboard, history: history, filter: TextFilter())
+    await controller.handle(.start(session: 1))
+    await controller.handle(.stop(session: 1, reason: .releasedHold))
+    await controller.drain()
+    #expect(clipboard.writes.isEmpty)
+    let rejected = await history.states.filter { $0.1 == .rejected }
+    #expect(rejected.first?.2 == "hallucination")
+  }
 }
 
 private final class EventBox: @unchecked Sendable {
