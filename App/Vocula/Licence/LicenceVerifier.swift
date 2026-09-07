@@ -4,7 +4,8 @@ import VoculaKit
 
 enum LicenceVerifier {
   static let publicKeysBase64URL = [
-    "ZxpFfC5Dbu6mtkc2O-I2TiDekag2oUwpt3TbdUK2Vic"
+    "krZ88BFOJk5Iwot2SNm14yzO_b1HQ1LtL0NoK9X78wg",
+    "ZxpFfC5Dbu6mtkc2O-I2TiDekag2oUwpt3TbdUK2Vic",
   ]
 
   enum Verdict: Equatable {
