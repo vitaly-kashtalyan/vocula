@@ -162,6 +162,8 @@ final class MenuBarController: ObservableObject {
   static let diagnosticLogURL = ApplicationSupport.directory
     .appendingPathComponent("diagnostics.json")
 
+  nonisolated static let supportAddress = "support@vocula.app"
+
   func revealDiagnosticLog() {
     NSWorkspace.shared.activateFileViewerSelecting([Self.diagnosticLogURL])
   }
@@ -187,10 +189,12 @@ final class MenuBarController: ObservableObject {
       revealDiagnosticLog()
       return
     }
-    service.subject = String(
+    let subject = String(
       localized: "report.subject",
       defaultValue: "Vocula problem report",
       comment: "Subject line of a problem-report email.")
+    service.recipients = [Self.supportAddress]
+    service.subject = "\(subject) — \(Bundle.main.shortVersion) (\(Bundle.main.buildNumber))"
     service.perform(withItems: items)
   }
 }
