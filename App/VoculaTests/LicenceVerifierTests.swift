@@ -88,11 +88,13 @@ struct LicenceVerifierTests {
     }
   }
 
-  @Test("the minting key is the one this build was released with")
-  func mintingKeyIsPinned() {
+  @Test("the shop's key mints, and the owner's verifies behind it")
+  func theTwoPairsAreInOrder() {
     #expect(
-      LicenceVerifier.publicKeysBase64URL.first
-        == "ZxpFfC5Dbu6mtkc2O-I2TiDekag2oUwpt3TbdUK2Vic")
+      LicenceVerifier.publicKeysBase64URL == [
+        "krZ88BFOJk5Iwot2SNm14yzO_b1HQ1LtL0NoK9X78wg",
+        "ZxpFfC5Dbu6mtkc2O-I2TiDekag2oUwpt3TbdUK2Vic",
+      ])
   }
 
   @Test("the development key that never minted a sale is gone, and stays gone")
