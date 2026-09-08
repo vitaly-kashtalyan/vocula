@@ -2588,55 +2588,55 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die größere Sprachauswahl, und die richtige Wahl, wenn ein einzelner Satz zwei Sprachen mischt — ein englischer Fachbegriff bleibt auch mitten in russischer Rede erhalten. Größerer Download und langsamere Transkription."
+            "value" : "Die größere Sprachauswahl, und die richtige Wahl, wenn ein einzelner Satz zwei Sprachen mischt — ein englischer Fachbegriff bleibt auch mitten in griechischer Rede erhalten. Größerer Download und langsamere Transkription."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Russian speech. Larger to download and slower to transcribe."
+            "value" : "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Greek speech. Larger to download and slower to transcribe."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La selección de idiomas más amplia, y la opción adecuada cuando una misma frase mezcla dos — mantiene un término inglés dentro del habla rusa. Descarga más grande y transcripción más lenta."
+            "value" : "La selección de idiomas más amplia, y la opción adecuada cuando una misma frase mezcla dos — mantiene un término inglés dentro del habla griega. Descarga más grande y transcripción más lenta."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Le choix de langues le plus large, et celui qu’il faut prendre quand une même phrase en mêle deux — un terme anglais reste intact au milieu d’un propos russe. Téléchargement plus volumineux et transcription plus lente."
+            "value" : "Le choix de langues le plus large, et celui qu’il faut prendre quand une même phrase en mêle deux — un terme anglais reste intact au milieu d’un propos grec. Téléchargement plus volumineux et transcription plus lente."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La scelta di lingue più ampia, e quella giusta quando una stessa frase ne mescola due — un termine inglese resta com’è dentro un discorso russo. Download più grande e trascrizione più lenta."
+            "value" : "La scelta di lingue più ampia, e quella giusta quando una stessa frase ne mescola due — un termine inglese resta com’è dentro un discorso greco. Download più grande e trascrizione più lenta."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Szerszy wybór języków i właściwy wybór, gdy jedno zdanie miesza dwa — angielski termin pozostanie angielskim pośrodku rosyjskiej wypowiedzi. Większe pobieranie i wolniejsza transkrypcja."
+            "value" : "Szerszy wybór języków i właściwy wybór, gdy jedno zdanie miesza dwa — angielski termin pozostanie angielskim pośrodku greckiej wypowiedzi. Większe pobieranie i wolniejsza transkrypcja."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "A escolha mais ampla de idiomas, e a certa quando uma mesma frase mistura dois — um termo em inglês se mantém dentro da fala em russo. Download maior e transcrição mais lenta."
+            "value" : "A escolha mais ampla de idiomas, e a certa quando uma mesma frase mistura dois — um termo em inglês se mantém dentro da fala em grego. Download maior e transcrição mais lenta."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Более широкий выбор языков и тот движок, который стоит взять, когда одна фраза смешивает два, — английский термин посреди русской речи он сохранит. Больше весит и распознаёт медленнее."
+            "value" : "Более широкий выбор языков и тот движок, который стоит взять, когда одна фраза смешивает два, — английский термин посреди греческой речи он сохранит. Больше весит и распознаёт медленнее."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ширший вибір мов і той рушій, який варто взяти, коли одна фраза змішує дві, — англійський термін посеред російського мовлення він збереже. Більше важить і розпізнає повільніше."
+            "value" : "Ширший вибір мов і той рушій, який варто взяти, коли одна фраза змішує дві, — англійський термін посеред грецького мовлення він збереже. Більше важить і розпізнає повільніше."
           }
         }
       }

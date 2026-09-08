@@ -23,7 +23,7 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
       return String(
         localized: "models.summary.whisper",
         defaultValue:
-          "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Russian speech. Larger to download and slower to transcribe.",
+          "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Greek speech. Larger to download and slower to transcribe.",
         bundle: .module,
         comment:
           "Footer under the Whisper group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale."
