@@ -5,6 +5,7 @@ enum ModelDownloadError: LocalizedError {
   case notEnoughSpace(SpaceVerdict)
   case capacityUnavailable
   case checksumMismatch(displayName: String)
+  case unpackFailed(displayName: String)
   case transport(Error)
 
   var errorDescription: String? {
@@ -24,6 +25,12 @@ enum ModelDownloadError: LocalizedError {
         localized: "models.download.checksumMismatch",
         defaultValue:
           "The file for “\(displayName)” did not match its checksum. It has been deleted; try again.",
+        comment: "The argument is a model's display name. Keep the typographic quotes.")
+    case .unpackFailed(let displayName):
+      return String(
+        localized: "models.download.unpackFailed",
+        defaultValue:
+          "The file for “\(displayName)” could not be expanded. It has been deleted; try again.",
         comment: "The argument is a model's display name. Keep the typographic quotes.")
     case .transport(let error):
       return String(
@@ -74,6 +81,35 @@ final class ModelDownloader: NSObject, ObservableObject {
 
   private func discardResumeData(for id: ModelID) {
     try? FileManager.default.removeItem(at: resumeURL(for: id))
+  }
+
+  private func expand(_ archive: URL, into name: String, model: ModelDescriptor) async throws {
+    let directory = store.directory
+    try await Task.detached(priority: .utility) {
+      // Foundation cannot read a zip archive; ditto is the system's own expander.
+      let staging = directory.appendingPathComponent("\(name).unpacking")
+      try? FileManager.default.removeItem(at: staging)
+      defer { try? FileManager.default.removeItem(at: staging) }
+
+      let ditto = Process()
+      ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+      ditto.arguments = ["-x", "-k", archive.path, staging.path]
+      try ditto.run()
+      ditto.waitUntilExit()
+
+      let produced = staging.appendingPathComponent(name)
+      guard ditto.terminationStatus == 0,
+        FileManager.default.fileExists(atPath: produced.path)
+      else {
+        try? FileManager.default.removeItem(at: archive)
+        throw ModelDownloadError.unpackFailed(displayName: model.displayName)
+      }
+
+      let installed = directory.appendingPathComponent(name)
+      try? FileManager.default.removeItem(at: installed)
+      try FileManager.default.moveItem(at: produced, to: installed)
+      try FileManager.default.removeItem(at: archive)
+    }.value
   }
 
   private func spaceRefusal(for ids: [ModelID]) async -> String? {
@@ -153,6 +189,8 @@ final class ModelDownloader: NSObject, ObservableObject {
     switch error as? ModelDownloadError {
     case .checksumMismatch:
       outcome = "checksum"
+    case .unpackFailed:
+      outcome = "unpack"
     case .transport(let underlying):
       let transport = underlying as NSError
       cause = ["domain=\(transport.domain)", "code=\(transport.code)"]
@@ -182,7 +220,7 @@ final class ModelDownloader: NSObject, ObservableObject {
       }
     }
     let model = store.descriptor(for: id)
-    let destination = store.url(for: id)
+    let destination = store.archiveURL(for: id)
     let resumeData = storedResumeData(for: id)
     await Task.detached(priority: .utility) {
       try? FileManager.default.removeItem(at: destination)
@@ -211,11 +249,14 @@ final class ModelDownloader: NSObject, ObservableObject {
       ofItemAtPath: destination.path)
 
     let verified = await Task.detached(priority: .utility) {
-      store.status(of: id) == .ready
+      store.matchesChecksum(id)
     }.value
     guard verified else {
       try? FileManager.default.removeItem(at: destination)
       throw ModelDownloadError.checksumMismatch(displayName: model.displayName)
+    }
+    if let unpacked = model.unpacked {
+      try await expand(destination, into: unpacked, model: model)
     }
     fraction[id] = 1
     current = nil

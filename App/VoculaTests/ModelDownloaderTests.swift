@@ -50,7 +50,7 @@ private func descriptor(sha256: String, byteSize: Int64) -> ModelDescriptor {
     id: .largeV3Turbo, family: .whisper, fileName: "test-model.bin",
     remoteURL: URL(string: "https://test.invalid/model.bin")!,
     sha256: sha256, byteSize: byteSize,
-    version: "test", licence: "test", displayName: "Test model")
+    version: "test", licence: "test", displayName: "Test model", unpacked: nil)
 }
 
 @MainActor
