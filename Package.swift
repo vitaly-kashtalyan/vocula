@@ -8,6 +8,10 @@ let package = Package(
   products: [
     .library(name: "VoculaKit", targets: ["VoculaKit"]),
     .library(name: "VoculaWhisper", targets: ["VoculaWhisper"]),
+    .library(name: "VoculaParakeet", targets: ["VoculaParakeet"]),
+  ],
+  dependencies: [
+    .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.15.6")
   ],
   targets: [
     .target(name: "VoculaKit", resources: [.process("Resources")]),
@@ -17,6 +21,9 @@ let package = Package(
         "https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.2/whisper-v1.9.2-xcframework.zip",
       checksum: "af74fed13ea7f2d5ca2a39d9f58ec177713fafd7cab63aef4e27b79f3ceca80b"),
     .target(name: "VoculaWhisper", dependencies: ["VoculaKit", "whisper"]),
+    .target(
+      name: "VoculaParakeet",
+      dependencies: ["VoculaKit", .product(name: "FluidAudio", package: "FluidAudio")]),
     .testTarget(name: "VoculaKitTests", dependencies: ["VoculaKit"]),
     .testTarget(name: "VoculaWhisperTests", dependencies: ["VoculaWhisper"]),
     .testTarget(name: "VoculaSlowTests", dependencies: ["VoculaWhisper"]),

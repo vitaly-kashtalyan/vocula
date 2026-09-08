@@ -25,8 +25,14 @@ public enum TranscriptionError: Error, Equatable {
 }
 
 public protocol Transcribing: Sendable {
+  func warmUp() async
+
   func transcribe(
     _ samples: [Float], languages: LanguageSelection,
     deadline: Duration
   ) async throws -> Transcription
+}
+
+extension Transcribing {
+  public func warmUp() async {}
 }
