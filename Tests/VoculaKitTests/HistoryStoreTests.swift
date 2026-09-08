@@ -461,3 +461,48 @@ struct WriteFailureRollbackTests {
     #expect(await store.records(on: day).count == 2)
   }
 }
+
+extension DateFormatter {
+  static let dayForTesting: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.calendar = Calendar(identifier: .gregorian)
+    formatter.dateFormat = "yyyy-MM-dd"
+    return formatter
+  }()
+}
+
+final class RecordingSwitch: @unchecked Sendable {
+  private let lock = NSLock()
+  private var value: Bool
+  init(_ value: Bool) { self.value = value }
+  var isOn: Bool {
+    get { lock.withLock { value } }
+    set { lock.withLock { value = newValue } }
+  }
+}
+
+struct RefusingCipher: HistoryCipher {
+  let status: Int32
+  init(status: Int32 = -25293) { self.status = status }
+  func seal(_ plaintext: Data) throws -> Data {
+    throw HistoryCipherError.keyUnavailable(status: status)
+  }
+  func open(_ ciphertext: Data) throws -> Data {
+    throw HistoryCipherError.keyUnavailable(status: status)
+  }
+}
+
+@Suite("HistoryFailureSignal")
+struct HistoryFailureSignalTests {
+  @Test("a refused key is one error case carrying the OSStatus")
+  func refusedKeyCarriesItsStatus() {
+    let error = HistoryCipherError.keyUnavailable(status: -25293)
+    #expect(error == HistoryCipherError.keyUnavailable(status: -25293))
+    guard case .keyUnavailable(let status) = error else {
+      Issue.record("the case did not match itself")
+      return
+    }
+    #expect(status == -25293)
+  }
+}
