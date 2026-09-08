@@ -25,12 +25,11 @@ public actor ParakeetEngine: Transcribing {
     guard !samples.isEmpty else {
       return Transcription(text: "", language: languages.autoDetect ? nil : languages.pinned)
     }
-    let manager = try await load()
-    let layers = decoderLayers
     let hint = languages.autoDetect ? nil : Language(rawValue: languages.pinned)
 
     let result = try await withThrowingTaskGroup(of: ASRResult?.self) { group in
-      group.addTask {
+      group.addTask { [self] in
+        let (manager, layers) = try await load()
         var state = try TdtDecoderState(decoderLayers: layers)
         return try await manager.transcribe(samples, decoderState: &state, language: hint)
       }
@@ -49,8 +48,8 @@ public actor ParakeetEngine: Transcribing {
       language: languages.autoDetect ? nil : languages.pinned)
   }
 
-  private func load() async throws -> AsrManager {
-    if let manager { return manager }
+  private func load() async throws -> (AsrManager, Int) {
+    if let manager { return (manager, decoderLayers) }
     let task = loading ?? beginLoading()
     loading = task
     do {
@@ -58,7 +57,7 @@ public actor ParakeetEngine: Transcribing {
       manager = created
       decoderLayers = layers
       loading = nil
-      return created
+      return (created, layers)
     } catch {
       loading = nil
       throw error

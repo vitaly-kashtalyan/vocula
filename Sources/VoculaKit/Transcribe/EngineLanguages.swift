@@ -1,7 +1,7 @@
 import Foundation
 
 public enum EngineLanguages {
-  static let parakeetCodes: Set<String> = [
+  public static let parakeetCodes: Set<String> = [
     "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr",
     "hr", "hu", "it", "lt", "lv", "mt", "nl", "pl", "pt", "ro",
     "ru", "sk", "sl", "sv", "uk",

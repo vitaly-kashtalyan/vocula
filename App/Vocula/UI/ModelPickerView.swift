@@ -73,13 +73,9 @@ struct ModelPickerView: View {
   }
 
   private func select(_ id: ModelID) {
-    let outgoing = ModelManifest.descriptor(for: transcriptionModel).family
-    let incoming = ModelManifest.descriptor(for: id).family
-    if outgoing != incoming {
-      let settings = AppSettings()
-      settings.rememberLanguages(for: outgoing)
-      settings.restoreLanguages(for: incoming)
-    }
+    AppSettings().switchEngine(
+      from: ModelManifest.descriptor(for: transcriptionModel).family,
+      to: ModelManifest.descriptor(for: id).family)
     transcriptionModel = id
     Task { await activateIfReady() }
   }

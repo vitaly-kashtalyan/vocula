@@ -60,6 +60,7 @@ final class AppCoordinator: ObservableObject {
   private var refusalDismissTask: Task<Void, Never>?
   private var refusalDedup = RefusalDedup()
   private var diagnosticLog: DiagnosticLog?
+  private var runningModel: ModelID?
 
   private static var launchDetail: String {
     let version = Bundle.main.shortVersion
@@ -135,6 +136,7 @@ final class AppCoordinator: ObservableObject {
     }
     menu.showsDownloadAction = false
     menu.iconState = .idle
+    runningModel = transcriptionModel
     let engine: any Transcribing =
       ModelManifest.descriptor(for: transcriptionModel).family == .parakeet
       ? ParakeetEngine(modelDirectory: store.url(for: transcriptionModel))
@@ -606,9 +608,10 @@ final class AppCoordinator: ObservableObject {
       indicator.note(notice, for: Self.refusalDismissDelay, alert: true)
     }
     if let raw = reason, let failure = SessionFailure(rawValue: raw),
-      modelStore.needsReinstall(after: failure, model: settings.transcriptionModel)
+      let running = runningModel,
+      modelStore.needsReinstall(after: failure, model: running)
     {
-      await discardInstalledModel(settings.transcriptionModel)
+      await discardInstalledModel(running)
     }
   }
 

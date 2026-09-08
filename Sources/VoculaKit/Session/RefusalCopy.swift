@@ -64,10 +64,10 @@ public enum RefusalCopy {
     case "refusal.modelUnreadable":
       return String(
         localized: "refusal.modelUnreadable",
-        defaultValue: "The recognition model could not be opened. It is being downloaded again.",
+        defaultValue: "The recognition model could not be opened. See Models in Settings.",
         bundle: .module,
         comment:
-          "Shown when the installed model will not load, which the app answers by discarding it and fetching it again. Drawn on the indicator strip, which clamps at three lines."
+          "Shown when the installed model will not load. It promises no repair, because only a model delivered as an archive is discarded and fetched again. Drawn on the indicator strip, which clamps at three lines."
       )
     case "refusal.engineFailed":
       return String(

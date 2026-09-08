@@ -104,7 +104,8 @@ public struct ModelStore: Sendable {
     let needed = Self.missingBytes(over: statuses)
     guard let available = fileSystem.availableCapacity(at: directory) else { return .unknown }
     let reclaimable = statuses.reduce(Int64(0)) { total, entry in
-      guard entry.status == .corrupted else { return total }
+      let leftBehind = entry.model.unpacked != nil && entry.status == .missing
+      guard entry.status == .corrupted || leftBehind else { return total }
       return total + max(fileSystem.size(of: archiveURL(for: entry.model.id)) ?? 0, 0)
     }
     let effectiveAvailable = max(available, 0).addingReportingOverflow(reclaimable)

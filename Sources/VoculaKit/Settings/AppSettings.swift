@@ -62,32 +62,31 @@ public struct AppSettings: @unchecked Sendable {
     }
   }
 
-  public static func languageCodesKey(_ family: ModelFamily) -> String {
+  private static func codesKey(_ family: ModelFamily) -> String {
     "\(languageCodesKey).\(family.rawValue)"
   }
 
-  public static func autoDetectLanguageKey(_ family: ModelFamily) -> String {
+  private static func autoDetectKey(_ family: ModelFamily) -> String {
     "\(autoDetectLanguageKey).\(family.rawValue)"
   }
 
-  public static func pinnedLanguageKey(_ family: ModelFamily) -> String {
+  private static func pinnedKey(_ family: ModelFamily) -> String {
     "\(pinnedLanguageKey).\(family.rawValue)"
   }
 
   public func storedLanguages(for family: ModelFamily) -> LanguageSelection? {
-    guard let stored = defaults.string(forKey: Self.languageCodesKey(family)) else { return nil }
+    guard let stored = defaults.string(forKey: Self.codesKey(family)) else { return nil }
     return LanguageSelection(
       stored: stored,
-      autoDetect: defaults.object(forKey: Self.autoDetectLanguageKey(family)) as? Bool
+      autoDetect: defaults.object(forKey: Self.autoDetectKey(family)) as? Bool
         ?? Self.autoDetectLanguageDefault,
-      pinned: defaults.string(forKey: Self.pinnedLanguageKey(family))
-        ?? Self.pinnedLanguageDefault)
+      pinned: defaults.string(forKey: Self.pinnedKey(family)) ?? Self.pinnedLanguageDefault)
   }
 
   public func setLanguages(_ selection: LanguageSelection, for family: ModelFamily) {
-    defaults.set(selection.stored, forKey: Self.languageCodesKey(family))
-    defaults.set(selection.autoDetect, forKey: Self.autoDetectLanguageKey(family))
-    defaults.set(selection.pinned, forKey: Self.pinnedLanguageKey(family))
+    defaults.set(selection.stored, forKey: Self.codesKey(family))
+    defaults.set(selection.autoDetect, forKey: Self.autoDetectKey(family))
+    defaults.set(selection.pinned, forKey: Self.pinnedKey(family))
   }
 
   public func rememberLanguages(for family: ModelFamily) {
@@ -96,6 +95,12 @@ public struct AppSettings: @unchecked Sendable {
 
   public func restoreLanguages(for family: ModelFamily) {
     languages = storedLanguages(for: family) ?? EngineLanguages.narrow(languages, to: family)
+  }
+
+  public func switchEngine(from outgoing: ModelFamily, to incoming: ModelFamily) {
+    guard outgoing != incoming else { return }
+    rememberLanguages(for: outgoing)
+    restoreLanguages(for: incoming)
   }
 
   public var licenceKey: String {
