@@ -113,8 +113,6 @@ final class ModelDownloader: NSObject, ObservableObject {
       let installed = directory.appendingPathComponent(name)
       try? FileManager.default.removeItem(at: installed)
       try FileManager.default.moveItem(at: produced, to: installed)
-      // The model is installed by the line above; deleting the archive is
-      // housekeeping, and failing it must not report the install as failed.
       try? FileManager.default.removeItem(at: archive)
     }.value
   }

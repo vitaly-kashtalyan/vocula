@@ -63,10 +63,6 @@ public struct ModelStore: Sendable {
     directory.appendingPathComponent(descriptor(for: id).fileName)
   }
 
-  // A file model is rehashed on every `status` read, so silent corruption already
-  // turns it `.corrupted` and the ordinary download path recovers. An expanded
-  // model is only checked for presence, so nothing else can notice that its
-  // bundles no longer load — discarding it is what puts it back on that path.
   public func needsReinstall(after failure: SessionFailure, model id: ModelID) -> Bool {
     failure == .modelUnreadable && descriptor(for: id).unpacked != nil
   }
@@ -82,9 +78,6 @@ public struct ModelStore: Sendable {
   public func status(of id: ModelID) -> ModelStatus {
     let model = descriptor(for: id)
     if model.unpacked != nil {
-      // Presence of every entry, never their digest: the archive's checksum is
-      // what established integrity, and rehashing 468 MB of Core ML bundles on
-      // every status read is exactly the file-sized work the tap cannot afford.
       let installed = url(for: id)
       let complete = model.contents.allSatisfy {
         fileSystem.fileExists(at: installed.appendingPathComponent($0))

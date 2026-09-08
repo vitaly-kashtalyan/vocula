@@ -188,8 +188,6 @@ struct ModelStoreTests {
   func onlyAnExpandedModelIsReinstalled() {
     let subject = store(FakeFS())
     #expect(subject.needsReinstall(after: .modelUnreadable, model: .parakeetV3))
-    // A single-file model is rehashed on every status read, so it already
-    // recovers through `.corrupted` and must not be thrown away here.
     #expect(!subject.needsReinstall(after: .modelUnreadable, model: transcription))
     for failure in SessionFailure.allCases where failure != .modelUnreadable {
       #expect(!subject.needsReinstall(after: failure, model: .parakeetV3))
