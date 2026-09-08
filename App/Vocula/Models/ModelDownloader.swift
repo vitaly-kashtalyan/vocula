@@ -120,7 +120,15 @@ final class ModelDownloader: NSObject, ObservableObject {
   private func spaceRefusal(for ids: [ModelID]) async -> String? {
     let store = self.store
     let verdict = await Task.detached(priority: .utility) {
-      store.spaceVerdict(for: ids)
+      // Before the verdict, not after: a quit during ditto leaves a staging
+      // directory larger than the archive, and refusing for want of room while
+      // holding it is a refusal nothing inside the app can lift.
+      for id in ids {
+        guard let unpacked = store.descriptor(for: id).unpacked else { continue }
+        try? FileManager.default.removeItem(
+          at: store.directory.appendingPathComponent("\(unpacked).unpacking"))
+      }
+      return store.spaceVerdict(for: ids)
     }.value
     switch verdict {
     case .enough:
@@ -226,12 +234,6 @@ final class ModelDownloader: NSObject, ObservableObject {
     }
     let model = store.descriptor(for: id)
     let destination = store.archiveURL(for: id)
-    if let unpacked = model.unpacked {
-      let staging = store.directory.appendingPathComponent("\(unpacked).unpacking")
-      await Task.detached(priority: .utility) {
-        try? FileManager.default.removeItem(at: staging)
-      }.value
-    }
     let resumeData = storedResumeData(for: id)
     await Task.detached(priority: .utility) {
       try? FileManager.default.removeItem(at: destination)
