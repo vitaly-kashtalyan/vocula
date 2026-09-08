@@ -55,12 +55,36 @@ public struct ModelStore: Sendable {
   }
 
   public func url(for id: ModelID) -> URL {
+    let model = descriptor(for: id)
+    return directory.appendingPathComponent(model.unpacked ?? model.fileName)
+  }
+
+  public func archiveURL(for id: ModelID) -> URL {
     directory.appendingPathComponent(descriptor(for: id).fileName)
+  }
+
+  public func needsReinstall(after failure: SessionFailure, model id: ModelID) -> Bool {
+    failure == .modelUnreadable && descriptor(for: id).unpacked != nil
+  }
+
+  public func matchesChecksum(_ id: ModelID) -> Bool {
+    let location = archiveURL(for: id)
+    guard fileSystem.fileExists(at: location),
+      let digest = try? fileSystem.sha256(of: location)
+    else { return false }
+    return digest == descriptor(for: id).sha256
   }
 
   public func status(of id: ModelID) -> ModelStatus {
     let model = descriptor(for: id)
-    let location = url(for: id)
+    if model.unpacked != nil {
+      let installed = url(for: id)
+      let complete = model.contents.allSatisfy {
+        fileSystem.fileExists(at: installed.appendingPathComponent($0))
+      }
+      return complete ? .ready : .missing
+    }
+    let location = archiveURL(for: id)
     guard fileSystem.fileExists(at: location), let size = fileSystem.size(of: location) else {
       return .missing
     }
@@ -80,8 +104,9 @@ public struct ModelStore: Sendable {
     let needed = Self.missingBytes(over: statuses)
     guard let available = fileSystem.availableCapacity(at: directory) else { return .unknown }
     let reclaimable = statuses.reduce(Int64(0)) { total, entry in
-      guard entry.status == .corrupted else { return total }
-      return total + max(fileSystem.size(of: url(for: entry.model.id)) ?? 0, 0)
+      let leftBehind = entry.model.unpacked != nil && entry.status == .missing
+      guard entry.status == .corrupted || leftBehind else { return total }
+      return total + max(fileSystem.size(of: archiveURL(for: entry.model.id)) ?? 0, 0)
     }
     let effectiveAvailable = max(available, 0).addingReportingOverflow(reclaimable)
     let capacity = effectiveAvailable.overflow ? Int64.max : effectiveAvailable.partialValue
@@ -99,7 +124,8 @@ public struct ModelStore: Sendable {
       switch entry.status {
       case .ready: return total
       case .incomplete(let bytes): return total + (entry.model.byteSize - bytes)
-      case .missing, .corrupted: return total + entry.model.byteSize
+      case .missing, .corrupted:
+        return total + entry.model.byteSize * (entry.model.unpacked == nil ? 1 : 2)
       }
     }
   }

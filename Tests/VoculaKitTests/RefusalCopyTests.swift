@@ -14,12 +14,12 @@ struct RefusalCopyTests {
     #expect(RefusalCopy.text(for: reason, historyIsRecording: recording).count > 10)
   }
 
-  @Test("seven failures produce eight distinct sentences")
+  @Test("eight failures produce nine distinct sentences")
   func failureKeysAreDistinct() {
     let keys = SessionFailure.allCases.flatMap {
       RefusalCopy.keys(for: $0, historyIsRecording: true)
     }
-    #expect(Set(keys).count == 8)
+    #expect(Set(keys).count == 9)
   }
 
   @Test("a silenced input and a dead device are not the same sentence")

@@ -23,6 +23,7 @@ settings:
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     SWIFT_STRICT_CONCURRENCY: complete
     SWIFT_EMIT_LOC_STRINGS: YES
+    ARCHS: arm64
 targets:
   Vocula:
     type: application
@@ -36,6 +37,8 @@ targets:
         product: VoculaKit
       - package: Vocula
         product: VoculaWhisper
+      - package: Vocula
+        product: VoculaParakeet
       - package: Sparkle
         product: Sparkle
     info:

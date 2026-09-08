@@ -2,12 +2,12 @@ import Foundation
 
 public struct Transcription: Equatable, Sendable {
   public let text: String
-  public let language: String
+  public let language: String?
   public let firstTokenProbability: Float?
   public let languageScores: [String: Float]
 
   public init(
-    text: String, language: String,
+    text: String, language: String?,
     firstTokenProbability: Float? = nil,
     languageScores: [String: Float] = [:]
   ) {
@@ -25,8 +25,14 @@ public enum TranscriptionError: Error, Equatable {
 }
 
 public protocol Transcribing: Sendable {
+  func warmUp() async
+
   func transcribe(
     _ samples: [Float], languages: LanguageSelection,
     deadline: Duration
   ) async throws -> Transcription
+}
+
+extension Transcribing {
+  public func warmUp() async {}
 }

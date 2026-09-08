@@ -5785,66 +5785,6 @@
         }
       }
     },
-    "keyboard.state.nothingArrived" : {
-      "comment" : "Row state: nothing reached the tap at all.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kommt nie an"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Never arrives"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nunca llega"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "N’arrive jamais"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non arriva mai"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nigdy nie dochodzi"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nunca chega"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не доходит"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не доходить"
-          }
-        }
-      }
-    },
     "keyboard.state.notTested" : {
       "comment" : "Row state before the live check has been run.",
       "extractionState" : "extracted_with_value",
@@ -5901,6 +5841,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не перевірено"
+          }
+        }
+      }
+    },
+    "keyboard.state.nothingArrived" : {
+      "comment" : "Row state: nothing reached the tap at all.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kommt nie an"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Never arrives"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nunca llega"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "N’arrive jamais"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non arriva mai"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nigdy nie dochodzi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nunca chega"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не доходит"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не доходить"
           }
         }
       }
@@ -7065,6 +7065,126 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Жодна мова не відповідає «%@»."
+          }
+        }
+      }
+    },
+    "languages.parakeetDetection" : {
+      "comment" : "How detection works when it is on and the Parakeet engine is selected. Parakeet is a product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet erkennt die Sprache im selben Erkennungsdurchlauf, in dem es die Aufnahme umsetzt, und zwar über alle Sprachen, die es kennt. Die Liste unten wird dabei nicht herangezogen; auch eine nicht angehakte Sprache wird erkannt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Parakeet identifies the language inside the same pass that transcribes it, over every language it knows. The list below is not consulted, and a language you have not ticked is still recognised."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifica el idioma en la misma pasada con la que transcribe, entre todos los idiomas que conoce. La lista de abajo no se consulta, y un idioma que no hayas marcado también se reconoce."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifie la langue au cours de la même passe que la transcription, parmi toutes les langues qu’il connaît. La liste ci-dessous n’est pas consultée, et une langue que vous n’avez pas cochée est reconnue quand même."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifica la lingua nello stesso passaggio con cui trascrive, fra tutte le lingue che conosce. L’elenco qui sotto non viene consultato, e una lingua che non hai spuntato viene comunque riconosciuta."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet wykrywa język w tym samym przebiegu, w którym rozpoznaje mowę, spośród wszystkich znanych mu języków. Lista poniżej nie jest brana pod uwagę, a język, którego nie zaznaczysz, i tak zostanie wykryty."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Parakeet identifica o idioma na mesma passagem em que transcreve, entre todos os idiomas que conhece. A lista abaixo não é consultada, e um idioma que você não marcou também é reconhecido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet определяет язык в том же проходе, которым распознаёт речь, среди всех известных ему языков. Список ниже при этом не учитывается: язык, который вы не отметили, всё равно будет распознан."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet визначає мову в тому самому проході, яким розпізнає мовлення, серед усіх відомих йому мов. Список нижче при цьому не враховується: мову, яку ви не позначили, усе одно буде розпізнано."
+          }
+        }
+      }
+    },
+    "languages.parakeetListNote" : {
+      "comment" : "Footer under the language list, shown only for the Parakeet engine. Parakeet is a product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bei eingeschalteter automatischer Erkennung ändert diese Liste bei Parakeet nichts. Schalten Sie die Erkennung aus, um eine Sprache festzuhalten; das hindert die Erkennung zugleich daran, ein anderes Alphabet in den Text zu mischen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "With automatic detection on, this list changes nothing on Parakeet. Turn detection off to hold one language, which also stops the engine mixing another alphabet into the text."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Con la detección automática activada, esta lista no cambia nada en Parakeet. Desactiva la detección para fijar un idioma; eso también impide que el motor mezcle otro alfabeto en el texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lorsque la détection automatique est activée, cette liste ne change rien pour Parakeet. Désactivez la détection pour fixer une langue ; cela empêche aussi le moteur de mêler un autre alphabet au texte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Con il rilevamento automatico attivo, questo elenco non cambia nulla su Parakeet. Disattiva il rilevamento per fissare una lingua; questo impedisce anche al motore di mescolare un altro alfabeto nel testo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przy włączonym automatycznym wykrywaniu ta lista nic nie zmienia w Parakeet. Wyłącz wykrywanie, aby ustalić jeden język; to jednocześnie powstrzyma silnik przed mieszaniem innego alfabetu w tekst."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Com a detecção automática ligada, esta lista não muda nada no Parakeet. Desligue a detecção para fixar um idioma; isso também impede o motor de misturar outro alfabeto no texto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "При включённом автоопределении этот список на Parakeet ничего не меняет. Выключите автоопределение, чтобы закрепить один язык, — это заодно не даст движку подмешивать в текст чужой алфавит."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "За увімкненого автовизначення цей список у Parakeet нічого не змінює. Вимкніть автовизначення, щоб закріпити одну мову, — це водночас не дасть рушієві підмішувати в текст чужу абетку."
           }
         }
       }
@@ -8437,66 +8557,6 @@
         }
       }
     },
-    "licence.notActivated" : {
-      "comment" : "Status shown when no licence key is present.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nicht aktiviert"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Not activated"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sin activar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non activée"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Non attivata"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Nieaktywowana"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Não ativada"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не активирована"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Не активована"
-          }
-        }
-      }
-    },
     "licence.notAKey" : {
       "comment" : "Shown when the pasted text does not verify. 120 is the key's own length.",
       "extractionState" : "extracted_with_value",
@@ -8553,6 +8613,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Це не ліцензійний ключ Vocula. Вставлене показано вище — перевірте, чи скопійовано ключ повністю; у ньому близько 120 символів, і поштова програма могла перенести його на кілька рядків, це нормально."
+          }
+        }
+      }
+    },
+    "licence.notActivated" : {
+      "comment" : "Status shown when no licence key is present.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht aktiviert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not activated"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sin activar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non activée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non attivata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieaktywowana"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não ativada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не активирована"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не активована"
           }
         }
       }
@@ -11401,66 +11521,6 @@
         }
       }
     },
-    "microphone.inputVolume" : {
-      "comment" : "Row label for the system input level slider.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Eingabelautstärke"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Input volume"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volumen de entrada"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume d’entrée"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume di ingresso"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Głośność wejścia"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Volume de entrada"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Громкость входа"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Гучність входу"
-          }
-        }
-      }
-    },
     "microphone.inUse" : {
       "comment" : "Badge on the device currently being recorded from. Shown upper-cased by the style;",
       "extractionState" : "extracted_with_value",
@@ -11517,6 +11577,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "АКТИВНИЙ"
+          }
+        }
+      }
+    },
+    "microphone.inputVolume" : {
+      "comment" : "Row label for the system input level slider.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eingabelautstärke"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Input volume"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volumen de entrada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume d’entrée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume di ingresso"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Głośność wejścia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Volume de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Громкость входа"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Гучність входу"
           }
         }
       }
@@ -11701,6 +11821,66 @@
         }
       }
     },
+    "microphone.noVolumeControl" : {
+      "comment" : "Shown where the slider would be for a device that offers none.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This device has no volume control of its own."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo no tiene control de volumen propio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cet appareil n’a pas de réglage de volume propre."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questo dispositivo non ha un controllo del volume proprio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie ma własnej regulacji głośności."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este dispositivo não tem controle de volume próprio."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У этого устройства нет собственной регулировки громкости."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У цього пристрою немає власного регулювання гучності."
+          }
+        }
+      }
+    },
     "microphone.notConnected" : {
       "comment" : "Marks a ranked device that is absent right now. Lower case: it follows the device's name on the same line.",
       "extractionState" : "extracted_with_value",
@@ -11817,66 +11997,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не слухає. Відкриття цього пристрою вивело б гарнітуру зі стерео, тож натисніть «Перевірити», щоб побачити рівень."
-          }
-        }
-      }
-    },
-    "microphone.noVolumeControl" : {
-      "comment" : "Shown where the slider would be for a device that offers none.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dieses Gerät hat keine eigene Lautstärkeregelung."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "This device has no volume control of its own."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo no tiene control de volumen propio."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Cet appareil n’a pas de réglage de volume propre."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Questo dispositivo non ha un controllo del volume proprio."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "To urządzenie nie ma własnej regulacji głośności."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Este dispositivo não tem controle de volume próprio."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У этого устройства нет собственной регулировки громкости."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "У цього пристрою немає власного регулювання гучності."
           }
         }
       }
@@ -12357,6 +12477,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Завантаження не почалося: %@."
+          }
+        }
+      }
+    },
+    "models.download.unpackFailed" : {
+      "comment" : "The argument is a model's display name. Keep the typographic quotes.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Datei für „%@“ konnte nicht entpackt werden. Sie wurde gelöscht; versuchen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The file for “%@” could not be expanded. It has been deleted; try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El archivo de «%@» no se pudo descomprimir. Se ha eliminado; inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le fichier de « %@ » n’a pas pu être décompressé. Il a été supprimé ; réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile decomprimere il file di “%@”. È stato eliminato; riprova."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się rozpakować pliku „%@”. Został usunięty; spróbuj ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível descompactar o arquivo de “%@”. Ele foi excluído; tente de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Файл «%@» не удалось распаковать. Он удалён; попробуйте снова."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Файл «%@» не вдалося розпакувати. Його вилучено; спробуйте ще раз."
           }
         }
       }
@@ -13201,66 +13381,6 @@
         }
       }
     },
-    "onboarding.checkedToday" : {
-      "comment" : "Value beside 'Last checked' when the last successful check was today.",
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Heute"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Today"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hoy"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aujourd’hui"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Oggi"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dzisiaj"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Hoje"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Сегодня"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Сьогодні"
-          }
-        }
-      }
-    },
     "onboarding.checkForUpdates" : {
       "comment" : "Button that asks for an update check immediately.",
       "extractionState" : "extracted_with_value",
@@ -13317,6 +13437,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Перевірити зараз"
+          }
+        }
+      }
+    },
+    "onboarding.checkedToday" : {
+      "comment" : "Value beside 'Last checked' when the last successful check was today.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Heute"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Today"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aujourd’hui"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oggi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dzisiaj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hoje"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сегодня"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сьогодні"
           }
         }
       }

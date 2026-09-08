@@ -65,8 +65,13 @@ VERSION_OVERRIDE=()
 # lets any process attach a debugger to the hardened binary and read its memory.
 # Apple names this setting as the fix for a workflow that does not export from
 # an archive.
+# ARCHS=arm64 on the COMMAND LINE, not in project.yml: a SwiftPM dependency is
+# built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
+# ours, so FluidAudio compiles for x86_64 and fails on Float16, which Swift does
+# not have there. Only the command line reaches every project in the build.
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
   -derivedDataPath "$BUILD_DIR/dd" \
+  ARCHS=arm64 \
   ${VERSION_OVERRIDE[@]+"${VERSION_OVERRIDE[@]}"} \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_STYLE=Manual \
@@ -77,6 +82,12 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
 
 APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
+
+# Measured, not assumed: nothing else in the repository ever builds Release, so
+# a lost ARCHS=arm64 would first be noticed here — or, if x86_64 ever compiles
+# again, would silently double the download.
+archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
+[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
 
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)

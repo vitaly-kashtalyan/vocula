@@ -22,14 +22,13 @@ struct ModelPickerView: View {
             status: downloader.statuses[id] ?? .missing,
             fraction: downloader.fraction[id] ?? 0,
             isDownloading: downloader.isDownloading,
-            select: {
-              transcriptionModel = id
-              Task { await activateIfReady() }
-            },
+            select: { select(id) },
             load: { Task { await load(id) } })
         }
       } header: {
         Text(verbatim: group.family.title)
+      } footer: {
+        Text(verbatim: group.family.summary)
       }
     }
     Section {
@@ -71,6 +70,14 @@ struct ModelPickerView: View {
   private func load(_ id: ModelID) async {
     await downloader.downloadOne(id)
     await activateIfReady()
+  }
+
+  private func select(_ id: ModelID) {
+    AppSettings().switchEngine(
+      from: ModelManifest.descriptor(for: transcriptionModel).family,
+      to: ModelManifest.descriptor(for: id).family)
+    transcriptionModel = id
+    Task { await activateIfReady() }
   }
 
   private func activateIfReady() async {

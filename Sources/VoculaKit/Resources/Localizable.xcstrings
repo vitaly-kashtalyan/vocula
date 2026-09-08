@@ -2521,6 +2521,126 @@
         }
       }
     },
+    "models.summary.parakeet" : {
+      "comment" : "Footer under the Parakeet group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Schneller und deutlich kleiner, und es ermittelt die Sprache selbst. Pro Äußerung bleibt es bei einem Alphabet, sodass ein fremdsprachiger Begriff mitten im Satz umgeschrieben werden oder verloren gehen kann."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Faster and much smaller, and it works out the language by itself. It holds to one alphabet per phrase, so a foreign term inside a sentence may come out transliterated or lost."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Más rápido y mucho más pequeño, y deduce el idioma por sí mismo. Se ciñe a un solo alfabeto por frase, así que un término extranjero dentro de una oración puede salir transliterado o perderse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus rapide et bien plus léger, et il détermine la langue tout seul. Il s’en tient à un seul alphabet par énoncé : un terme étranger au milieu d’une phrase peut en ressortir translittéré ou perdu."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Più veloce e molto più leggero, e ricava la lingua da sé. Si attiene a un solo alfabeto per frase, quindi un termine straniero dentro una frase può uscire traslitterato o perdersi."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szybszy i znacznie mniejszy, a język ustala sam. Trzyma się jednego alfabetu na wypowiedź, więc obcy termin w środku zdania może wyjść w transliteracji albo zniknąć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mais rápido e bem menor, e descobre o idioma sozinho. Mantém um único alfabeto por frase, então um termo estrangeiro dentro de uma oração pode sair transliterado ou se perder."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Быстрее и заметно легче, язык определяет сам. В пределах одной фразы держится одного алфавита, поэтому иностранный термин посреди предложения может выйти в транслитерации или потеряться."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Швидший і помітно легший, мову визначає сам. У межах однієї фрази тримається одного алфавіту, тому іншомовний термін посеред речення може вийти в транслітерації або загубитися."
+          }
+        }
+      }
+    },
+    "models.summary.whisper" : {
+      "comment" : "Footer under the Whisper group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die größere Sprachauswahl, und die richtige Entscheidung, wenn ein einzelner Satz zwei Sprachen mischt — ein englischer Fachbegriff bleibt auch mitten in griechischer Rede erhalten. Größerer Download und langsamere Transkription."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Greek speech. Larger to download and slower to transcribe."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La selección de idiomas más amplia, y la opción adecuada cuando una misma frase mezcla dos — mantiene un término inglés dentro del habla griega. Descarga más grande y transcripción más lenta."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le choix de langues le plus large, et celui qu’il faut prendre quand une même phrase en mêle deux — un terme anglais reste intact au milieu d’un propos grec. Téléchargement plus volumineux et transcription plus lente."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La scelta di lingue più ampia, e quella giusta quando una stessa frase ne mescola due — un termine inglese resta com’è dentro un discorso greco. Download più grande e trascrizione più lenta."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szerszy wybór języków i właściwa opcja, gdy jedno zdanie miesza dwa — angielski termin pozostanie angielskim pośrodku greckiej wypowiedzi. Większe pobieranie i wolniejsza transkrypcja."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A escolha mais ampla de idiomas, e a certa quando uma mesma frase mistura dois — um termo em inglês se mantém dentro da fala em grego. Download maior e transcrição mais lenta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Более широкий выбор языков и тот движок, который стоит взять, когда одна фраза смешивает два, — английский термин посреди греческой речи он сохранит. Больше весит и распознаёт медленнее."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ширший вибір мов і той рушій, який варто взяти, коли одна фраза змішує дві, — англійський термін посеред грецького мовлення він збереже. Більше важить і розпізнає повільніше."
+          }
+        }
+      }
+    },
     "onboarding.accessibility.explanation" : {
       "comment" : "Why Accessibility is needed. ⌘V is a key chord and is never translated.",
       "extractionState" : "extracted_with_value",
@@ -4197,6 +4317,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не вдалося підготувати буфер обміну або подію вставлення, тому нічого не надіслано."
+          }
+        }
+      }
+    },
+    "refusal.modelUnreadable" : {
+      "comment" : "Shown when the installed model will not load. It promises no repair, because only a model delivered as an archive is discarded and fetched again. Drawn on the indicator strip, which clamps at three lines.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Erkennungsmodell ließ sich nicht öffnen. Siehe Modelle in den Einstellungen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The recognition model could not be opened. See Models in Settings."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo abrir el modelo de reconocimiento. Consulta Modelos en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle de reconnaissance n’a pas pu être ouvert. Voir Modèles dans les Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile aprire il modello di riconoscimento. Vedi Modelli nelle Impostazioni."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się otworzyć modelu rozpoznawania. Zobacz Modele w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível abrir o modelo de reconhecimento. Veja Modelos nos Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Модель распознавания не удалось открыть. См. раздел «Модели» в настройках."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Модель розпізнавання не вдалося відкрити. Див. розділ «Моделі» в налаштуваннях."
           }
         }
       }

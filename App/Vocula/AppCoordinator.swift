@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import VoculaKit
+import VoculaParakeet
 import VoculaWhisper
 
 @MainActor
@@ -59,6 +60,7 @@ final class AppCoordinator: ObservableObject {
   private var refusalDismissTask: Task<Void, Never>?
   private var refusalDedup = RefusalDedup()
   private var diagnosticLog: DiagnosticLog?
+  private var runningModel: ModelID?
 
   private static var launchDetail: String {
     let version = Bundle.main.shortVersion
@@ -134,7 +136,11 @@ final class AppCoordinator: ObservableObject {
     }
     menu.showsDownloadAction = false
     menu.iconState = .idle
-    let engine = WhisperEngine(modelPath: store.url(for: transcriptionModel))
+    runningModel = transcriptionModel
+    let engine: any Transcribing =
+      ModelManifest.descriptor(for: transcriptionModel).family == .parakeet
+      ? ParakeetEngine(modelDirectory: store.url(for: transcriptionModel))
+      : WhisperEngine(modelPath: store.url(for: transcriptionModel))
     let detector = WhisperVADDetector(modelPath: store.url(for: .speechDetector))
 
     let monitor = HotkeyMonitor(
@@ -601,6 +607,30 @@ final class AppCoordinator: ObservableObject {
     if let notice = plan.notice {
       indicator.note(notice, for: Self.refusalDismissDelay, alert: true)
     }
+    if let raw = reason, let failure = SessionFailure(rawValue: raw),
+      let running = runningModel,
+      modelStore.needsReinstall(after: failure, model: running)
+    {
+      await discardInstalledModel(running)
+    }
+  }
+
+  private var modelStore: ModelStore {
+    ModelStore(
+      directory: ApplicationSupport.modelsDirectory,
+      fileSystem: SystemModelFileSystem())
+  }
+
+  private func discardInstalledModel(_ id: ModelID) async {
+    let store = modelStore
+    await Task.detached(priority: .utility) {
+      try? FileManager.default.removeItem(at: store.url(for: id))
+    }.value
+    log("model.discarded", "model=\(id.rawValue)")
+    tearDownPipeline()
+    menu.iconState = .error(MenuBarController.modelsNotDownloaded)
+    menu.showsDownloadAction = true
+    startMonitorOnly()
   }
 
   private func forwardDeviceChanges(to controller: DictationController) async {

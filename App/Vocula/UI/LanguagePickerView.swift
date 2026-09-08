@@ -9,7 +9,17 @@ struct LanguagePickerView: View {
   private var autoDetect = AppSettings.autoDetectLanguageDefault
   @AppStorage(AppSettings.pinnedLanguageKey)
   private var pinned = AppSettings.pinnedLanguageDefault
+  @AppStorage(AppSettings.transcriptionModelKey)
+  private var transcriptionModel = AppSettings.transcriptionModelDefault
   @State private var search = ""
+
+  private var family: ModelFamily {
+    ModelManifest.descriptor(for: transcriptionModel).family
+  }
+
+  private var availableLanguages: [WhisperLanguage] {
+    WhisperLanguages.all.filter { EngineLanguages.supports($0.code, family) }
+  }
 
   private var selection: LanguageSelection {
     LanguageSelection(stored: storedCodes, autoDetect: autoDetect, pinned: pinned)
@@ -21,7 +31,9 @@ struct LanguagePickerView: View {
         .tint(Theme.accent)
     } footer: {
       VStack(alignment: .leading, spacing: 6) {
-        if autoDetect {
+        if autoDetect, family == .parakeet {
+          Text(LanguageScreenCopy.parakeetDetection)
+        } else if autoDetect {
           Text(LanguageScreenCopy.detectionExplained)
           Text(LanguageScreenCopy.detectionIsRestricted)
         } else {
@@ -95,9 +107,14 @@ struct LanguagePickerView: View {
     } header: {
       Text(LanguageScreenCopy.allLanguages)
     } footer: {
-      Text(
-        verbatim: CountedText.text(
-          LanguageCopy.enginesLanguages(count: WhisperLanguages.all.count)))
+      VStack(alignment: .leading, spacing: 6) {
+        Text(
+          verbatim: CountedText.text(
+            LanguageCopy.enginesLanguages(count: availableLanguages.count)))
+        if family == .parakeet {
+          Text(LanguageScreenCopy.parakeetListNote)
+        }
+      }
     }
   }
 
@@ -160,8 +177,8 @@ struct LanguagePickerView: View {
 
   private var matches: [WhisperLanguage] {
     let query = search.trimmingCharacters(in: .whitespaces)
-    guard !query.isEmpty else { return WhisperLanguages.all }
-    return WhisperLanguages.all.filter { language in
+    guard !query.isEmpty else { return availableLanguages }
+    return availableLanguages.filter { language in
       [language.displayName, language.name, language.nativeName ?? "", language.code]
         .contains { $0.localizedStandardContains(query) }
     }

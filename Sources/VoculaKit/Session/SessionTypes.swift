@@ -44,6 +44,7 @@ public enum SessionFailure: String, Codable, Sendable, Equatable, CaseIterable {
   case passTimeout
   case queueTimeout
   case engineFailed
+  case modelUnreadable
   case emptyTranscript
   case insertionFailed
   case overflow
@@ -111,7 +112,7 @@ public protocol SessionRecording: Sendable {
   ) async -> UUID?
   func markTruncated(_ id: UUID) async
   func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async
-  func attachRawText(_ id: UUID, _ text: String, language: String) async
+  func attachRawText(_ id: UUID, _ text: String, language: String?) async
   func attachFinalText(_ id: UUID, _ text: String) async
   func setState(_ id: UUID, _ state: SessionState, reason: String?) async
 }
