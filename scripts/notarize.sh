@@ -83,6 +83,12 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
 APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
 
+# Measured, not assumed: nothing else in the repository ever builds Release, so
+# a lost ARCHS=arm64 would first be noticed here — or, if x86_64 ever compiles
+# again, would silently double the download.
+archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
+[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
+
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)
 VERSION=$(plist CFBundleShortVersionString)

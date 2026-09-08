@@ -29,6 +29,10 @@ public actor ParakeetEngine: Transcribing {
 
     let result = try await withThrowingTaskGroup(of: ASRResult?.self) { group in
       group.addTask { [self] in
+        // `load()` awaits an unstructured Task, and `Task.value` ignores
+        // cancellation, so a cold start runs to completion past the deadline.
+        // Deliberate: the compiled encoder survives and serves the next
+        // dictation, where killing it would compile again from nothing.
         let (manager, layers) = try await load()
         var state = try TdtDecoderState(decoderLayers: layers)
         return try await manager.transcribe(samples, decoderState: &state, language: hint)

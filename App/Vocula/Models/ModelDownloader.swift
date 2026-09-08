@@ -226,6 +226,12 @@ final class ModelDownloader: NSObject, ObservableObject {
     }
     let model = store.descriptor(for: id)
     let destination = store.archiveURL(for: id)
+    if let unpacked = model.unpacked {
+      let staging = store.directory.appendingPathComponent("\(unpacked).unpacking")
+      await Task.detached(priority: .utility) {
+        try? FileManager.default.removeItem(at: staging)
+      }.value
+    }
     let resumeData = storedResumeData(for: id)
     await Task.detached(priority: .utility) {
       try? FileManager.default.removeItem(at: destination)
