@@ -184,6 +184,18 @@ struct ModelStoreTests {
     #expect(store(FakeFS()).missingBytes(for: [.parakeetV3]) == model.byteSize * 2)
   }
 
+  @Test("only an expanded model is discarded when it will not load")
+  func onlyAnExpandedModelIsReinstalled() {
+    let subject = store(FakeFS())
+    #expect(subject.needsReinstall(after: .modelUnreadable, model: .parakeetV3))
+    // A single-file model is rehashed on every status read, so it already
+    // recovers through `.corrupted` and must not be thrown away here.
+    #expect(!subject.needsReinstall(after: .modelUnreadable, model: transcription))
+    for failure in SessionFailure.allCases where failure != .modelUnreadable {
+      #expect(!subject.needsReinstall(after: failure, model: .parakeetV3))
+    }
+  }
+
   @Test("an injected manifest is used for paths, sizes and digests")
   func injectedManifestIsAuthoritative() {
     let custom = ModelDescriptor(

@@ -387,6 +387,7 @@ public actor DictationController {
       let failure: SessionFailure
       switch error {
       case TranscriptionError.timedOut: failure = .passTimeout
+      case TranscriptionError.modelNotLoaded: failure = .modelUnreadable
       default: failure = .engineFailed
       }
       await conclude(id, session: session, .failed, reason: failure.rawValue)

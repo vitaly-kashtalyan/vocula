@@ -4321,6 +4321,66 @@
         }
       }
     },
+    "refusal.modelUnreadable" : {
+      "comment" : "Shown when the installed model will not load, which the app answers by discarding it and fetching it again. Drawn on the indicator strip, which clamps at three lines.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Erkennungsmodell ließ sich nicht öffnen. Es wird erneut geladen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The recognition model could not be opened. It is being downloaded again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo abrir el modelo de reconocimiento. Se está descargando de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le modèle de reconnaissance n’a pas pu être ouvert. Il est téléchargé à nouveau."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile aprire il modello di riconoscimento. Verrà scaricato di nuovo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się otworzyć modelu rozpoznawania. Jest pobierany ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível abrir o modelo de reconhecimento. Ele está sendo baixado de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Модель распознавания не удалось открыть. Она загружается заново."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Модель розпізнавання не вдалося відкрити. Її завантажують заново."
+          }
+        }
+      }
+    },
     "refusal.noSpeech" : {
       "comment" : "Announced when a recording held no speech. Neither a rejection nor a failure — the user did speak, from their side, so it must not read as blame.",
       "extractionState" : "manual",

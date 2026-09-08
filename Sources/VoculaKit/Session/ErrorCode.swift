@@ -20,6 +20,7 @@ public enum ErrorCode {
     case .queueTimeout: return "VOC-ENG-03"
     case .emptyTranscript: return "VOC-ENG-04"
     case .overflow: return "VOC-ENG-05"
+    case .modelUnreadable: return "VOC-ENG-06"
     case .insertionFailed: return "VOC-PASTE-01"
     }
   }

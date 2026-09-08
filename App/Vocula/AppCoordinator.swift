@@ -605,6 +605,29 @@ final class AppCoordinator: ObservableObject {
     if let notice = plan.notice {
       indicator.note(notice, for: Self.refusalDismissDelay, alert: true)
     }
+    if let raw = reason, let failure = SessionFailure(rawValue: raw),
+      modelStore.needsReinstall(after: failure, model: settings.transcriptionModel)
+    {
+      await discardInstalledModel(settings.transcriptionModel)
+    }
+  }
+
+  private var modelStore: ModelStore {
+    ModelStore(
+      directory: ApplicationSupport.modelsDirectory,
+      fileSystem: SystemModelFileSystem())
+  }
+
+  private func discardInstalledModel(_ id: ModelID) async {
+    let store = modelStore
+    await Task.detached(priority: .utility) {
+      try? FileManager.default.removeItem(at: store.url(for: id))
+    }.value
+    log("model.discarded", "model=\(id.rawValue)")
+    tearDownPipeline()
+    menu.iconState = .error(MenuBarController.modelsNotDownloaded)
+    menu.showsDownloadAction = true
+    startMonitorOnly()
   }
 
   private func forwardDeviceChanges(to controller: DictationController) async {

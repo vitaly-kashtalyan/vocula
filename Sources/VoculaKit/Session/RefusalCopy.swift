@@ -61,6 +61,14 @@ public enum RefusalCopy {
         comment:
           "Dropped before transcription began. Must read differently from refusal.passTimeout — they are different failures."
       )
+    case "refusal.modelUnreadable":
+      return String(
+        localized: "refusal.modelUnreadable",
+        defaultValue: "The recognition model could not be opened. It is being downloaded again.",
+        bundle: .module,
+        comment:
+          "Shown when the installed model will not load, which the app answers by discarding it and fetching it again. Drawn on the indicator strip, which clamps at three lines."
+      )
     case "refusal.engineFailed":
       return String(
         localized: "refusal.engineFailed",
@@ -190,6 +198,8 @@ public enum RefusalCopy {
       return ["refusal.queueTimeout"]
     case .engineFailed:
       return ["refusal.engineFailed"]
+    case .modelUnreadable:
+      return ["refusal.modelUnreadable"]
     case .emptyTranscript:
       return ["refusal.emptyTranscript"]
     case .insertionFailed:

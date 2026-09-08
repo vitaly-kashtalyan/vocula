@@ -44,6 +44,7 @@ public enum SessionFailure: String, Codable, Sendable, Equatable, CaseIterable {
   case passTimeout
   case queueTimeout
   case engineFailed
+  case modelUnreadable
   case emptyTranscript
   case insertionFailed
   case overflow
