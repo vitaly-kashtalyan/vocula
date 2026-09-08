@@ -41,7 +41,7 @@ private func store(_ fs: FakeFS) -> ModelStore {
 struct ModelStoreTests {
   @Test("the manifest pins every model with a version, a checksum and a licence")
   func manifestIsComplete() {
-    #expect(ModelManifest.current.count == 2)
+    #expect(ModelManifest.current.count == 3)
     for model in ModelManifest.current {
       #expect(model.sha256.count == 64)
       #expect(model.sha256.allSatisfy { $0.isHexDigit })
@@ -50,7 +50,7 @@ struct ModelStoreTests {
       #expect(model.byteSize > 0)
     }
     #expect(Set(ModelManifest.current.map(\.id)) == Set(ModelID.allCases))
-    #expect(ModelManifest.transcriptionModels.count == 1)
+    #expect(ModelManifest.transcriptionModels.count == 2)
     #expect(!ModelManifest.transcriptionModels.contains(.speechDetector))
     let grouped = ModelManifest.transcriptionModelsByFamily
     #expect(grouped.flatMap(\.models) == ModelManifest.transcriptionModels)
@@ -153,7 +153,7 @@ struct ModelStoreTests {
       id: transcription, family: .whisper, fileName: "custom.bin",
       remoteURL: URL(string: "https://example.invalid/custom.bin")!,
       sha256: String(repeating: "a", count: 64), byteSize: 42,
-      version: "test", licence: "test", displayName: "Test")
+      version: "test", licence: "test", displayName: "Test", unpacked: nil)
     var fs = FakeFS()
     fs.files[custom.fileName] = custom.byteSize
     fs.digests[custom.fileName] = custom.sha256

@@ -2,6 +2,7 @@ import Foundation
 
 public enum ModelID: String, Codable, Sendable, Equatable, CaseIterable {
   case largeV3Turbo
+  case parakeetV3
   case speechDetector
 }
 
@@ -21,7 +22,7 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
     case .whisper:
       return "whisper.cpp v1.9.2 — MIT, The ggml authors"
     case .parakeet:
-      return "parakeet.cpp — MIT; weights by NVIDIA under CC-BY-4.0"
+      return "FluidAudio — Apache-2.0; weights by NVIDIA under CC-BY-4.0"
     }
   }
 }
@@ -36,6 +37,7 @@ public struct ModelDescriptor: Codable, Sendable, Equatable {
   public let version: String
   public let licence: String
   public let displayName: String
+  public let unpacked: String?
 }
 
 public enum ModelManifest {
@@ -52,7 +54,22 @@ public enum ModelManifest {
       byteSize: 1_624_555_275,
       version: "large-v3-turbo @ 5359861c",
       licence: "MIT (OpenAI weights, whisper.cpp GGML conversion)",
-      displayName: "Large v3 Turbo"),
+      displayName: "Large v3 Turbo",
+      unpacked: nil),
+    ModelDescriptor(
+      id: .parakeetV3,
+      family: .parakeet,
+      fileName: "parakeet-tdt-0.6b-v3.zip",
+      remoteURL: URL(
+        string:
+          "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/parakeet-tdt-0.6b-v3.zip"
+      )!,
+      sha256: "cba75876b0448f11f7db77ce1acb5f2f0619588fe7b4df77bf4b4ec7859be23c",
+      byteSize: 466_638_996,
+      version: "parakeet-tdt-0.6b-v3 (Core ML)",
+      licence: "CC-BY-4.0 (NVIDIA weights, FluidInference Core ML conversion)",
+      displayName: "Parakeet v3",
+      unpacked: "parakeet-tdt-0.6b-v3"),
     ModelDescriptor(
       id: .speechDetector,
       family: .whisper,
@@ -67,10 +84,11 @@ public enum ModelManifest {
       licence: "MIT (Silero VAD)",
       displayName: String(
         localized: "models.speechDetector", defaultValue: "Speech detector", bundle: .module,
-        comment: "Name of the VAD model as shown in the model list.")),
+        comment: "Name of the VAD model as shown in the model list."),
+      unpacked: nil),
   ]
 
-  public static let transcriptionModels: [ModelID] = [.largeV3Turbo]
+  public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetV3]
 
   public static var transcriptionModelsByFamily: [(family: ModelFamily, models: [ModelID])] {
     ModelFamily.allCases.compactMap { family in
