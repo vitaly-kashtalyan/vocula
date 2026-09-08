@@ -74,7 +74,14 @@ public struct ModelStore: Sendable {
   public func status(of id: ModelID) -> ModelStatus {
     let model = descriptor(for: id)
     if model.unpacked != nil {
-      return fileSystem.fileExists(at: url(for: id)) ? .ready : .missing
+      // Presence of every entry, never their digest: the archive's checksum is
+      // what established integrity, and rehashing 468 MB of Core ML bundles on
+      // every status read is exactly the file-sized work the tap cannot afford.
+      let installed = url(for: id)
+      let complete = model.contents.allSatisfy {
+        fileSystem.fileExists(at: installed.appendingPathComponent($0))
+      }
+      return complete ? .ready : .missing
     }
     let location = archiveURL(for: id)
     guard fileSystem.fileExists(at: location), let size = fileSystem.size(of: location) else {

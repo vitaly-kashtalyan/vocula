@@ -2,12 +2,15 @@ import Foundation
 
 public struct Transcription: Equatable, Sendable {
   public let text: String
-  public let language: String
+  // Optional because an engine may not know: Parakeet identifies the language
+  // inside its own pass and reports nothing back, so naming one would be a guess
+  // that reaches the History screen as if it were a measurement.
+  public let language: String?
   public let firstTokenProbability: Float?
   public let languageScores: [String: Float]
 
   public init(
-    text: String, language: String,
+    text: String, language: String?,
     firstTokenProbability: Float? = nil,
     languageScores: [String: Float] = [:]
   ) {

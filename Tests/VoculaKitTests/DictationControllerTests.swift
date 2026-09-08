@@ -179,7 +179,7 @@ private actor FakeHistory: SessionRecording {
   var truncated: Set<UUID> = []
   func markTruncated(_ id: UUID) async { truncated.insert(id) }
   func attachMetrics(_ id: UUID, _ value: SpeechMetrics) async { metrics[id] = value }
-  func attachRawText(_ id: UUID, _ text: String, language: String) async { rawTexts[id] = text }
+  func attachRawText(_ id: UUID, _ text: String, language: String?) async { rawTexts[id] = text }
   func attachFinalText(_ id: UUID, _ text: String) async { finalTexts[id] = text }
   func setState(_ id: UUID, _ state: SessionState, reason: String?) async {
     states.append((id, state, reason))
@@ -726,7 +726,7 @@ struct DictationControllerTests {
       ) async -> UUID? { nil }
       func markTruncated(_ id: UUID) async {}
       func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async {}
-      func attachRawText(_ id: UUID, _ text: String, language: String) async {}
+      func attachRawText(_ id: UUID, _ text: String, language: String?) async {}
       func attachFinalText(_ id: UUID, _ text: String) async {}
       func setState(_ id: UUID, _ state: SessionState, reason: String?) async {}
     }

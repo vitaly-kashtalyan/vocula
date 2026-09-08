@@ -138,7 +138,7 @@ public actor DayFileHistoryStore: HistoryStoring {
   public func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async {
     mutate(id) { $0.metrics = metrics }
   }
-  public func attachRawText(_ id: UUID, _ text: String, language: String) async {
+  public func attachRawText(_ id: UUID, _ text: String, language: String?) async {
     mutate(id) {
       $0.rawText = text
       $0.language = language

@@ -5,6 +5,7 @@ import VoculaKit
 public actor ParakeetEngine: Transcribing {
   private let modelDirectory: URL
   private var manager: AsrManager?
+  private var loading: Task<(AsrManager, Int), Error>?
   private var decoderLayers = 2
 
   private static let warmUpDeadline: Duration = .seconds(120)
@@ -22,7 +23,7 @@ public actor ParakeetEngine: Transcribing {
     _ samples: [Float], languages: LanguageSelection, deadline: Duration
   ) async throws -> Transcription {
     guard !samples.isEmpty else {
-      return Transcription(text: "", language: languages.codes[0])
+      return Transcription(text: "", language: languages.autoDetect ? nil : languages.pinned)
     }
     let manager = try await load()
     let layers = decoderLayers
@@ -45,25 +46,40 @@ public actor ParakeetEngine: Transcribing {
     guard let result else { throw TranscriptionError.timedOut }
     return Transcription(
       text: result.text.trimmingCharacters(in: .whitespacesAndNewlines),
-      language: languages.pinned)
+      language: languages.autoDetect ? nil : languages.pinned)
   }
 
   private func load() async throws -> AsrManager {
     if let manager { return manager }
-    let models: AsrModels
+    let task = loading ?? beginLoading()
+    loading = task
     do {
-      models = try await AsrModels.load(from: modelDirectory, version: .v3)
+      let (created, layers) = try await task.value
+      manager = created
+      decoderLayers = layers
+      loading = nil
+      return created
     } catch {
-      throw TranscriptionError.modelNotLoaded
+      loading = nil
+      throw error
     }
-    decoderLayers = models.version.decoderLayers
-    let created = AsrManager(config: .default)
-    do {
-      try await created.loadModels(models)
-    } catch {
-      throw TranscriptionError.engineFailed("AsrManager.loadModels: \(error)")
+  }
+
+  private func beginLoading() -> Task<(AsrManager, Int), Error> {
+    Task { [modelDirectory] in
+      let models: AsrModels
+      do {
+        models = try await AsrModels.load(from: modelDirectory, version: .v3)
+      } catch {
+        throw TranscriptionError.modelNotLoaded
+      }
+      let created = AsrManager(config: .default)
+      do {
+        try await created.loadModels(models)
+      } catch {
+        throw TranscriptionError.engineFailed("AsrManager.loadModels: \(error)")
+      }
+      return (created, models.version.decoderLayers)
     }
-    manager = created
-    return created
   }
 }

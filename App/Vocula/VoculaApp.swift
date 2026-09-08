@@ -109,6 +109,8 @@ private struct MenuBarContentView: View {
   private var pinnedLanguage = AppSettings.pinnedLanguageDefault
   @AppStorage(AppSettings.microphonePriorityKey)
   private var microphonePriorityRaw = AppSettings.microphonePriorityDefault
+  @AppStorage(AppSettings.transcriptionModelKey)
+  private var transcriptionModel = AppSettings.transcriptionModelDefault
 
   private var microphonePriority: MicrophonePriorityList {
     get { MicrophonePriorityList(encoded: microphonePriorityRaw) }
@@ -127,8 +129,10 @@ private struct MenuBarContentView: View {
 
   private var orderedLanguages: [WhisperLanguage] {
     let selected = languages.codes
+    let family = ModelManifest.descriptor(for: transcriptionModel).family
+    let available = WhisperLanguages.all.filter { EngineLanguages.supports($0.code, family) }
     return selected.compactMap(WhisperLanguages.language(for:))
-      + WhisperLanguages.all.filter { !selected.contains($0.code) }
+      + available.filter { !selected.contains($0.code) }
   }
 
   private func write(_ selection: LanguageSelection) {

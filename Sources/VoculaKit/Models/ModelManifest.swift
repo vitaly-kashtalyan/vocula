@@ -61,6 +61,7 @@ public struct ModelDescriptor: Codable, Sendable, Equatable {
   public let licence: String
   public let displayName: String
   public let unpacked: String?
+  public let contents: [String]
 }
 
 public enum ModelManifest {
@@ -78,7 +79,7 @@ public enum ModelManifest {
       version: "large-v3-turbo @ 5359861c",
       licence: "MIT (OpenAI weights, whisper.cpp GGML conversion)",
       displayName: "Large v3 Turbo",
-      unpacked: nil),
+      unpacked: nil, contents: []),
     ModelDescriptor(
       id: .parakeetV3,
       family: .parakeet,
@@ -92,7 +93,11 @@ public enum ModelManifest {
       version: "parakeet-tdt-0.6b-v3 (Core ML)",
       licence: "CC-BY-4.0 (NVIDIA weights, FluidInference Core ML conversion)",
       displayName: "Parakeet v3",
-      unpacked: "parakeet-tdt-0.6b-v3"),
+      unpacked: "parakeet-tdt-0.6b-v3",
+      contents: [
+        "Preprocessor.mlmodelc", "Encoder.mlmodelc", "Decoder.mlmodelc",
+        "JointDecisionv3.mlmodelc", "parakeet_v3_vocab.json",
+      ]),
     ModelDescriptor(
       id: .speechDetector,
       family: .whisper,
@@ -108,7 +113,7 @@ public enum ModelManifest {
       displayName: String(
         localized: "models.speechDetector", defaultValue: "Speech detector", bundle: .module,
         comment: "Name of the VAD model as shown in the model list."),
-      unpacked: nil),
+      unpacked: nil, contents: []),
   ]
 
   public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetV3]

@@ -397,9 +397,10 @@ public actor DictationController {
       session: session, speechSamples: speech.count,
       took: Date().timeIntervalSince(startedTranscribing))
 
-    if let detail = LanguageDetectionReport.detail(
-      session: session, chosen: transcription.language,
-      scores: transcription.languageScores, peak: metrics.peakLevel)
+    if let chosen = transcription.language,
+      let detail = LanguageDetectionReport.detail(
+        session: session, chosen: chosen,
+        scores: transcription.languageScores, peak: metrics.peakLevel)
     {
       dependencies.diagnose("language.detected", detail)
     }

@@ -164,7 +164,7 @@ struct ModelStoreTests {
     #expect(store(fs).status(of: .parakeetV3) == .missing)
     #expect(store(fs).matchesChecksum(.parakeetV3))
 
-    fs.files[model.unpacked!] = model.byteSize
+    for entry in model.contents { fs.files[entry] = 1 }
     #expect(store(fs).status(of: .parakeetV3) == .ready)
   }
 
@@ -190,7 +190,7 @@ struct ModelStoreTests {
       id: transcription, family: .whisper, fileName: "custom.bin",
       remoteURL: URL(string: "https://example.invalid/custom.bin")!,
       sha256: String(repeating: "a", count: 64), byteSize: 42,
-      version: "test", licence: "test", displayName: "Test", unpacked: nil)
+      version: "test", licence: "test", displayName: "Test", unpacked: nil, contents: [])
     var fs = FakeFS()
     fs.files[custom.fileName] = custom.byteSize
     fs.digests[custom.fileName] = custom.sha256

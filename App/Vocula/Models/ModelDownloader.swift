@@ -94,7 +94,12 @@ final class ModelDownloader: NSObject, ObservableObject {
       let ditto = Process()
       ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
       ditto.arguments = ["-x", "-k", archive.path, staging.path]
-      try ditto.run()
+      do {
+        try ditto.run()
+      } catch {
+        try? FileManager.default.removeItem(at: archive)
+        throw ModelDownloadError.unpackFailed(displayName: model.displayName)
+      }
       ditto.waitUntilExit()
 
       let produced = staging.appendingPathComponent(name)
@@ -108,7 +113,9 @@ final class ModelDownloader: NSObject, ObservableObject {
       let installed = directory.appendingPathComponent(name)
       try? FileManager.default.removeItem(at: installed)
       try FileManager.default.moveItem(at: produced, to: installed)
-      try FileManager.default.removeItem(at: archive)
+      // The model is installed by the line above; deleting the archive is
+      // housekeeping, and failing it must not report the install as failed.
+      try? FileManager.default.removeItem(at: archive)
     }.value
   }
 
