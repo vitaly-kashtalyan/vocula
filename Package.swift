@@ -26,6 +26,6 @@ let package = Package(
       dependencies: ["VoculaKit", .product(name: "FluidAudio", package: "FluidAudio")]),
     .testTarget(name: "VoculaKitTests", dependencies: ["VoculaKit"]),
     .testTarget(name: "VoculaWhisperTests", dependencies: ["VoculaWhisper"]),
-    .testTarget(name: "VoculaSlowTests", dependencies: ["VoculaWhisper"]),
+    .testTarget(name: "VoculaSlowTests", dependencies: ["VoculaWhisper", "VoculaParakeet"]),
   ]
 )
