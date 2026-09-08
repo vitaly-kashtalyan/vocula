@@ -67,6 +67,14 @@ public actor ParakeetEngine: Transcribing {
 
   private func beginLoading() -> Task<(AsrManager, Int), Error> {
     Task { [modelDirectory] in
+      // `AsrModels.load` is NOT offline: it reaches ModelHub, which silently
+      // fetches any missing bundle from HuggingFace — bypassing the mirror the
+      // app hosts precisely because that host can be unreachable, and arriving
+      // outside the SHA-256 compiled into this binary. Refusing here is what
+      // keeps a damaged model on OUR repair path.
+      guard AsrModels.modelsExist(at: modelDirectory, version: .v3) else {
+        throw TranscriptionError.modelNotLoaded
+      }
       let models: AsrModels
       do {
         models = try await AsrModels.load(from: modelDirectory, version: .v3)
