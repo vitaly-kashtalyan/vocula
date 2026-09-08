@@ -154,10 +154,11 @@ silent recording, a refusal and a dead microphone all cost nothing.
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
 
-Apple Silicon only. Transcription runs on the GPU, and an Intel integrated GPU
-is not a machine this can serve — the M1 is already noticeably slower than an
-M5. Both architectures still build and the framework ships an Intel slice, but
-Intel is not supported and is not claimed.
+Apple Silicon only, and the binary is built for `arm64` alone. Recognition runs
+on the GPU and the Neural Engine; an Intel Mac has neither in a form this can
+use, so the answer there is not a slower build but a different product. Parakeet
+will not even compile for `x86_64` — FluidAudio uses `Float16`, which Swift does
+not have on Intel.
 
 ## Build it yourself
 

@@ -65,8 +65,13 @@ VERSION_OVERRIDE=()
 # lets any process attach a debugger to the hardened binary and read its memory.
 # Apple names this setting as the fix for a workflow that does not export from
 # an archive.
+# ARCHS=arm64 on the COMMAND LINE, not in project.yml: a SwiftPM dependency is
+# built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
+# ours, so FluidAudio compiles for x86_64 and fails on Float16, which Swift does
+# not have there. Only the command line reaches every project in the build.
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
   -derivedDataPath "$BUILD_DIR/dd" \
+  ARCHS=arm64 \
   ${VERSION_OVERRIDE[@]+"${VERSION_OVERRIDE[@]}"} \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   CODE_SIGN_STYLE=Manual \
