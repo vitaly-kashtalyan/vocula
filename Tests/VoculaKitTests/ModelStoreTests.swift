@@ -147,6 +147,43 @@ struct ModelStoreTests {
     #expect(store(fs).spaceVerdict(for: required) == .enough)
   }
 
+  @Test("a model delivered as an archive is named twice, and read as a directory")
+  func anExpandedModelHasTwoPaths() {
+    let subject = store(FakeFS())
+    #expect(subject.url(for: .parakeetV3).lastPathComponent == "parakeet-tdt-0.6b-v3")
+    #expect(subject.archiveURL(for: .parakeetV3).lastPathComponent == "parakeet-tdt-0.6b-v3.zip")
+    #expect(subject.url(for: transcription) == subject.archiveURL(for: transcription))
+  }
+
+  @Test("a verified archive is not yet a ready model; the expanded directory is")
+  func expansionIsWhatMakesItReady() {
+    let model = ModelManifest.descriptor(for: .parakeetV3)
+    var fs = FakeFS()
+    fs.files[model.fileName] = model.byteSize
+    fs.digests[model.fileName] = model.sha256
+    #expect(store(fs).status(of: .parakeetV3) == .missing)
+    #expect(store(fs).matchesChecksum(.parakeetV3))
+
+    fs.files[model.unpacked!] = model.byteSize
+    #expect(store(fs).status(of: .parakeetV3) == .ready)
+  }
+
+  @Test("the checksum is read off the archive, and a wrong one is refused")
+  func checksumReadsTheArchive() {
+    let model = ModelManifest.descriptor(for: .parakeetV3)
+    var fs = FakeFS()
+    #expect(!store(fs).matchesChecksum(.parakeetV3))
+    fs.files[model.fileName] = model.byteSize
+    fs.digests[model.fileName] = "wrong"
+    #expect(!store(fs).matchesChecksum(.parakeetV3))
+  }
+
+  @Test("room is asked for the archive and its expansion at once")
+  func spaceCountsTheArchiveTwice() {
+    let model = ModelManifest.descriptor(for: .parakeetV3)
+    #expect(store(FakeFS()).missingBytes(for: [.parakeetV3]) == model.byteSize * 2)
+  }
+
   @Test("an injected manifest is used for paths, sizes and digests")
   func injectedManifestIsAuthoritative() {
     let custom = ModelDescriptor(
@@ -173,7 +210,7 @@ struct ModelStoreTests {
     let subject = ModelStore(directory: directory, fileSystem: fs, manifest: ModelManifest.current)
     _ = subject.spaceVerdict(for: ModelManifest.current.map(\.id))
     for model in ModelManifest.current {
-      #expect(fs.hashCallCounts[model.fileName] == 1)
+      #expect(fs.hashCallCounts[model.fileName] == (model.unpacked == nil ? 1 : nil))
     }
   }
 }
