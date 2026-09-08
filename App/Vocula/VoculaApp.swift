@@ -112,6 +112,15 @@ private struct MenuBarContentView: View {
   @AppStorage(AppSettings.transcriptionModelKey)
   private var transcriptionModel = AppSettings.transcriptionModelDefault
 
+  private var recording: Binding<Bool> {
+    Binding(
+      get: { historyEnabled && !menu.historyRecordingFailed },
+      set: { wanted in
+        historyEnabled = wanted
+        if wanted { menu.historyRecordingFailed = false }
+      })
+  }
+
   private var microphonePriority: MicrophonePriorityList {
     get { MicrophonePriorityList(encoded: microphonePriorityRaw) }
     nonmutating set { microphonePriorityRaw = newValue.encoded() }
@@ -166,7 +175,7 @@ private struct MenuBarContentView: View {
           NSPasteboard.general.setString(last, forType: .string)
         }
       }
-      Toggle(MenuCopy.recordHistory, isOn: $historyEnabled)
+      Toggle(MenuCopy.recordHistory, isOn: recording)
       if menu.historyPaused {
         Text(MenuCopy.historyPaused)
       } else {

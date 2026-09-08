@@ -311,12 +311,30 @@ struct PermissionsSettingsSection: View {
 struct PrivacyDefaultsView: View {
   @AppStorage(AppSettings.historyEnabledKey)
   private var historyEnabled = AppSettings.historyEnabledDefault
+  @ObservedObject var menu: MenuBarController
   var summary: HistorySummary?
   @State private var showingSource = false
 
+  private var recording: Binding<Bool> {
+    Binding(
+      get: { historyEnabled && !menu.historyRecordingFailed },
+      set: { wanted in
+        historyEnabled = wanted
+        if wanted { menu.historyRecordingFailed = false }
+      })
+  }
+
   var body: some View {
     Section {
-      Toggle(OnboardingScreenCopy.keepHistory, isOn: $historyEnabled)
+      if menu.historyRecordingFailed {
+        Label {
+          Text(HistoryScreenCopy.notRecording)
+        } icon: {
+          Image(systemName: "exclamationmark.triangle")
+        }
+        .foregroundStyle(Theme.warning)
+      }
+      Toggle(OnboardingScreenCopy.keepHistory, isOn: recording)
         .tint(Theme.accent)
       if let summary { tiles(summary) }
     } footer: {

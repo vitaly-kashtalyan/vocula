@@ -5,7 +5,6 @@ import VoculaKit
 
 struct KeychainCipher: HistoryCipher {
   enum Failure: Error {
-    case keyUnavailable(OSStatus)
     case sealFailed
   }
 
@@ -33,7 +32,7 @@ struct KeychainCipher: HistoryCipher {
       try store(fresh)
       return fresh
     case .unavailable(let status):
-      throw Failure.keyUnavailable(status)
+      throw HistoryCipherError.keyUnavailable(status: Int32(status))
     }
   }
 
@@ -72,6 +71,8 @@ struct KeychainCipher: HistoryCipher {
     request[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
     SecItemDelete(query() as CFDictionary)
     let status = SecItemAdd(request as CFDictionary, nil)
-    guard status == errSecSuccess else { throw Failure.keyUnavailable(status) }
+    guard status == errSecSuccess else {
+      throw HistoryCipherError.keyUnavailable(status: Int32(status))
+    }
   }
 }

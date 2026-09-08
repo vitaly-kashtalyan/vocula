@@ -10,6 +10,13 @@ enum CommonCopy {
 }
 
 enum HistoryScreenCopy {
+  static let notRecording = LocalizedStringResource(
+    "history.notRecording",
+    defaultValue: "Dictations are not reaching history. Diagnostics has the reason.",
+    comment:
+      "Warning drawn beside the history switch when a dictation could not be saved. 'Diagnostics' is this app's own settings section; use the same wording as settings.section.diagnostics."
+  )
+
   static func noSpeechReadout(_ segments: Int, _ frameProbability: String, _ peak: String)
     -> LocalizedStringResource
   {

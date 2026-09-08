@@ -74,6 +74,7 @@ enum MenuIconState: Equatable {
 final class MenuBarController: ObservableObject {
   @Published var iconState: MenuIconState = .idle
   @Published var showsDownloadAction = false
+  @Published var historyRecordingFailed = false
   @Published var lastTranscript: String?
 
   @Published private(set) var inputDevices: [AudioInputDevice] = []

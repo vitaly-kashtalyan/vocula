@@ -8,6 +8,7 @@ public actor DayFileHistoryStore: HistoryStoring {
   private var recordsByDay: [String: [DictationRecord]] = [:]
   private var unreadableDays: Set<String> = []
   private var directoryUnreadable = false
+  private var writeFailed = false
   private var loaded = false
 
   public init(
@@ -23,6 +24,8 @@ public actor DayFileHistoryStore: HistoryStoring {
 
   public func attach(diagnosticLog: DiagnosticLog) { self.diagnosticLog = diagnosticLog }
 
+  public func recordingIsFailing() -> Bool { writeFailed }
+
   static let dayFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -30,6 +33,14 @@ public actor DayFileHistoryStore: HistoryStoring {
     formatter.dateFormat = "yyyy-MM-dd"
     return formatter
   }()
+
+  private func cause(_ error: Error) -> String {
+    if case HistoryCipherError.keyUnavailable(let status) = error {
+      return "domain=keychain code=\(status)"
+    }
+    let error = error as NSError
+    return "domain=\(error.domain) code=\(error.code)"
+  }
 
   private func dayKey(_ date: Date) -> String { Self.dayFormatter.string(from: date) }
   private func url(forDay day: String) -> URL {
@@ -51,22 +62,22 @@ public actor DayFileHistoryStore: HistoryStoring {
     loaded = true
     for name in names where name.hasSuffix(".history") {
       let day = String(name.dropLast(".history".count))
-      guard let blob = try? Data(contentsOf: url(forDay: day)),
-        let json = try? cipher.open(blob),
-        let records = try? JSONDecoder().decode([DictationRecord].self, from: json)
-      else {
+      do {
+        let blob = try Data(contentsOf: url(forDay: day))
+        let json = try cipher.open(blob)
+        recordsByDay[day] = try JSONDecoder().decode([DictationRecord].self, from: json)
+      } catch {
         unreadableDays.insert(day)
-        diagnosticLog?.record("history.readFailed", "")
-        continue
+        diagnosticLog?.record("history.readFailed", cause(error))
       }
-      recordsByDay[day] = records
     }
   }
 
   @discardableResult
   private func write(day: String) -> Bool {
     guard !unreadableDays.contains(day), !directoryUnreadable else {
-      diagnosticLog?.record("history.writeFailed", "")
+      let reason = directoryUnreadable ? "directoryUnreadable" : "unreadableDay"
+      diagnosticLog?.record("history.writeFailed", "reason=\(reason)")
       return false
     }
     guard let records = recordsByDay[day] else { return remove(day: day) }
@@ -79,7 +90,7 @@ public actor DayFileHistoryStore: HistoryStoring {
         ofItemAtPath: url(forDay: day).path)
       return true
     } catch {
-      diagnosticLog?.record("history.writeFailed", "")
+      diagnosticLog?.record("history.writeFailed", cause(error))
       return false
     }
   }
@@ -88,7 +99,7 @@ public actor DayFileHistoryStore: HistoryStoring {
     let path = url(forDay: day)
     if FileManager.default.fileExists(atPath: path.path) {
       do { try FileManager.default.removeItem(at: path) } catch {
-        diagnosticLog?.record("history.writeFailed", "")
+        diagnosticLog?.record("history.writeFailed", cause(error))
         return false
       }
     }
@@ -117,7 +128,10 @@ public actor DayFileHistoryStore: HistoryStoring {
     session: Int, startedAt: Date, durationMilliseconds: Int,
     targetBundleID: String?, modelID: String? = nil
   ) async -> UUID? {
-    guard isRecordingEnabled() else { return nil }
+    guard isRecordingEnabled() else {
+      writeFailed = false
+      return nil
+    }
     loadIfNeeded()
     let record = DictationRecord(
       id: UUID(), session: session, createdAt: startedAt, updatedAt: startedAt,
@@ -129,8 +143,10 @@ public actor DayFileHistoryStore: HistoryStoring {
     recordsByDay[day, default: []].append(record)
     guard write(day: day) else {
       rollBack(day: day)
+      writeFailed = true
       return nil
     }
+    writeFailed = false
     return record.id
   }
 

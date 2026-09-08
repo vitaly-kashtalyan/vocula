@@ -219,7 +219,7 @@ struct SettingsWindowView: View {
     case .keyboard:
       KeyboardSettingsSection(menu: menu, coordinator: coordinator)
     case .history:
-      HistorySettingsSection(model: historyModel)
+      HistorySettingsSection(model: historyModel, menu: menu)
     case .licence:
       LicenceSettingsView()
     case .appearance:
@@ -257,6 +257,7 @@ private struct KeyboardSettingsSection: View {
 
 private struct HistorySettingsSection: View {
   @ObservedObject var model: HistoryWindowModel
+  let menu: MenuBarController
 
   private var summary: HistorySummary? {
     let characters = model.days.reduce(0) { $0 + $1.insertedCharacters }
@@ -285,7 +286,7 @@ private struct HistorySettingsSection: View {
   }
 
   var body: some View {
-    PrivacyDefaultsView(summary: summary)
+    PrivacyDefaultsView(menu: menu, summary: summary)
     HistoryView(model: model)
       .task { await model.openNewestDay() }
       .refreshOnActivate { Task { await model.reload() } }

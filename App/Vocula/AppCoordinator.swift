@@ -585,6 +585,8 @@ final class AppCoordinator: ObservableObject {
     controller: DictationController
   ) async {
     menu.lastTranscript = await controller.lastTranscript
+    let recordingFailed = await historyStore.recordingIsFailing()
+    menu.historyRecordingFailed = recordingFailed
     let plan = OutcomePolicy.plan(
       session: session, state: state, reason: reason,
       heldFor: gestureHeldFor[session] ?? .zero,
@@ -592,7 +594,7 @@ final class AppCoordinator: ObservableObject {
         AudioInputDevices
         .resolvedDeviceID(for: settings.microphonePriority)
         .flatMap { AudioInputDevices.inputIsSilenced($0) } ?? false,
-      historyIsRecording: settings.isRecordingHistory,
+      historyIsRecording: settings.isRecordingHistory && !recordingFailed,
       alreadyExplained: refusalDedup.alreadyExplained(session: session))
     gestureHeldFor[session] = nil
     if plan.recordsUsage {
