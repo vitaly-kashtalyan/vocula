@@ -57,6 +57,18 @@ struct ModelStoreTests {
     #expect(grouped.allSatisfy { !$0.models.isEmpty })
   }
 
+  @Test("a fresh install starts on Whisper, and an unknown model falls back to it")
+  func whisperIsTheDefaultEngine() {
+    #expect(ModelManifest.defaultTranscriptionModel == .largeV3Turbo)
+    #expect(ModelManifest.descriptor(for: .largeV3Turbo).family == .whisper)
+
+    let defaults = UserDefaults(suiteName: "test.models.default")!
+    defaults.removePersistentDomain(forName: "test.models.default")
+    #expect(AppSettings(defaults: defaults).transcriptionModel == .largeV3Turbo)
+    defaults.set("aModelThisBuildDoesNotHave", forKey: AppSettings.transcriptionModelKey)
+    #expect(AppSettings(defaults: defaults).transcriptionModel == .largeV3Turbo)
+  }
+
   @Test("a missing file is missing")
   func missing() {
     #expect(store(FakeFS()).status(of: transcription) == .missing)
