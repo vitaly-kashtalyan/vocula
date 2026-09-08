@@ -13,9 +13,12 @@ struct LanguagePickerView: View {
   private var transcriptionModel = AppSettings.transcriptionModelDefault
   @State private var search = ""
 
+  private var family: ModelFamily {
+    ModelManifest.descriptor(for: transcriptionModel).family
+  }
+
   private var availableLanguages: [WhisperLanguage] {
-    let family = ModelManifest.descriptor(for: transcriptionModel).family
-    return WhisperLanguages.all.filter { EngineLanguages.supports($0.code, family) }
+    WhisperLanguages.all.filter { EngineLanguages.supports($0.code, family) }
   }
 
   private var selection: LanguageSelection {
@@ -28,7 +31,9 @@ struct LanguagePickerView: View {
         .tint(Theme.accent)
     } footer: {
       VStack(alignment: .leading, spacing: 6) {
-        if autoDetect {
+        if autoDetect, family == .parakeet {
+          Text(LanguageScreenCopy.parakeetDetection)
+        } else if autoDetect {
           Text(LanguageScreenCopy.detectionExplained)
           Text(LanguageScreenCopy.detectionIsRestricted)
         } else {
@@ -102,9 +107,14 @@ struct LanguagePickerView: View {
     } header: {
       Text(LanguageScreenCopy.allLanguages)
     } footer: {
-      Text(
-        verbatim: CountedText.text(
-          LanguageCopy.enginesLanguages(count: availableLanguages.count)))
+      VStack(alignment: .leading, spacing: 6) {
+        Text(
+          verbatim: CountedText.text(
+            LanguageCopy.enginesLanguages(count: availableLanguages.count)))
+        if family == .parakeet {
+          Text(LanguageScreenCopy.parakeetListNote)
+        }
+      }
     }
   }
 

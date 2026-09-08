@@ -7069,6 +7069,30 @@
         }
       }
     },
+    "languages.parakeetDetection" : {
+      "comment" : "How detection works when it is on and the Parakeet engine is selected. Parakeet is a product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Parakeet identifies the language inside the same pass that transcribes it, over every language it knows. The list below is not consulted, and a language you have not ticked is still recognised."
+          }
+        }
+      }
+    },
+    "languages.parakeetListNote" : {
+      "comment" : "Footer under the language list, shown only for the Parakeet engine. Parakeet is a product name.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "With automatic detection on, this list changes nothing on Parakeet. Turn detection off to hold one language, which also stops the engine mixing another alphabet into the text."
+          }
+        }
+      }
+    },
     "languages.pin.accessibility" : {
       "comment" : "VoiceOver label; the argument is a language name.",
       "extractionState" : "extracted_with_value",

@@ -394,6 +394,20 @@ enum LanguageScreenCopy {
     defaultValue:
       "The comparison is over YOUR list and nothing else. Whisper's own unrestricted detection is never used: on mixed speech it returns a third language, transcribes in it, and only then reports it.",
     comment: "A measured fact about the engine, not a preference. Whisper is a product name.")
+  static let parakeetDetection = LocalizedStringResource(
+    "languages.parakeetDetection",
+    defaultValue:
+      "Parakeet identifies the language inside the same pass that transcribes it, over every language it knows. The list below is not consulted, and a language you have not ticked is still recognised.",
+    comment:
+      "How detection works when it is on and the Parakeet engine is selected. Parakeet is a product name."
+  )
+  static let parakeetListNote = LocalizedStringResource(
+    "languages.parakeetListNote",
+    defaultValue:
+      "With automatic detection on, this list changes nothing on Parakeet. Turn detection off to hold one language, which also stops the engine mixing another alphabet into the text.",
+    comment:
+      "Footer under the language list, shown only for the Parakeet engine. Parakeet is a product name."
+  )
   static let noDetection = LocalizedStringResource(
     "languages.noDetection",
     defaultValue:
