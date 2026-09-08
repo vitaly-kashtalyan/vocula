@@ -8,6 +8,7 @@ public actor DayFileHistoryStore: HistoryStoring {
   private var recordsByDay: [String: [DictationRecord]] = [:]
   private var unreadableDays: Set<String> = []
   private var directoryUnreadable = false
+  private var writeFailed = false
   private var loaded = false
 
   public init(
@@ -22,6 +23,8 @@ public actor DayFileHistoryStore: HistoryStoring {
   }
 
   public func attach(diagnosticLog: DiagnosticLog) { self.diagnosticLog = diagnosticLog }
+
+  public func recordingIsFailing() -> Bool { writeFailed }
 
   static let dayFormatter: DateFormatter = {
     let formatter = DateFormatter()
@@ -117,7 +120,10 @@ public actor DayFileHistoryStore: HistoryStoring {
     session: Int, startedAt: Date, durationMilliseconds: Int,
     targetBundleID: String?, modelID: String? = nil
   ) async -> UUID? {
-    guard isRecordingEnabled() else { return nil }
+    guard isRecordingEnabled() else {
+      writeFailed = false
+      return nil
+    }
     loadIfNeeded()
     let record = DictationRecord(
       id: UUID(), session: session, createdAt: startedAt, updatedAt: startedAt,
@@ -129,8 +135,10 @@ public actor DayFileHistoryStore: HistoryStoring {
     recordsByDay[day, default: []].append(record)
     guard write(day: day) else {
       rollBack(day: day)
+      writeFailed = true
       return nil
     }
+    writeFailed = false
     return record.id
   }
 

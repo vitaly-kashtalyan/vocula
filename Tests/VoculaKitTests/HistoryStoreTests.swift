@@ -495,6 +495,118 @@ struct RefusingCipher: HistoryCipher {
 
 @Suite("HistoryFailureSignal")
 struct HistoryFailureSignalTests {
+  private func unwritableStore() -> (DayFileHistoryStore, URL) {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    let store = DayFileHistoryStore(
+      directory: url, cipher: PassthroughCipher(), isRecordingEnabled: { true })
+    return (store, url)
+  }
+
+  @Test("a dictation that could not be written is remembered")
+  func failedDraftIsRemembered() async {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    defer { try? FileManager.default.removeItem(at: url) }
+    let store = DayFileHistoryStore(
+      directory: url, cipher: RefusingCipher(), isRecordingEnabled: { true })
+    #expect(await store.recordingIsFailing() == false)
+    let id = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100,
+      targetBundleID: nil)
+    #expect(id == nil)
+    #expect(await store.recordingIsFailing())
+  }
+
+  @Test("a dictation that was written clears the memory of one that was not")
+  func successfulDraftClearsTheFlag() async throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: url) }
+    let store = DayFileHistoryStore(
+      directory: url, cipher: PassthroughCipher(), isRecordingEnabled: { true })
+    _ = await store.days()
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: url.path)
+    _ = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    #expect(await store.recordingIsFailing())
+
+    try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: url.path)
+    let id = await store.createDraft(
+      session: 2, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    #expect(id != nil)
+    #expect(await store.recordingIsFailing() == false)
+  }
+
+  @Test("switching history off clears a failure rather than leaving it lit")
+  func disabledHistoryClearsTheFailure() async throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: url) }
+    let enabled = RecordingSwitch(true)
+    let store = DayFileHistoryStore(
+      directory: url, cipher: RefusingCipher(),
+      isRecordingEnabled: { enabled.isOn })
+
+    _ = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    #expect(await store.recordingIsFailing())
+
+    enabled.isOn = false
+    _ = await store.createDraft(
+      session: 2, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    #expect(await store.recordingIsFailing() == false)
+  }
+
+  @Test("a failed delete-all does not claim dictations are unrecorded")
+  func failedDeleteAllLeavesTheFlagAlone() async throws {
+    let (store, url) = unwritableStore()
+    _ = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    #expect(await store.recordingIsFailing() == false)
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: url.path)
+    defer {
+      try? FileManager.default.setAttributes(
+        [.posixPermissions: 0o700], ofItemAtPath: url.path)
+      try? FileManager.default.removeItem(at: url)
+    }
+    await #expect(throws: HistoryStoreError.self) { try await store.deleteAll() }
+    #expect(await store.recordingIsFailing() == false)
+  }
+
+  @Test("a failed delete of a day's last record does not claim dictations are unrecorded")
+  func failedSingleDeleteLeavesTheFlagAlone() async throws {
+    let (store, url) = unwritableStore()
+    let id = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    let recordID = try #require(id)
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: url.path)
+    defer {
+      try? FileManager.default.setAttributes(
+        [.posixPermissions: 0o700], ofItemAtPath: url.path)
+      try? FileManager.default.removeItem(at: url)
+    }
+    #expect(await store.delete(recordID) == false)
+    #expect(await store.recordingIsFailing() == false)
+  }
+
+  @Test("a failed retention sweep does not claim dictations are unrecorded")
+  func failedRetentionLeavesTheFlagAlone() async throws {
+    let (store, url) = unwritableStore()
+    let day = try #require(DateFormatter.dayForTesting.date(from: "2026-01-01"))
+    _ = await store.createDraft(
+      session: 1, startedAt: day, durationMilliseconds: 100, targetBundleID: nil)
+    try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: url.path)
+    defer {
+      try? FileManager.default.setAttributes(
+        [.posixPermissions: 0o700], ofItemAtPath: url.path)
+      try? FileManager.default.removeItem(at: url)
+    }
+    await #expect(throws: HistoryStoreError.self) {
+      try await store.deleteOlderThan(day.addingTimeInterval(3_600))
+    }
+    #expect(await store.recordingIsFailing() == false)
+  }
+
   @Test("a refused key is one error case carrying the OSStatus")
   func refusedKeyCarriesItsStatus() {
     let error = HistoryCipherError.keyUnavailable(status: -25293)
