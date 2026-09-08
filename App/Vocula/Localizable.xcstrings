@@ -7073,10 +7073,58 @@
       "comment" : "How detection works when it is on and the Parakeet engine is selected. Parakeet is a product name.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet erkennt die Sprache im selben Durchgang, in dem es transkribiert, und zwar über alle Sprachen, die es kennt. Die Liste unten wird dabei nicht herangezogen; auch eine nicht angehakte Sprache wird erkannt."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Parakeet identifies the language inside the same pass that transcribes it, over every language it knows. The list below is not consulted, and a language you have not ticked is still recognised."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifica el idioma en la misma pasada con la que transcribe, entre todos los idiomas que conoce. La lista de abajo no se consulta, y un idioma que no hayas marcado también se reconoce."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifie la langue au cours de la même passe que la transcription, parmi toutes les langues qu’il connaît. La liste ci-dessous n’est pas consultée, et une langue que vous n’avez pas cochée est reconnue quand même."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet identifica la lingua nella stessa passata con cui trascrive, fra tutte le lingue che conosce. L’elenco qui sotto non viene consultato, e una lingua che non hai spuntato viene comunque riconosciuta."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet rozpoznaje język w tym samym przebiegu, w którym transkrybuje, spośród wszystkich znanych mu języków. Lista poniżej nie jest brana pod uwagę, a język, którego nie zaznaczono, i tak zostanie rozpoznany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Parakeet identifica o idioma na mesma passagem em que transcreve, entre todos os idiomas que conhece. A lista abaixo não é consultada, e um idioma que você não marcou também é reconhecido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet определяет язык в том же проходе, которым распознаёт речь, среди всех известных ему языков. Список ниже при этом не учитывается: язык, который вы не отметили, всё равно будет распознан."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parakeet визначає мову в тому самому проході, яким розпізнає мовлення, серед усіх відомих йому мов. Список нижче при цьому не враховується: мову, яку ви не позначили, усе одно буде розпізнано."
           }
         }
       }
@@ -7085,10 +7133,58 @@
       "comment" : "Footer under the language list, shown only for the Parakeet engine. Parakeet is a product name.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bei eingeschalteter automatischer Erkennung ändert diese Liste bei Parakeet nichts. Schalten Sie die Erkennung aus, um eine Sprache festzuhalten; das hindert die Engine zugleich daran, ein anderes Alphabet in den Text zu mischen."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "With automatic detection on, this list changes nothing on Parakeet. Turn detection off to hold one language, which also stops the engine mixing another alphabet into the text."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Con la detección automática activada, esta lista no cambia nada en Parakeet. Desactiva la detección para fijar un idioma; eso también impide que el motor mezcle otro alfabeto en el texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lorsque la détection automatique est activée, cette liste ne change rien pour Parakeet. Désactivez la détection pour fixer une langue ; cela empêche aussi le moteur de mêler un autre alphabet au texte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Con il rilevamento automatico attivo, questo elenco non cambia nulla su Parakeet. Disattiva il rilevamento per fissare una lingua; questo impedisce anche al motore di mescolare un altro alfabeto nel testo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przy włączonym automatycznym wykrywaniu ta lista nic nie zmienia w Parakeet. Wyłącz wykrywanie, aby ustalić jeden język; to jednocześnie powstrzyma silnik przed mieszaniem innego alfabetu w tekst."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Com a detecção automática ligada, esta lista não muda nada no Parakeet. Desligue a detecção para fixar um idioma; isso também impede o motor de misturar outro alfabeto no texto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "При включённом автоопределении этот список на Parakeet ничего не меняет. Выключите автоопределение, чтобы закрепить один язык, — это заодно не даст движку подмешивать в текст чужой алфавит."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "За увімкненого автовизначення цей список у Parakeet нічого не змінює. Вимкніть автовизначення, щоб закріпити одну мову, — це водночас не дасть рушієві підмішувати в текст чужу абетку."
           }
         }
       }
@@ -12389,10 +12485,58 @@
       "comment" : "The argument is a model's display name. Keep the typographic quotes.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Datei für „%@“ konnte nicht entpackt werden. Sie wurde gelöscht; versuchen Sie es erneut."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "The file for “%@” could not be expanded. It has been deleted; try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El archivo de «%@» no se pudo descomprimir. Se ha eliminado; inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le fichier de « %@ » n’a pas pu être décompressé. Il a été supprimé ; réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile decomprimere il file di “%@”. È stato eliminato; riprova."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się rozpakować pliku „%@”. Został usunięty; spróbuj ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível descompactar o arquivo de “%@”. Ele foi excluído; tente de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Файл «%@» не удалось распаковать. Он удалён; попробуйте снова."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Файл «%@» не вдалося розпакувати. Його вилучено; спробуйте ще раз."
           }
         }
       }

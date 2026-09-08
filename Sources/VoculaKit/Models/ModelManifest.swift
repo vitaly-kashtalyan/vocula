@@ -17,6 +17,29 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
     }
   }
 
+  public var summary: String {
+    switch self {
+    case .whisper:
+      return String(
+        localized: "models.summary.whisper",
+        defaultValue:
+          "The wider choice of languages, and the one to pick when a single sentence mixes two — it will keep an English term inside Russian speech. Larger to download and slower to transcribe.",
+        bundle: .module,
+        comment:
+          "Footer under the Whisper group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale."
+      )
+    case .parakeet:
+      return String(
+        localized: "models.summary.parakeet",
+        defaultValue:
+          "Faster and much smaller, and it works out the language by itself. It holds to one alphabet per phrase, so a foreign term inside a sentence may come out transliterated or lost.",
+        bundle: .module,
+        comment:
+          "Footer under the Parakeet group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale."
+      )
+    }
+  }
+
   public var engineCredit: String {
     switch self {
     case .whisper:

@@ -27,6 +27,8 @@ struct ModelPickerView: View {
         }
       } header: {
         Text(verbatim: group.family.title)
+      } footer: {
+        Text(verbatim: group.family.summary)
       }
     }
     Section {
