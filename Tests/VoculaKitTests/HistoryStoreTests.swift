@@ -607,6 +607,60 @@ struct HistoryFailureSignalTests {
     #expect(await store.recordingIsFailing() == false)
   }
 
+  private func temporaryLog() -> DiagnosticLog {
+    DiagnosticLog(
+      fileURL: FileManager.default.temporaryDirectory
+        .appendingPathComponent("\(UUID()).json"))
+  }
+
+  @Test("a write that threw names the domain and the code")
+  func failedWriteNamesItsCause() async {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    defer { try? FileManager.default.removeItem(at: url) }
+    let log = temporaryLog()
+    let store = DayFileHistoryStore(
+      directory: url, cipher: RefusingCipher(status: -25293),
+      isRecordingEnabled: { true }, diagnosticLog: log)
+    _ = await store.createDraft(
+      session: 1, startedAt: Date(), durationMilliseconds: 100, targetBundleID: nil)
+    let line = log.recent(10).first { $0.kind == "history.writeFailed" }
+    #expect(line?.detail == "domain=keychain code=-25293")
+  }
+
+  @Test("a day that would not open names the domain and the code")
+  func failedReadNamesItsCause() async throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: url) }
+    try Data("not a sealed day".utf8).write(
+      to: url.appendingPathComponent("2026-01-01.history"))
+    let log = temporaryLog()
+    let store = DayFileHistoryStore(
+      directory: url, cipher: RefusingCipher(status: -25293),
+      isRecordingEnabled: { true }, diagnosticLog: log)
+    _ = await store.days()
+    let line = log.recent(10).first { $0.kind == "history.readFailed" }
+    #expect(line?.detail == "domain=keychain code=-25293")
+  }
+
+  @Test("a write refused before it was tried names which refusal it was")
+  func refusedWriteNamesItsReason() async throws {
+    let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID())")
+    try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: url) }
+    try Data("not a sealed day".utf8).write(
+      to: url.appendingPathComponent("2026-01-01.history"))
+    let log = temporaryLog()
+    let store = DayFileHistoryStore(
+      directory: url, cipher: PassthroughCipher(),
+      isRecordingEnabled: { true }, diagnosticLog: log)
+    let day = try #require(DateFormatter.dayForTesting.date(from: "2026-01-01"))
+    _ = await store.createDraft(
+      session: 1, startedAt: day, durationMilliseconds: 100, targetBundleID: nil)
+    let line = log.recent(10).last { $0.kind == "history.writeFailed" }
+    #expect(line?.detail == "reason=unreadableDay")
+  }
+
   @Test("a refused key is one error case carrying the OSStatus")
   func refusedKeyCarriesItsStatus() {
     let error = HistoryCipherError.keyUnavailable(status: -25293)
