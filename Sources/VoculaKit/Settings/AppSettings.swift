@@ -62,6 +62,42 @@ public struct AppSettings: @unchecked Sendable {
     }
   }
 
+  public static func languageCodesKey(_ family: ModelFamily) -> String {
+    "\(languageCodesKey).\(family.rawValue)"
+  }
+
+  public static func autoDetectLanguageKey(_ family: ModelFamily) -> String {
+    "\(autoDetectLanguageKey).\(family.rawValue)"
+  }
+
+  public static func pinnedLanguageKey(_ family: ModelFamily) -> String {
+    "\(pinnedLanguageKey).\(family.rawValue)"
+  }
+
+  public func storedLanguages(for family: ModelFamily) -> LanguageSelection? {
+    guard let stored = defaults.string(forKey: Self.languageCodesKey(family)) else { return nil }
+    return LanguageSelection(
+      stored: stored,
+      autoDetect: defaults.object(forKey: Self.autoDetectLanguageKey(family)) as? Bool
+        ?? Self.autoDetectLanguageDefault,
+      pinned: defaults.string(forKey: Self.pinnedLanguageKey(family))
+        ?? Self.pinnedLanguageDefault)
+  }
+
+  public func setLanguages(_ selection: LanguageSelection, for family: ModelFamily) {
+    defaults.set(selection.stored, forKey: Self.languageCodesKey(family))
+    defaults.set(selection.autoDetect, forKey: Self.autoDetectLanguageKey(family))
+    defaults.set(selection.pinned, forKey: Self.pinnedLanguageKey(family))
+  }
+
+  public func rememberLanguages(for family: ModelFamily) {
+    setLanguages(languages, for: family)
+  }
+
+  public func restoreLanguages(for family: ModelFamily) {
+    languages = storedLanguages(for: family) ?? EngineLanguages.narrow(languages, to: family)
+  }
+
   public var licenceKey: String {
     get { defaults.string(forKey: Self.licenceKeyKey) ?? Self.licenceKeyDefault }
     nonmutating set { defaults.set(newValue, forKey: Self.licenceKeyKey) }

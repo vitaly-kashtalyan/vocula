@@ -104,4 +104,40 @@ struct AppSettingsTests {
     #expect(settings.microphonePriority == list)
     #expect(settings.microphonePriorityMigrated == true)
   }
+
+  @Test("a language one engine cannot hear waits in that engine's own key")
+  func aSelectionSurvivesAVisitToAnotherEngine() {
+    let settings = AppSettings(defaults: fresh("test.settings.languages.perEngine"))
+    settings.languages = LanguageSelection(codes: ["ru", "ja"], autoDetect: true)
+
+    settings.rememberLanguages(for: .whisper)
+    settings.restoreLanguages(for: .parakeet)
+    #expect(settings.languages.codes == ["ru"])
+
+    settings.rememberLanguages(for: .parakeet)
+    settings.restoreLanguages(for: .whisper)
+    #expect(settings.languages.codes == ["ru", "ja"])
+  }
+
+  @Test("an engine visited before is restored to what it was left on")
+  func anEngineIsRestoredToItsOwnSelection() {
+    let settings = AppSettings(defaults: fresh("test.settings.languages.restore"))
+    settings.setLanguages(
+      LanguageSelection(codes: ["de", "pl"], autoDetect: false), for: .parakeet)
+    settings.languages = LanguageSelection(codes: ["ru"], autoDetect: true)
+
+    settings.restoreLanguages(for: .parakeet)
+    #expect(settings.languages.codes == ["de", "pl"])
+    #expect(settings.languages.autoDetect == false)
+  }
+
+  @Test("an engine never visited inherits the selection in force, narrowed")
+  func aFirstVisitInheritsRatherThanResets() {
+    let settings = AppSettings(defaults: fresh("test.settings.languages.firstVisit"))
+    settings.languages = LanguageSelection(codes: ["ru", "zh"], autoDetect: true)
+    #expect(settings.storedLanguages(for: .parakeet) == nil)
+
+    settings.restoreLanguages(for: .parakeet)
+    #expect(settings.languages.codes == ["ru"])
+  }
 }
