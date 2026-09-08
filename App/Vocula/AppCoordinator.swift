@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import VoculaKit
+import VoculaParakeet
 import VoculaWhisper
 
 @MainActor
@@ -134,7 +135,10 @@ final class AppCoordinator: ObservableObject {
     }
     menu.showsDownloadAction = false
     menu.iconState = .idle
-    let engine = WhisperEngine(modelPath: store.url(for: transcriptionModel))
+    let engine: any Transcribing =
+      ModelManifest.descriptor(for: transcriptionModel).family == .parakeet
+      ? ParakeetEngine(modelDirectory: store.url(for: transcriptionModel))
+      : WhisperEngine(modelPath: store.url(for: transcriptionModel))
     let detector = WhisperVADDetector(modelPath: store.url(for: .speechDetector))
 
     let monitor = HotkeyMonitor(

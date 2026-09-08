@@ -36,6 +36,8 @@ targets:
         product: VoculaKit
       - package: Vocula
         product: VoculaWhisper
+      - package: Vocula
+        product: VoculaParakeet
       - package: Sparkle
         product: Sparkle
     info:

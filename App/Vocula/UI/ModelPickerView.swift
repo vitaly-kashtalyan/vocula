@@ -22,10 +22,7 @@ struct ModelPickerView: View {
             status: downloader.statuses[id] ?? .missing,
             fraction: downloader.fraction[id] ?? 0,
             isDownloading: downloader.isDownloading,
-            select: {
-              transcriptionModel = id
-              Task { await activateIfReady() }
-            },
+            select: { select(id) },
             load: { Task { await load(id) } })
         }
       } header: {
@@ -71,6 +68,18 @@ struct ModelPickerView: View {
   private func load(_ id: ModelID) async {
     await downloader.downloadOne(id)
     await activateIfReady()
+  }
+
+  private func select(_ id: ModelID) {
+    let outgoing = ModelManifest.descriptor(for: transcriptionModel).family
+    let incoming = ModelManifest.descriptor(for: id).family
+    if outgoing != incoming {
+      let settings = AppSettings()
+      settings.rememberLanguages(for: outgoing)
+      settings.restoreLanguages(for: incoming)
+    }
+    transcriptionModel = id
+    Task { await activateIfReady() }
   }
 
   private func activateIfReady() async {

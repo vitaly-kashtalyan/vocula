@@ -9,7 +9,14 @@ struct LanguagePickerView: View {
   private var autoDetect = AppSettings.autoDetectLanguageDefault
   @AppStorage(AppSettings.pinnedLanguageKey)
   private var pinned = AppSettings.pinnedLanguageDefault
+  @AppStorage(AppSettings.transcriptionModelKey)
+  private var transcriptionModel = AppSettings.transcriptionModelDefault
   @State private var search = ""
+
+  private var availableLanguages: [WhisperLanguage] {
+    let family = ModelManifest.descriptor(for: transcriptionModel).family
+    return WhisperLanguages.all.filter { EngineLanguages.supports($0.code, family) }
+  }
 
   private var selection: LanguageSelection {
     LanguageSelection(stored: storedCodes, autoDetect: autoDetect, pinned: pinned)
@@ -97,7 +104,7 @@ struct LanguagePickerView: View {
     } footer: {
       Text(
         verbatim: CountedText.text(
-          LanguageCopy.enginesLanguages(count: WhisperLanguages.all.count)))
+          LanguageCopy.enginesLanguages(count: availableLanguages.count)))
     }
   }
 
@@ -160,8 +167,8 @@ struct LanguagePickerView: View {
 
   private var matches: [WhisperLanguage] {
     let query = search.trimmingCharacters(in: .whitespaces)
-    guard !query.isEmpty else { return WhisperLanguages.all }
-    return WhisperLanguages.all.filter { language in
+    guard !query.isEmpty else { return availableLanguages }
+    return availableLanguages.filter { language in
       [language.displayName, language.name, language.nativeName ?? "", language.code]
         .contains { $0.localizedStandardContains(query) }
     }
