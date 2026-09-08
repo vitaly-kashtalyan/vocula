@@ -5,7 +5,7 @@
 <h1>Vocula</h1>
 
 <p><b>Hold a key. Speak. The words appear where the caret is.</b><br>
-Dictation for macOS that runs entirely on your Mac, in any of 100 languages.</p>
+Dictation for macOS that runs entirely on your Mac, in up to 100 languages.</p>
 
 [![Licence: GPL-3.0](https://img.shields.io/badge/licence-GPL--3.0-blue?style=flat-square)](LICENSE)
 ![Platform](https://img.shields.io/badge/macOS-26%2B-informational?style=flat-square)
@@ -50,6 +50,7 @@ one gesture that always works beats two where one sometimes does.
    [ Silero VAD ]         CPU — finds where the speech is, or salvages a whisper
           │
    [ whisper.cpp ]        Metal GPU — 0.02–0.03× realtime, measured
+    or [ Parakeet ]       Neural Engine — about three times faster, 25 languages
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -92,9 +93,11 @@ by [Sparkle](https://github.com/sparkle-project/Sparkle), pinned by commit in
 `App/project.yml`, and it fetches one signed XML file from the same GitHub
 releases the models come from.
 
-No telemetry, no analytics, no crash reporting, no licence server. The two
-third-party components in the app are whisper.cpp and Sparkle, both pinned in
-`App/project.yml`, so there is no analytics SDK for a call to hide in. One thing
+No telemetry, no analytics, no crash reporting, no licence server. The
+third-party components in the app are the two recognition engines — whisper.cpp
+and FluidAudio, the latter carrying a prebuilt text-normalisation framework —
+and Sparkle, every one pinned by tag, commit or checksum in `App/project.yml`
+and `Package.swift`, so there is no analytics SDK for a call to hide in. One thing
 the update check gives away by existing: GitHub counts downloads of every
 release asset, so the number of copies asking is visible to anyone who looks —
 including us. It is a count, and it is all it is.
@@ -144,8 +147,9 @@ silent recording, a refusal and a dead microphone all cost nothing.
 ## Requirements
 
 - macOS 26.0 or later.
-- About 1.6 GB of disk for the models — Large v3 Turbo, plus the voice-activity
-  detector — downloaded once on first run.
+- Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
+  Large v3 Turbo, or about 470 MB for Parakeet v3, plus the voice-activity
+  detector either way.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
@@ -158,10 +162,11 @@ Intel is not supported and is not claimed.
 ## Build it yourself
 
 Xcode 26 or later — the package needs the Swift 6.2 toolchain and the macOS 26
-SDK. The first build needs a network for two dependencies: Sparkle, pinned by
-commit in `App/project.yml`, and the whisper.cpp XCFramework, fetched from its
-GitHub release and checked against the SHA-256 pinned in
-`Package.swift`.
+SDK. The first build needs a network for its dependencies: Sparkle, pinned by
+commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from its
+GitHub release and checked against the SHA-256 pinned in `Package.swift`; and
+FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
+text-normalisation XCFramework against its own checksum.
 
 ```sh
 brew install xcodegen                       # once
@@ -184,7 +189,7 @@ replaced bundle.
 ### Tests
 
 ```sh
-swift test                       # VoculaKit and VoculaWhisper — no app, no hardware
+swift test                       # the kit and both engines — no app, no hardware
 ./scripts/check-purity.sh        # VoculaKit must import Foundation only
 ./scripts/check-localization.sh  # every key has a translator comment
 xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
@@ -225,6 +230,7 @@ Stated here rather than discovered later.
 | --- | --- |
 | `Sources/VoculaKit` | Every decision. Foundation only, enforced by a script. All of it tested. |
 | `Sources/VoculaWhisper` | Adapters over the pinned whisper.cpp XCFramework. |
+| `Sources/VoculaParakeet` | Adapters over FluidAudio, which runs Parakeet on the Neural Engine. |
 | `App/` | Event taps, audio, Accessibility, pasteboard, UI. |
 
 Most of `App/` has no fast automated tests by design: it touches hardware. When

@@ -2588,7 +2588,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Die größere Sprachauswahl, und die richtige Wahl, wenn ein einzelner Satz zwei Sprachen mischt — ein englischer Fachbegriff bleibt auch mitten in griechischer Rede erhalten. Größerer Download und langsamere Transkription."
+            "value" : "Die größere Sprachauswahl, und die richtige Entscheidung, wenn ein einzelner Satz zwei Sprachen mischt — ein englischer Fachbegriff bleibt auch mitten in griechischer Rede erhalten. Größerer Download und langsamere Transkription."
           }
         },
         "en" : {
@@ -2618,7 +2618,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Szerszy wybór języków i właściwy wybór, gdy jedno zdanie miesza dwa — angielski termin pozostanie angielskim pośrodku greckiej wypowiedzi. Większe pobieranie i wolniejsza transkrypcja."
+            "value" : "Szerszy wybór języków i właściwa opcja, gdy jedno zdanie miesza dwa — angielski termin pozostanie angielskim pośrodku greckiej wypowiedzi. Większe pobieranie i wolniejsza transkrypcja."
           }
         },
         "pt-BR" : {

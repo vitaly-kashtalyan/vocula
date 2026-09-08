@@ -7076,7 +7076,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Parakeet erkennt die Sprache im selben Durchgang, in dem es transkribiert, und zwar über alle Sprachen, die es kennt. Die Liste unten wird dabei nicht herangezogen; auch eine nicht angehakte Sprache wird erkannt."
+            "value" : "Parakeet erkennt die Sprache im selben Erkennungsdurchlauf, in dem es die Aufnahme umsetzt, und zwar über alle Sprachen, die es kennt. Die Liste unten wird dabei nicht herangezogen; auch eine nicht angehakte Sprache wird erkannt."
           }
         },
         "en" : {
@@ -7100,13 +7100,13 @@
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Parakeet identifica la lingua nella stessa passata con cui trascrive, fra tutte le lingue che conosce. L’elenco qui sotto non viene consultato, e una lingua che non hai spuntato viene comunque riconosciuta."
+            "value" : "Parakeet identifica la lingua nello stesso passaggio con cui trascrive, fra tutte le lingue che conosce. L’elenco qui sotto non viene consultato, e una lingua che non hai spuntato viene comunque riconosciuta."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Parakeet rozpoznaje język w tym samym przebiegu, w którym transkrybuje, spośród wszystkich znanych mu języków. Lista poniżej nie jest brana pod uwagę, a język, którego nie zaznaczono, i tak zostanie rozpoznany."
+            "value" : "Parakeet wykrywa język w tym samym przebiegu, w którym rozpoznaje mowę, spośród wszystkich znanych mu języków. Lista poniżej nie jest brana pod uwagę, a język, którego nie zaznaczysz, i tak zostanie wykryty."
           }
         },
         "pt-BR" : {
@@ -7136,7 +7136,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bei eingeschalteter automatischer Erkennung ändert diese Liste bei Parakeet nichts. Schalten Sie die Erkennung aus, um eine Sprache festzuhalten; das hindert die Engine zugleich daran, ein anderes Alphabet in den Text zu mischen."
+            "value" : "Bei eingeschalteter automatischer Erkennung ändert diese Liste bei Parakeet nichts. Schalten Sie die Erkennung aus, um eine Sprache festzuhalten; das hindert die Erkennung zugleich daran, ein anderes Alphabet in den Text zu mischen."
           }
         },
         "en" : {
