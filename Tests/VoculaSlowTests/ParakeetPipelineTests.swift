@@ -6,7 +6,7 @@ import VoculaParakeet
 
 private let modelDirectory = FileManager.default.homeDirectoryForCurrentUser
   .appendingPathComponent(
-    "Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3")
+    "Library/Application Support/app.vocula.mac/Models/parakeet-ultra-95eaa59")
 
 private var modelIsAbsent: Bool {
   !FileManager.default.fileExists(atPath: modelDirectory.path)
@@ -53,8 +53,54 @@ struct ParakeetPipelineTests {
   }
 }
 
-@Suite("Parakeet without any weights on disk")
+private func snapshot(of directory: URL) throws -> [String: Data] {
+  let base = directory.resolvingSymlinksInPath().path + "/"
+  var files: [String: Data] = [:]
+  let walk = FileManager.default.enumerator(
+    at: directory, includingPropertiesForKeys: [.isRegularFileKey])
+  while let url = walk?.nextObject() as? URL {
+    guard try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true else {
+      continue
+    }
+    let path = url.resolvingSymlinksInPath().path
+    files[String(path.dropFirst(base.count))] = try Data(contentsOf: url)
+  }
+  return files
+}
+
+@Suite("Parakeet without any weights on disk", .serialized)
 struct ParakeetWithoutModelTests {
+  @Test("A model that will not load is refused without deleting or downloading anything")
+  func anUnloadableModelIsLeftAlone() async throws {
+    let root = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    let model = root.appendingPathComponent("parakeet-ultra", isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+    let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
+    try JSONSerialization.data(withJSONObject: vocabulary)
+      .write(to: model.appendingPathComponent("parakeet_vocab.json"))
+    for bundle in ["Preprocessor", "Encoder", "Decoder", "JointDecisionv3"] {
+      let weights = model.appendingPathComponent("\(bundle).mlmodelc/weights", isDirectory: true)
+      try FileManager.default.createDirectory(at: weights, withIntermediateDirectories: true)
+      try Data("junk".utf8).write(
+        to: weights.deletingLastPathComponent().appendingPathComponent("coremldata.bin"))
+      try Data("junk".utf8).write(to: weights.appendingPathComponent("weight.bin"))
+    }
+    let before = try snapshot(of: model)
+    #expect(before.count == 9)
+    let host = ModelRegistry.baseURL
+    ModelRegistry.baseURL = "http://127.0.0.1:9"
+    defer { ModelRegistry.baseURL = host }
+
+    let engine = ParakeetEngine(modelDirectory: model)
+    await #expect(throws: TranscriptionError.modelNotLoaded) {
+      try await engine.transcribe(
+        [Float](repeating: 0.1, count: 16000), languages: .pinned("en"), deadline: .seconds(30))
+    }
+    #expect(try snapshot(of: model) == before)
+  }
+
   @Test("Every code this app offers for Parakeet is one FluidAudio knows")
   func theCodeListIsNotAHandWrittenGuess() {
     for code in EngineLanguages.parakeetCodes {

@@ -70,14 +70,9 @@ public actor ParakeetEngine: Transcribing {
 
   private func beginLoading() -> Task<(AsrManager, Int), Error> {
     Task { [modelDirectory] in
-      // `AsrModels.load` fetches any missing bundle from HuggingFace, behind the
-      // mirror and outside the checksum compiled into this binary.
-      guard AsrModels.modelsExist(at: modelDirectory, version: .v3) else {
-        throw TranscriptionError.modelNotLoaded
-      }
       let models: AsrModels
       do {
-        models = try await AsrModels.load(from: modelDirectory, version: .v3)
+        models = try AsrModels.loadLocal(from: modelDirectory, version: .ultra)
       } catch {
         throw TranscriptionError.modelNotLoaded
       }
