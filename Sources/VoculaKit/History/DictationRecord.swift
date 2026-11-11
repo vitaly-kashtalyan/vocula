@@ -16,4 +16,5 @@ public struct DictationRecord: Equatable, Sendable, Codable {
   public var metrics: SpeechMetrics?
   public var truncated: Bool
   public var modelID: String?
+  public var refinedBy: String?
 }

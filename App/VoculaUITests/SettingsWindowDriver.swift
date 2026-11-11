@@ -67,7 +67,7 @@ extension XCTestCase {
 enum Sidebar {
   static let sections = [
     "status", "permissions",
-    "keyboard", "languages", "microphone", "models",
+    "keyboard", "languages", "microphone", "models", "refinement",
     "history", "diagnostics",
     "licence", "appearance",
   ]

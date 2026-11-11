@@ -55,9 +55,7 @@ struct ModelPickerView: View {
           }
         }
       }
-      if let error = downloader.lastError {
-        Text(verbatim: error).foregroundStyle(.red)
-      }
+      ModelDownloadFailure(message: downloader.lastError)
     } footer: {
       Text(ModelScreenCopy.fullyLocal)
     }
@@ -83,6 +81,16 @@ struct ModelPickerView: View {
   private func activateIfReady() async {
     guard downloader.statuses[transcriptionModel] == .ready else { return }
     await onModelsReady()
+  }
+}
+
+struct ModelDownloadFailure: View {
+  let message: String?
+
+  var body: some View {
+    if let message {
+      Text(verbatim: message).foregroundStyle(.red)
+    }
   }
 }
 
@@ -118,18 +126,19 @@ private struct ModelPickerRow: View {
       }
       .buttonStyle(.plain)
       .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
-      Text(verbatim: subtitle)
+      Text(verbatim: descriptor.statusLine(status))
     }
   }
+}
 
-  private var subtitle: String {
-    let size = descriptor.byteSize.formatted(.byteCount(style: .file).locale(.interface))
+extension ModelDescriptor {
+  func statusLine(_ status: ModelStatus) -> String {
+    let size = byteSize.formatted(.byteCount(style: .file).locale(.interface))
     switch status {
     case .ready: return size
     case .missing: return String(localized: ModelScreenCopy.notDownloaded(size))
     case .incomplete: return String(localized: ModelScreenCopy.partlyDownloaded(size))
-    case .corrupted:
-      return String(localized: ModelScreenCopy.damaged(size, descriptor.version))
+    case .corrupted: return String(localized: ModelScreenCopy.damaged(size, version))
     }
   }
 }

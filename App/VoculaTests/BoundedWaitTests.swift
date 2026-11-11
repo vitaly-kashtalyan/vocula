@@ -1,15 +1,18 @@
 import Foundation
 import Testing
+import VoculaKit
 
 @testable import Vocula
 
 @Suite("Bounded wait")
 struct BoundedWaitTests {
-  @Test("uncancellable work does not outrun the bound")
+  @Test("uncancellable work does not outrun the bound, which throws timedOut")
   func boundHoldsAgainstUncancellableWork() async {
     let started = ContinuousClock.now
-    await withBound(.milliseconds(200)) {
-      await Task { try? await Task.sleep(for: .seconds(5)) }.value
+    await #expect(throws: TranscriptionError.timedOut) {
+      try await withBound(.milliseconds(200)) {
+        await Task { try? await Task.sleep(for: .seconds(5)) }.value
+      }
     }
     let elapsed = ContinuousClock.now - started
     #expect(
@@ -20,8 +23,8 @@ struct BoundedWaitTests {
   @Test("work that finishes early returns early")
   func fastWorkReturnsImmediately() async {
     let started = ContinuousClock.now
-    await withBound(.seconds(5)) {
-      try? await Task.sleep(for: .milliseconds(20))
+    await #expect(throws: Never.self) {
+      try await withBound(.seconds(5)) { try await Task.sleep(for: .milliseconds(20)) }
     }
     #expect(ContinuousClock.now - started < .seconds(1))
   }
@@ -29,7 +32,7 @@ struct BoundedWaitTests {
   @Test("both racers completing does not resume twice")
   func bothRacersAreSafe() async {
     for _ in 0..<20 {
-      await withBound(.milliseconds(10)) {
+      _ = try? await withBound(.milliseconds(10)) {
         try? await Task.sleep(for: .milliseconds(10))
       }
     }
@@ -48,7 +51,7 @@ struct BoundedWaitCancellationTests {
   @Test("work that outran the bound is cancelled rather than left running")
   func theLoserIsCancelled() async {
     let cancelled = Flag()
-    await withBound(.milliseconds(100)) {
+    _ = try? await withBound(.milliseconds(100)) {
       await withTaskCancellationHandler {
         try? await Task.sleep(for: .seconds(5))
       } onCancel: {

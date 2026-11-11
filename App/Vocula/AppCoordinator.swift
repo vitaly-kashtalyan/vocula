@@ -1,36 +1,59 @@
 import AppKit
 import Carbon.HIToolbox
+import Synchronization
 import VoculaKit
 import VoculaParakeet
 import VoculaWhisper
 
-@MainActor
-func withBound(_ bound: Duration, _ work: @escaping @Sendable () async -> Void) async {
-  let job = Task { await work() }
-  let timer = Task { try? await Task.sleep(for: bound) }
-  await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-    let once = ResumeOnce(continuation)
-    Task {
-      await job.value
-      await once.fire()
-    }
-    Task {
-      await timer.value
-      await once.fire()
-    }
+extension ModelStore {
+  static func app() -> ModelStore {
+    ModelStore(
+      directory: ApplicationSupport.modelsDirectory,
+      fileSystem: SystemModelFileSystem(),
+      localOverrides: developmentOverrides())
   }
-  job.cancel()
-  timer.cancel()
+
+  static func developmentOverrides(_ defaults: UserDefaults = .standard) -> [ModelID: URL] {
+    #if DEBUG
+      ModelID.allCases.reduce(into: [:]) { found, id in
+        if let path = defaults.string(forKey: "models.path.\(id.rawValue)") {
+          found[id] = URL(fileURLWithPath: path)
+        }
+      }
+    #else
+      [:]
+    #endif
+  }
 }
 
-private actor ResumeOnce {
-  private var continuation: CheckedContinuation<Void, Never>?
-  init(_ continuation: CheckedContinuation<Void, Never>) {
-    self.continuation = continuation
+func withBound<T: Sendable>(
+  _ bound: Duration, _ work: @escaping @Sendable () async throws -> T
+) async throws -> T {
+  let job = Task { try await work() }
+  let timer = Task { try await Task.sleep(for: bound) }
+  defer {
+    job.cancel()
+    timer.cancel()
   }
-  func fire() {
-    continuation?.resume()
-    continuation = nil
+  return try await withCheckedThrowingContinuation { continuation in
+    let first = FirstResult(continuation)
+    Task { first.resume(with: await job.result) }
+    Task {
+      guard case .success = await timer.result else { return }
+      first.resume(with: .failure(TranscriptionError.timedOut))
+    }
+  }
+}
+
+private final class FirstResult<T: Sendable>: Sendable {
+  private let continuation: Mutex<CheckedContinuation<T, Error>?>
+
+  init(_ continuation: CheckedContinuation<T, Error>) {
+    self.continuation = Mutex(continuation)
+  }
+
+  func resume(with result: Result<T, Error>) {
+    continuation.withLock { $0.take() }?.resume(with: result)
   }
 }
 
@@ -43,10 +66,14 @@ final class AppCoordinator: ObservableObject {
   private var monitor: HotkeyMonitor?
   private var controller: DictationController?
   private var inserter: TextInserter?
+  private var refiner: MLXRefiner?
+  private var refinementObserver: (any NSObjectProtocol)?
+  private var refinerLifecycle = RefinerLifecycle()
+  var modelsChangedOnDisk: (() -> Void)?
 
   func finishInFlightWork() async {
     guard let controller else { return }
-    await withBound(.seconds(3)) { await controller.drain() }
+    _ = try? await withBound(.seconds(3)) { await controller.drain() }
     inserter?.settleOwedRestore()
   }
   private let recorder = AudioRecorder()
@@ -121,9 +148,7 @@ final class AppCoordinator: ObservableObject {
     MicrophonePriorityMigration.blankLegacyNamesIfNeeded(settings: settings)
     MicrophonePriorityMigration.reconcile(settings: settings, snapshot: inputs)
     menu.watchInputDevices()
-    let store = ModelStore(
-      directory: ApplicationSupport.modelsDirectory,
-      fileSystem: SystemModelFileSystem())
+    let store = ModelStore.app()
     let transcriptionModel = settings.transcriptionModel
     let modelsAreReady = await Task.detached(priority: .utility) {
       store.isReady([transcriptionModel, .speechDetector])
@@ -177,6 +202,12 @@ final class AppCoordinator: ObservableObject {
             "", at: timestamp)
         }
       })
+    let refiner = MLXRefiner(
+      directory: store.url(for: .qwenRefine2B), modelID: ModelID.qwenRefine2B.rawValue,
+      loadFailed: { [weak self] in
+        Task { @MainActor in self?.refinerFailedToLoad() }
+      })
+    self.refiner = refiner
     self.inserter = inserter
     let controller = DictationController(
       dependencies: .init(
@@ -186,6 +217,9 @@ final class AppCoordinator: ObservableObject {
         probe: AXTargetProbe(),
         inserter: inserter,
         filter: TextFilter(),
+        refiner: refiner,
+        refinementIsEnabled: { [settings] in settings.refineEnabled },
+        refinementCeiling: { [settings] in .seconds(settings.refineMaximumWait) },
         history: historyStore,
         modelID: transcriptionModel.rawValue,
         timings: .default,
@@ -239,7 +273,40 @@ final class AppCoordinator: ObservableObject {
       },
       Task { [weak self] in await self?.forwardDeviceChanges(to: controller) },
     ]
+    watchRefinementSetting()
+    perform(refinerLifecycle.handle(.pipelineStarted(isEnabled: settings.refineEnabled)))
     if installed { indicator.show(.idle) }
+  }
+
+  private func watchRefinementSetting() {
+    guard refinementObserver == nil else { return }
+    refinementObserver = NotificationCenter.default.addObserver(
+      forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+    ) { [weak self] _ in
+      MainActor.assumeIsolated {
+        guard let self else { return }
+        self.perform(
+          self.refinerLifecycle.handle(.settingChanged(isEnabled: self.settings.refineEnabled)))
+      }
+    }
+  }
+
+  private func refinerFailedToLoad() {
+    perform(
+      refinerLifecycle.handle(
+        .loadFailed(
+          isEnabled: settings.refineEnabled, model: modelStore.status(of: .qwenRefine2B))))
+  }
+
+  private func perform(_ actions: [RefinerLifecycle.Action]) {
+    for action in actions {
+      switch action {
+      case .prewarm: if let refiner { Task { await refiner.prewarm() } }
+      case .unload: if let refiner { Task { await refiner.unload() } }
+      case .switchOff: settings.refineEnabled = false
+      case .discard: Task { await removeInstalledModel(.qwenRefine2B) }
+      }
+    }
   }
 
   private func tearDownPipeline() {
@@ -256,6 +323,8 @@ final class AppCoordinator: ObservableObject {
     indicator.hide()
     controller = nil
     bindingModel = nil
+    perform(refinerLifecycle.handle(.tornDown))
+    refiner = nil
   }
 
   private func startRetentionIfNeeded() {
@@ -617,22 +686,32 @@ final class AppCoordinator: ObservableObject {
     }
   }
 
-  private var modelStore: ModelStore {
-    ModelStore(
-      directory: ApplicationSupport.modelsDirectory,
-      fileSystem: SystemModelFileSystem())
-  }
+  private var modelStore: ModelStore { .app() }
 
   private func discardInstalledModel(_ id: ModelID) async {
-    let store = modelStore
-    await Task.detached(priority: .utility) {
-      try? FileManager.default.removeItem(at: store.url(for: id))
-    }.value
-    log("model.discarded", "model=\(id.rawValue)")
+    guard await removeInstalledModel(id) else { return }
     tearDownPipeline()
     menu.iconState = .error(MenuBarController.modelsNotDownloaded)
     menu.showsDownloadAction = true
     startMonitorOnly()
+  }
+
+  @discardableResult
+  private func removeInstalledModel(_ id: ModelID) async -> Bool {
+    let store = modelStore
+    let removed = await Task.detached(priority: .utility) {
+      Self.removeInstalled(id, from: store)
+    }.value
+    guard removed else { return false }
+    log("model.discarded", "model=\(id.rawValue)")
+    modelsChangedOnDisk?()
+    return true
+  }
+
+  nonisolated static func removeInstalled(_ id: ModelID, from store: ModelStore) -> Bool {
+    guard store.localOverrides[id] == nil else { return false }
+    try? FileManager.default.removeItem(at: store.url(for: id))
+    return true
   }
 
   private func forwardDeviceChanges(to controller: DictationController) async {

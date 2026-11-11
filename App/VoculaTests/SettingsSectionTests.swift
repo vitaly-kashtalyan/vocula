@@ -15,7 +15,7 @@ struct SettingsSectionTests {
   func order() {
     #expect(
       SettingsSection.groups.flatMap(\.sections) == [
-        .status, .permissions, .keyboard, .languages, .microphone, .models,
+        .status, .permissions, .keyboard, .languages, .microphone, .models, .refinement,
         .history, .diagnostics, .licence, .appearance,
       ])
     #expect(SettingsSection.groups.map(\.id) == ["top", "dictation", "data", "app"])
@@ -42,7 +42,7 @@ struct SettingsSectionTests {
       SettingsSection.allCases.map { inEnglish($0.title) }
         == [
           "Status", "Permissions", "Keyboard", "Languages", "Microphone", "Models",
-          "History", "Diagnostics", "Licence", "Appearance",
+          "Clean-up", "History", "Diagnostics", "Licence", "Appearance",
         ])
     #expect(
       SettingsSection.groups.compactMap { $0.title }.map { inEnglish($0) }

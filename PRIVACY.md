@@ -30,6 +30,14 @@ Recognition runs entirely on this Mac, using a model that was downloaded once.
 No audio, no text and no metadata about what you dictate leave the machine at
 any point.
 
+**Clean-up, if you switch it on, runs on this Mac as well.** A language model,
+downloaded once, rewrites the transcript to remove filler before it is pasted.
+It sees that text and nothing else, and the code that runs it makes no network
+request.
+When its result loses a number, a negation or a question, or changes the
+language, the text as recognised is pasted instead. History keeps the text as
+recognised beside the cleaned-up one.
+
 ## Putting the text in place
 
 Text is inserted by writing it to the system clipboard and sending ⌘V. That
@@ -101,16 +109,17 @@ else is dropped before it reaches the file. But it does record *when* the app
 was used and how a dictation ended when it ended badly. Someone reading it
 learns that you dictated at 14:32 and how long you held the key — never what
 the text was, and never which language you spoke. A dictation that simply
-worked writes no outcome line; the one thing it can write is a measurement of
-how unsure the language detector was, as bare percentages that name no
-language. It holds the last 2,000 events. "Reveal the Diagnostic Log in Finder" in the menu
+worked writes no outcome line; what it can write is a measurement of how unsure
+the language detector was, as bare percentages that name no language, and, with
+clean-up on, how long a slow pass took or why its result was not used. It holds the last 2,000 events. "Reveal the Diagnostic Log in Finder" in the menu
 takes you to it.
 
 ## What leaves this Mac
 
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-**The recognition models, once**, the first time you use the app. Each file is
+**The models, once each**: the recognition models the first time you use the
+app, and the clean-up model only when you ask for it. Each file is
 verified against a checksum built into the app, and a file that does not match
 it is deleted rather than used.
 

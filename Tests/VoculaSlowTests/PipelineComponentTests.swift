@@ -203,6 +203,7 @@ private actor OutcomeLog: SessionRecording {
   func attachMetrics(_ id: UUID, _ value: SpeechMetrics) async { metrics = value }
   func attachRawText(_ id: UUID, _ text: String, language: String?) async { rawText = text }
   func attachFinalText(_ id: UUID, _ text: String) async { finalText = text }
+  func attachRefinement(_ id: UUID, modelID: String) async {}
   func setState(_ id: UUID, _ state: SessionState, reason: String?) async {
     states.append((state, reason))
   }

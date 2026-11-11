@@ -8,6 +8,9 @@ public actor DictationController {
     public var probe: TargetProbing
     public var inserter: TextInserter
     public var filter: TextFiltering
+    public var refiner: TextRefining?
+    public var refinementIsEnabled: @Sendable () -> Bool
+    public var refinementCeiling: @Sendable () -> Duration
     public var history: SessionRecording
     public var modelID: String?
     public var timings: Timings
@@ -19,6 +22,11 @@ public actor DictationController {
     public init(
       audio: AudioRecording, detector: SpeechDetecting, engine: Transcribing,
       probe: TargetProbing, inserter: TextInserter, filter: TextFiltering,
+      refiner: TextRefining? = nil,
+      refinementIsEnabled: @escaping @Sendable () -> Bool = { false },
+      refinementCeiling: @escaping @Sendable () -> Duration = {
+        .seconds(AppSettings.refineMaximumWaitDefault)
+      },
       history: SessionRecording, modelID: String? = nil,
       timings: Timings,
       languages: @escaping @Sendable () -> LanguageSelection,
@@ -32,6 +40,9 @@ public actor DictationController {
       self.probe = probe
       self.inserter = inserter
       self.filter = filter
+      self.refiner = refiner
+      self.refinementIsEnabled = refinementIsEnabled
+      self.refinementCeiling = refinementCeiling
       self.history = history
       self.modelID = modelID
       self.timings = timings
@@ -430,15 +441,16 @@ public actor DictationController {
     }
     rememberTranscript(filtered.text, session: session)
     await gate.wait(for: session)
+    let finalText = await refined(filtered.text, id: id)
 
     guard
       await reprobeAndApprove(
         id: id, session: session, snapshot: snapshot,
-        finalTextOnDeny: filtered.text) != nil
+        finalTextOnDeny: finalText) != nil
     else { return nil }
 
-    await dependencies.history.attachFinalText(id, filtered.text)
-    rememberTranscript(filtered.text, session: session)
+    await dependencies.history.attachFinalText(id, finalText)
+    rememberTranscript(finalText, session: session)
 
     guard
       let approval = await reprobeAndApprove(
@@ -446,7 +458,7 @@ public actor DictationController {
         snapshot: snapshot,
         finalTextOnDeny: nil)
     else { return nil }
-    switch await dependencies.inserter.insert(filtered.text, approval: approval) {
+    switch await dependencies.inserter.insert(finalText, approval: approval) {
     case .sent(let restore):
       await conclude(id, session: session, .sent, reason: nil)
       return restore
@@ -495,6 +507,50 @@ public actor DictationController {
       await cancel(session)
     case .stopping, .idle:
       break
+    }
+  }
+
+  private func refined(_ text: String, id: UUID) async -> String {
+    guard let refiner = dependencies.refiner,
+      RefinementPolicy.shouldRun(isEnabled: dependencies.refinementIsEnabled(), text: text)
+    else { return text }
+    let input = RepeatedSentences.collapse(text)
+    let started = ContinuousClock.now
+    let produced: String
+    do {
+      produced = try await refiner.refine(
+        input,
+        deadline: RefinementPolicy.deadline(
+          for: input, ceiling: dependencies.refinementCeiling()))
+    } catch {
+      dependencies.diagnose("refine.failed", Self.refineFailure(error))
+      return text
+    }
+    let took = ContinuousClock.now - started
+    let ms = Int(took / .milliseconds(1))
+    let result: String
+    switch RefinementPolicy.verdict(on: produced, original: input) {
+    case .accepted(let accepted): result = accepted
+    case .unchanged: result = input
+    case .refused(let why):
+      dependencies.diagnose("refine.failed", "reason=\(why.rawValue) ms=\(ms)")
+      return text
+    }
+    if RefinementPolicy.isSlow(took, characters: input.count) {
+      dependencies.diagnose(
+        "refine.done", "ms=\(ms) outcome=\(result == text ? "same" : "changed")")
+    }
+    guard result != text else { return text }
+    await dependencies.history.attachRefinement(id, modelID: refiner.modelID)
+    return result
+  }
+
+  private static func refineFailure(_ error: Error) -> String {
+    switch error {
+    case TranscriptionError.timedOut: "reason=timeout"
+    case TranscriptionError.modelNotLoaded: "reason=notLoaded"
+    case RefinementError.tokenCap: "reason=tokenCap"
+    default: "reason=engineFailed"
     }
   }
 }

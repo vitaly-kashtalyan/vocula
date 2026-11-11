@@ -41,7 +41,7 @@ private func store(_ fs: FakeFS) -> ModelStore {
 struct ModelStoreTests {
   @Test("the manifest pins every model with a version, a checksum and a licence")
   func manifestIsComplete() {
-    #expect(ModelManifest.current.count == 3)
+    #expect(ModelManifest.current.count == 4)
     for model in ModelManifest.current {
       #expect(model.sha256.count == 64)
       #expect(model.sha256.allSatisfy { $0.isHexDigit })
@@ -52,9 +52,44 @@ struct ModelStoreTests {
     #expect(Set(ModelManifest.current.map(\.id)) == Set(ModelID.allCases))
     #expect(ModelManifest.transcriptionModels.count == 2)
     #expect(!ModelManifest.transcriptionModels.contains(.speechDetector))
+    #expect(!ModelManifest.transcriptionModels.contains(.qwenRefine2B))
     let grouped = ModelManifest.transcriptionModelsByFamily
     #expect(grouped.flatMap(\.models) == ModelManifest.transcriptionModels)
     #expect(grouped.allSatisfy { !$0.models.isEmpty })
+  }
+
+  @Test("the refinement model arrives as an archive and is never offered as an engine")
+  func refinementModelIsNotAnEngine() {
+    let descriptor = ModelManifest.descriptor(for: .qwenRefine2B)
+    #expect(descriptor.unpacked != nil)
+    #expect(!descriptor.contents.isEmpty)
+    #expect(descriptor.family == .refiner)
+    #expect(!ModelManifest.transcriptionModelsByFamily.contains { $0.family == .refiner })
+  }
+
+  @Test("the clean-up model's licence line says the Qwen weights were modified")
+  func refinementModelSaysItIsModified() {
+    #expect(ModelManifest.descriptor(for: .qwenRefine2B).licence.contains("modified"))
+  }
+
+  @Test("refinement is off until someone turns it on")
+  func refinementDefaultsOff() {
+    let defaults = UserDefaults(suiteName: "test.refine.default")!
+    defaults.removePersistentDomain(forName: "test.refine.default")
+    #expect(AppSettings(defaults: defaults).refineEnabled == false)
+  }
+
+  @Test("a local override moves one model, and status reads it there, while the others stay put")
+  func localOverrideIsUsed() {
+    let elsewhere = URL(fileURLWithPath: "/tmp/somewhere/qwen")
+    var fs = FakeFS()
+    for name in ModelManifest.descriptor(for: .qwenRefine2B).contents { fs.files[name] = 1 }
+    let store = ModelStore(
+      directory: directory, fileSystem: fs, manifest: ModelManifest.current,
+      localOverrides: [.qwenRefine2B: elsewhere])
+    #expect(store.url(for: .qwenRefine2B) == elsewhere)
+    #expect(store.status(of: .qwenRefine2B) == .ready)
+    #expect(store.url(for: .largeV3Turbo).deletingLastPathComponent().path == directory.path)
   }
 
   @Test("a fresh install starts on Whisper, and an unknown model falls back to it")

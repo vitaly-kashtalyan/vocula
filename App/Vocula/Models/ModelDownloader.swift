@@ -52,7 +52,7 @@ final class ModelDownloader: NSObject, ObservableObject {
   private let requiredModels: @Sendable () -> [ModelID]
   private var task: URLSessionDownloadTask?
   private var continuation: CheckedContinuation<URL, Error>?
-  private var current: ModelID?
+  @Published private(set) var current: ModelID?
   private var session: URLSession!
 
   init(

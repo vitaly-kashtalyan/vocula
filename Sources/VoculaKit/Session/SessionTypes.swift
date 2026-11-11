@@ -114,6 +114,7 @@ public protocol SessionRecording: Sendable {
   func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async
   func attachRawText(_ id: UUID, _ text: String, language: String?) async
   func attachFinalText(_ id: UUID, _ text: String) async
+  func attachRefinement(_ id: UUID, modelID: String) async
   func setState(_ id: UUID, _ state: SessionState, reason: String?) async
 }
 

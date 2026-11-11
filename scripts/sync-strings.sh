@@ -13,7 +13,7 @@ DERIVED=$(xcodebuild -project "$ROOT/App/Vocula.xcodeproj" -scheme Vocula \
           | awk -F' = ' '/ OBJROOT = /{print $2; exit}')
 if [ -z "$DERIVED" ] || [ ! -d "$DERIVED" ]; then
     echo "sync-strings: nothing was checked — xcodebuild reported no OBJROOT." >&2
-    echo "  Build once first: xcodebuild -project App/Vocula.xcodeproj -scheme Vocula build" >&2
+    echo "  Build once first: xcodebuild -project App/Vocula.xcodeproj -scheme Vocula -skipPackagePluginValidation build" >&2
     exit 1
 fi
 

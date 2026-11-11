@@ -9,6 +9,7 @@ clean=${1:-}
 
 if [ "$clean" = "--clean" ]; then
     xcodebuild -project "$root/App/Vocula.xcodeproj" -scheme Vocula \
+               -skipPackagePluginValidation \
                -configuration Debug clean >/dev/null
 elif [ -n "$clean" ]; then
     echo "usage: $0 [--clean]" >&2
@@ -16,6 +17,7 @@ elif [ -n "$clean" ]; then
 fi
 
 xcodebuild -project "$root/App/Vocula.xcodeproj" -scheme Vocula \
+           -skipPackagePluginValidation \
            -configuration Debug build >/dev/null
 settings=$(xcodebuild -project "$root/App/Vocula.xcodeproj" -scheme Vocula \
                       -configuration Debug -showBuildSettings 2>/dev/null)

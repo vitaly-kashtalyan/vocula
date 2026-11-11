@@ -24,6 +24,7 @@ command -v xcodegen >/dev/null || { echo "screenshots: brew install xcodegen" >&
 (cd App && xcodegen generate >/dev/null)
 mkdir -p "$PWD/build"
 xcodebuild -project App/Vocula.xcodeproj -scheme Vocula -configuration Debug build \
+  -skipPackagePluginValidation \
   >"$PWD/build/screenshots-build.log" 2>&1 ||
   { echo "screenshots: build failed; see build/screenshots-build.log" >&2; exit 1; }
 app=$(xcodebuild -project App/Vocula.xcodeproj -scheme Vocula -configuration Debug \
