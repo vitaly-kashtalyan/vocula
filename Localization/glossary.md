@@ -74,6 +74,7 @@ translation must pick one word per row and use it in prose too.
 | `Languages` | `settings.section.languages` |
 | `Microphone` | `settings.section.microphone` |
 | `Models` | `settings.section.models` |
+| `Clean-up` | `settings.section.refinement` |
 | `History` | `settings.section.history` |
 | `Diagnostics` | `settings.section.diagnostics` |
 | `Licence` | `settings.section.licence` |

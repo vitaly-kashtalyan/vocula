@@ -138,7 +138,7 @@ public actor DayFileHistoryStore: HistoryStoring {
       owner: nil, state: .recorded, reason: nil,
       rawText: nil, finalText: nil, language: nil,
       durationMilliseconds: durationMilliseconds, targetBundleID: targetBundleID,
-      metrics: nil, truncated: false, modelID: modelID)
+      metrics: nil, truncated: false, modelID: modelID, refinedBy: nil)
     let day = dayKey(startedAt)
     recordsByDay[day, default: []].append(record)
     guard write(day: day) else {
@@ -162,6 +162,9 @@ public actor DayFileHistoryStore: HistoryStoring {
   }
   public func attachFinalText(_ id: UUID, _ text: String) async {
     mutate(id) { $0.finalText = text }
+  }
+  public func attachRefinement(_ id: UUID, modelID: String) async {
+    mutate(id) { $0.refinedBy = modelID }
   }
   public func setState(_ id: UUID, _ state: SessionState, reason: String?) async {
     mutate(id) {

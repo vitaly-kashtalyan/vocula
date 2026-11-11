@@ -108,6 +108,7 @@ final class HistoryWindowModel: ObservableObject {
 struct HistoryView: View {
   @ObservedObject var model: HistoryWindowModel
   @State private var copied: UUID?
+  @State private var rowShowingChanges: UUID?
   @State private var confirmingAll = false
   @State private var confirmingDay = false
 
@@ -208,6 +209,36 @@ struct HistoryView: View {
         Text(verbatim: record.language ?? "—").font(.caption)
         Text(record.state.title).font(.caption)
           .foregroundStyle(colour(for: record.state))
+        if record.refinedBy != nil, let original = record.rawText, !original.isEmpty {
+          Button {
+            rowShowingChanges = rowShowingChanges == record.id ? nil : record.id
+          } label: {
+            Text(HistoryScreenCopy.refined).font(.caption)
+          }
+          .buttonStyle(.plain)
+          .foregroundStyle(Theme.accentText)
+          .help(Text(HistoryScreenCopy.showChangesHelp))
+          .accessibilityLabel(Text(HistoryScreenCopy.showChangesAccessibility(time(record))))
+          .popover(
+            isPresented: Binding(
+              get: { rowShowingChanges == record.id },
+              set: { if !$0 { rowShowingChanges = nil } })
+          ) {
+            VStack(alignment: .leading, spacing: 8) {
+              Text(HistoryScreenCopy.changesHeading)
+                .font(.caption).foregroundStyle(.secondary)
+              ScrollView {
+                Text(Self.attributedDiff(from: original, to: record.finalText ?? original))
+                  .textSelection(.enabled)
+                  .frame(maxWidth: .infinity, alignment: .leading)
+                  .fixedSize(horizontal: false, vertical: true)
+              }
+            }
+            .padding()
+            .frame(width: 460)
+            .frame(maxHeight: 420)
+          }
+        }
         Spacer()
         if let text = record.finalText, !text.isEmpty {
           Button {
@@ -247,6 +278,27 @@ struct HistoryView: View {
     let peak = metrics.peakLevel.map { String(format: "%.3f", $0) } ?? "—"
     return String(
       localized: HistoryScreenCopy.noSpeechReadout(metrics.segmentCount, frame, peak))
+  }
+
+  static func attributedDiff(from original: String, to final: String) -> AttributedString {
+    var result = AttributedString()
+    for segment in TextDiff.words(from: original, to: final) {
+      var piece: AttributedString
+      switch segment {
+      case .same(let text):
+        piece = AttributedString(text)
+      case .removed(let text):
+        piece = AttributedString(text)
+        piece.strikethroughStyle = .single
+        piece.foregroundColor = .secondary
+      case .added(let text):
+        piece = AttributedString(text)
+        piece.inlinePresentationIntent = .stronglyEmphasized
+      }
+      if !result.characters.isEmpty { result += AttributedString(" ") }
+      result += piece
+    }
+    return result
   }
 
   private func time(_ record: DictationRecord) -> String {

@@ -31,6 +31,14 @@ jobs:
       - name: swift test
         run: swift test
 
+      # MLX compiles its Metal kernels from source, and Xcode 26 ships that
+      # toolchain as a separate component. Without it the build fails at a step
+      # that did not exist before MLX, with "cannot execute tool 'metal'".
+      - name: Metal Toolchain
+        run: |
+          xcodebuild -showComponent MetalToolchain | grep -q '^Status: installed' \
+            || xcodebuild -downloadComponent MetalToolchain
+
       - name: Generate the Xcode project
         run: |
           brew install xcodegen
@@ -40,6 +48,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild test \
+            -skipPackagePluginValidation \
             -project App/Vocula.xcodeproj \
             -scheme Vocula \
             -only-testing:VoculaAppTests \

@@ -181,8 +181,34 @@ private actor FakeHistory: SessionRecording {
   func attachMetrics(_ id: UUID, _ value: SpeechMetrics) async { metrics[id] = value }
   func attachRawText(_ id: UUID, _ text: String, language: String?) async { rawTexts[id] = text }
   func attachFinalText(_ id: UUID, _ text: String) async { finalTexts[id] = text }
+  var refinements: [UUID: String] = [:]
+  func attachRefinement(_ id: UUID, modelID: String) async {
+    refinements[id] = modelID
+  }
   func setState(_ id: UUID, _ state: SessionState, reason: String?) async {
     states.append((id, state, reason))
+  }
+}
+
+private final class FakeRefiner: TextRefining, @unchecked Sendable {
+  enum Behaviour {
+    case succeed(String)
+    case echo
+    case fail(any Error)
+  }
+  var behaviour: Behaviour = .succeed("refined")
+  var delay: Duration = .zero
+  var calls = 0
+  let modelID = "stub-refiner"
+
+  func refine(_ text: String, deadline: Duration) async throws -> String {
+    calls += 1
+    if delay != .zero { try? await Task.sleep(for: delay) }
+    switch behaviour {
+    case .succeed(let out): return out
+    case .echo: return text
+    case .fail(let error): throw error
+    }
   }
 }
 
@@ -195,6 +221,8 @@ private func makeController(
   paste: FakePaste = FakePaste(),
   history: FakeHistory = FakeHistory(),
   filter: any TextFiltering = PassthroughFilter(),
+  refiner: FakeRefiner? = nil,
+  refinementIsEnabled: Bool = true,
   timings: Timings = .default,
   abandonGesture: @escaping @Sendable () -> Void = {},
   diagnose: @escaping @Sendable (String, String) -> Void = { _, _ in }
@@ -206,6 +234,7 @@ private func makeController(
         clipboard: clipboard, paste: paste,
         timings: timings, sleep: { _ in }),
       filter: filter,
+      refiner: refiner, refinementIsEnabled: { refinementIsEnabled },
       history: history, timings: timings, languages: { .default },
       abandonGesture: abandonGesture, diagnose: diagnose))
 }
@@ -728,6 +757,7 @@ struct DictationControllerTests {
       func attachMetrics(_ id: UUID, _ metrics: SpeechMetrics) async {}
       func attachRawText(_ id: UUID, _ text: String, language: String?) async {}
       func attachFinalText(_ id: UUID, _ text: String) async {}
+      func attachRefinement(_ id: UUID, modelID: String) async {}
       func setState(_ id: UUID, _ state: SessionState, reason: String?) async {}
     }
     let clipboard = FakeClipboard()
@@ -1224,5 +1254,175 @@ struct RefusedGestureTests {
     let drained = await finished(within: .seconds(2)) { await controller.drain() }
     #expect(drained, "the insert queue was left waiting on a session that never ran")
     #expect(await history.states.contains { $0.1 == .sent })
+  }
+}
+
+@Suite("Refinement in the pipeline")
+struct RefinementPipelineTests {
+  private func insertedText(
+    transcript: String, refiner: FakeRefiner, isEnabled: Bool = true,
+    history: FakeHistory = FakeHistory(), recorded: EventBox = EventBox()
+  ) async -> [String] {
+    let engine = FakeEngine()
+    engine.text = transcript
+    let clipboard = FakeClipboard()
+    let controller = makeController(
+      engine: engine, clipboard: clipboard, history: history, refiner: refiner,
+      refinementIsEnabled: isEnabled, diagnose: { recorded.append($0, $1) })
+    await controller.handle(.start(session: 1))
+    await controller.handle(.stop(session: 1, reason: .releasedHold))
+    await controller.drain()
+    return clipboard.writes
+  }
+
+  private static let restated =
+    "Я хочу сказать. Я хочу сказать, что завтра релиз."
+  private static let restatementDropped = "Я хочу сказать, что завтра релиз."
+
+  @Test("a successful refinement inserts the refined text")
+  func successInsertsRefined() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .succeed("I think we should ship it.")
+    #expect(
+      await insertedText(transcript: "so um I think we should ship it", refiner: refiner)
+        == ["I think we should ship it."])
+  }
+
+  @Test("history records the model only when the text actually changed")
+  func labelOnlyOnChange() async {
+    for (produced, expected) in [
+      ("I think we should ship it.", 1), ("so um I think we should ship it", 0),
+    ] {
+      let refiner = FakeRefiner()
+      refiner.behaviour = .succeed(produced)
+      let engine = FakeEngine()
+      engine.text = "so um I think we should ship it"
+      let history = FakeHistory()
+      let controller = makeController(engine: engine, history: history, refiner: refiner)
+      await controller.handle(.start(session: 1))
+      await controller.handle(.stop(session: 1, reason: .releasedHold))
+      await controller.drain()
+      #expect(await history.refinements.count == expected)
+    }
+  }
+
+  @Test("every fallback pastes the text exactly as it was recognised")
+  func everyFallbackIsTheRecognisedText() async {
+    let fallbacks: [FakeRefiner.Behaviour] = [
+      .fail(TranscriptionError.timedOut), .fail(TranscriptionError.modelNotLoaded),
+      .fail(RefinementError.tokenCap),
+      .succeed(""), .succeed(String(repeating: "слишком длинно ", count: 40)),
+    ]
+    for behaviour in fallbacks {
+      let refiner = FakeRefiner()
+      refiner.behaviour = behaviour
+      let history = FakeHistory()
+      #expect(
+        await insertedText(transcript: Self.restated, refiner: refiner, history: history)
+          == [Self.restated], "\(behaviour)")
+      #expect(await history.refinements.isEmpty, "\(behaviour)")
+    }
+  }
+
+  @Test("a model that returns its input unchanged still delivers the deduplicated text, labelled")
+  func unchangedAfterDeduplicationIsLabelled() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .echo
+    let history = FakeHistory()
+    #expect(
+      await insertedText(transcript: Self.restated, refiner: refiner, history: history)
+        == [Self.restatementDropped])
+    #expect(await history.refinements.count == 1)
+  }
+
+  @Test("a pass that is neither slow nor refused writes no line")
+  func routinePassIsSilent() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .succeed("I think we should ship it.")
+    let recorded = EventBox()
+    _ = await insertedText(
+      transcript: "so um I think we should ship it", refiner: refiner, recorded: recorded)
+    #expect(!recorded.all.contains { $0.0.hasPrefix("refine.") })
+  }
+
+  @Test("a slow pass is reported")
+  func slowPassIsReported() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .succeed("I think we should ship it.")
+    refiner.delay = .milliseconds(1_100)
+    let recorded = EventBox()
+    _ = await insertedText(
+      transcript: "so um I think we should ship it", refiner: refiner, recorded: recorded)
+    let lines = recorded.all.filter { $0.0 == "refine.done" }
+    #expect(lines.count == 1)
+    #expect(lines.first?.1.hasSuffix("outcome=changed") == true)
+    #expect(lines.first.map { DiagnosticLog.redact($0.1) == $0.1 } == true)
+  }
+
+  @Test("a slow pass that changed nothing is reported as the same, and labels nothing")
+  func slowUnchangedPass() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .echo
+    refiner.delay = .milliseconds(1_100)
+    let history = FakeHistory()
+    let recorded = EventBox()
+    #expect(
+      await insertedText(
+        transcript: "so um I think we should ship it", refiner: refiner, history: history,
+        recorded: recorded) == ["so um I think we should ship it"])
+    let lines = recorded.all.filter { $0.0 == "refine.done" }
+    #expect(lines.count == 1)
+    #expect(lines.first?.1.hasSuffix("outcome=same") == true)
+    #expect(await history.refinements.isEmpty)
+  }
+
+  @Test("a refiner handed over without its switch is never called: clean-up is off by default")
+  func offUnlessSwitchedOn() async {
+    let refiner = FakeRefiner()
+    let engine = FakeEngine()
+    engine.text = "so um I think we should ship it"
+    let clipboard = FakeClipboard()
+    let controller = DictationController(
+      dependencies: .init(
+        audio: FakeAudio(), detector: FakeDetector(), engine: engine, probe: FakeProbe(),
+        inserter: TextInserter(clipboard: clipboard, paste: FakePaste(), sleep: { _ in }),
+        filter: PassthroughFilter(), refiner: refiner, history: FakeHistory(),
+        timings: .default, languages: { .default }))
+    await controller.handle(.start(session: 1))
+    await controller.handle(.stop(session: 1, reason: .releasedHold))
+    await controller.drain()
+    #expect(clipboard.writes == ["so um I think we should ship it"])
+    #expect(refiner.calls == 0)
+  }
+
+  @Test("each failure is logged under its own reason, and the line survives redaction")
+  func failureReasons() async {
+    let reasons: [(any Error, String)] = [
+      (TranscriptionError.timedOut, "reason=timeout"),
+      (TranscriptionError.modelNotLoaded, "reason=notLoaded"),
+      (RefinementError.tokenCap, "reason=tokenCap"),
+      (CancellationError(), "reason=engineFailed"),
+    ]
+    for (error, expected) in reasons {
+      let refiner = FakeRefiner()
+      refiner.behaviour = .fail(error)
+      let recorded = EventBox()
+      _ = await insertedText(
+        transcript: "so um I think we should ship it", refiner: refiner, recorded: recorded)
+      let line = recorded.all.first { $0.0 == "refine.failed" }?.1
+      #expect(line == expected)
+      #expect(line.map(DiagnosticLog.redact) == expected)
+    }
+  }
+
+  @Test("with refinement off the refiner is never called")
+  func disabledNeverCalls() async {
+    let refiner = FakeRefiner()
+    refiner.behaviour = .succeed("should not appear")
+    #expect(
+      await insertedText(
+        transcript: "so um I think we should ship it", refiner: refiner, isEnabled: false)
+        == ["so um I think we should ship it"])
+    #expect(refiner.calls == 0)
   }
 }

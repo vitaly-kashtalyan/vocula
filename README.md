@@ -25,8 +25,8 @@ Dictation for macOS that runs entirely on your Mac, in up to 100 languages.</p>
 
 There is no account and no sign-in, and nothing you dictate ever leaves this
 Mac. The app talks to exactly two places, both on GitHub: it fetches the speech
-model once, and — while you leave the switch on — it asks once a day whether a
-newer version of Vocula exists. Your licence is checked here, offline.
+model once (and the clean-up model, if you ask for it), and — while you leave the
+switch on — it asks once a day whether a newer version of Vocula exists. Your licence is checked here, offline.
 
 ## How it works
 
@@ -56,6 +56,8 @@ one gesture that always works beats two where one sometimes does.
           │
    [ TextFilter ]         drops output that is nothing but *[Music]* tags
           │
+   [ clean-up ]           optional, off by default — a local model removes filler;
+          │               a lost number, "not" or question pastes the original
    [ TargetGuard ]        refuses password fields, and secure input raised mid-session
           │
    [ ⌘V ]                 your clipboard is put back a second later
@@ -73,9 +75,10 @@ Nothing you say. Ever.
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release. |
 | Speech detection and transcription | This Mac, on the GPU. |
+| Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | This project's GitHub releases, once, on first run. SHA-256 verified. |
+| Model download | This project's GitHub releases, once, on first run — the clean-up model only when you ask for it. SHA-256 verified. |
 | Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
@@ -84,7 +87,7 @@ the command that proves there is no third:
 
 ```sh
 git grep -l "URLSession\|SUFeedURL" -- App/Vocula App/project.yml Sources
-# App/Vocula/Models/ModelDownloader.swift    the speech model, once
+# App/Vocula/Models/ModelDownloader.swift    the models, once each
 # App/project.yml                            SUFeedURL, the daily version check
 ```
 
@@ -96,8 +99,10 @@ releases the models come from.
 No telemetry, no analytics, no crash reporting, no licence server. The
 third-party components in the app are the two recognition engines — whisper.cpp
 and FluidAudio, the latter carrying a prebuilt text-normalisation framework —
-and Sparkle, every one pinned by tag, commit or checksum in `App/project.yml`
-and `Package.swift`, so there is no analytics SDK for a call to hide in. One thing
+MLX and swift-transformers for the optional clean-up model, and Sparkle, every
+one and every package they pull in pinned by exact version, commit or checksum
+in `App/project.yml` and `Package.swift`, so there is no analytics SDK for a
+call to hide in. One thing
 the update check gives away by existing: GitHub counts downloads of every
 release asset, so the number of copies asking is visible to anyone who looks —
 including us. It is a count, and it is all it is.
@@ -149,7 +154,8 @@ silent recording, a refusal and a dead microphone all cost nothing.
 - macOS 26.0 or later.
 - Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
   Large v3 Turbo, or about 470 MB for Parakeet v3, plus the voice-activity
-  detector either way.
+  detector either way, and about 1.5 GB more for the clean-up model if you
+  switch it on.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
@@ -167,12 +173,18 @@ SDK. The first build needs a network for its dependencies: Sparkle, pinned by
 commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from its
 GitHub release and checked against the SHA-256 pinned in `Package.swift`; and
 FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
-text-normalisation XCFramework against its own checksum.
+text-normalisation XCFramework against its own checksum; and MLX with
+swift-transformers, each package pinned by commit in `App/project.yml`.
+MLX compiles its Metal kernels from source, which needs Xcode's separately
+installed Metal Toolchain, and mlx-swift ships a build-tool plugin that
+`xcodebuild` refuses to run unless told to trust it.
 
 ```sh
 brew install xcodegen                       # once
+xcodebuild -downloadComponent MetalToolchain  # once
 (cd App && xcodegen generate)               # required on a fresh clone
-xcodebuild -project App/Vocula.xcodeproj -scheme Vocula -configuration Debug build
+xcodebuild -project App/Vocula.xcodeproj -scheme Vocula -configuration Debug \
+  -skipPackagePluginValidation build
 ```
 
 Hooks are tracked but not installed by cloning — `git config core.hooksPath .githooks`
@@ -194,11 +206,11 @@ swift test                       # the kit and both engines — no app, no hardw
 ./scripts/check-purity.sh        # VoculaKit must import Foundation only
 ./scripts/check-localization.sh  # every key has a translator comment
 xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
-  -only-testing:VoculaAppTests
+  -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-897 tests: 665 in the kit, 219 in the hosted app bundle, 13 driving the real
-interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1074 tests: 822 from `swift test`, 239 in the hosted app bundle, 13 driving the
+real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
 
@@ -213,8 +225,8 @@ Stated here rather than discovered later.
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
 - **A dictated command lands at a shell prompt; it does not run itself.** The
-  transcript is folded to one line before it is pasted, so nothing in it carries
-  a Return. A modal editor is the exception that remains: in vim's normal mode
+  transcript is folded to one line before it is pasted — and so is whatever the
+  clean-up model returns — so nothing in it carries a Return. A modal editor is the exception that remains: in vim's normal mode
   the letters are commands, and what protects you there is the terminal's
   bracketed paste rather than anything this app does. Measured: Terminal.app
   performs it, tmux does not.

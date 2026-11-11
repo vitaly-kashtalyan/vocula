@@ -11,7 +11,7 @@
 - [ ] `swift test`
 - [ ] `./scripts/check-purity.sh`
 - [ ] `./scripts/check-localization.sh`
-- [ ] `xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula -only-testing:VoculaAppTests`
+- [ ] `xcodebuild test -skipPackagePluginValidation -project App/Vocula.xcodeproj -scheme Vocula -only-testing:VoculaAppTests`
 - [ ] `cd App && xcodegen generate` (needed after adding, renaming or removing a file under `App/Vocula/`)
 
 ## What this made untrue

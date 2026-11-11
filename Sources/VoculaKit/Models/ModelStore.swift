@@ -44,17 +44,21 @@ public struct ModelStore: Sendable {
   public let directory: URL
   private let fileSystem: ModelFileSystem
   public let descriptors: [ModelDescriptor]
+  public let localOverrides: [ModelID: URL]
 
   public init(
     directory: URL, fileSystem: ModelFileSystem,
-    manifest: [ModelDescriptor] = ModelManifest.current
+    manifest: [ModelDescriptor] = ModelManifest.current,
+    localOverrides: [ModelID: URL] = [:]
   ) {
     self.directory = directory
     self.fileSystem = fileSystem
     self.descriptors = manifest
+    self.localOverrides = localOverrides
   }
 
   public func url(for id: ModelID) -> URL {
+    if let override = localOverrides[id] { return override }
     let model = descriptor(for: id)
     return directory.appendingPathComponent(model.unpacked ?? model.fileName)
   }

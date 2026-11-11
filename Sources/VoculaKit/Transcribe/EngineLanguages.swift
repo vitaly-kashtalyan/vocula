@@ -9,7 +9,7 @@ public enum EngineLanguages {
 
   public static func supports(_ code: String, _ family: ModelFamily) -> Bool {
     switch family {
-    case .whisper: return true
+    case .whisper, .refiner: return true
     case .parakeet: return parakeetCodes.contains(code)
     }
   }

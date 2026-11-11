@@ -68,6 +68,17 @@ jobs:
             echo "▸ build $BUILD > published $PUBLISHED"
           fi
 
+      - name: Every model the build downloads is published
+        run: |
+          set -euo pipefail
+          urls=$(grep -o 'https://github.com/[^"]*/releases/download/models-v1/[^"]*' \
+            Sources/VoculaKit/Models/ModelManifest.swift || true)
+          [ -n "$urls" ] || { echo "❌ no models-v1 URL found in ModelManifest.swift" >&2; exit 1; }
+          for url in $urls; do
+            curl -fsSIL -o /dev/null "$url" || { echo "❌ not published: $url" >&2; exit 1; }
+            echo "▸ $url"
+          done
+
       - name: Tools
         # Before the keychain is imported, never after: from then on the signing
         # identity is unlocked and a formula could sign with it. generate_appcast
@@ -83,6 +94,21 @@ jobs:
             | shasum -a 256 -c -
           tar -xf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP" bin/generate_appcast
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: Metal Toolchain
+        run: |
+          xcodebuild -showComponent MetalToolchain | grep -q '^Status: installed' \
+            || xcodebuild -downloadComponent MetalToolchain
+
+      # Fetched before the keychain is unlocked, into the directory notarize.sh
+      # builds from. Every package manifest and mlx-swift's CudaBuild plugin
+      # still run again inside the signed build; this does not prevent that.
+      - name: Resolve packages
+        run: |
+          set -euo pipefail
+          (cd App && xcodegen generate)
+          xcodebuild -resolvePackageDependencies -project App/Vocula.xcodeproj \
+            -clonedSourcePackagesDirPath build/packages
 
       - name: Import the Developer ID certificate
         env:

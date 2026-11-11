@@ -813,3 +813,74 @@ extension StatusScreenCopy {
       "Placeholder for the input device before the scan has answered. macOS's own term for the default input."
   )
 }
+
+extension HistoryScreenCopy {
+  static let changesHeading = LocalizedStringResource(
+    "history.original.heading", defaultValue: "What clean-up changed",
+    comment:
+      "Heading in the popover that opens from a history row. Below it is the recognised text, with the words clean-up removed struck through and the words it added in bold."
+  )
+  static let showChangesHelp = LocalizedStringResource(
+    "history.original.help", defaultValue: "Show what clean-up changed",
+    comment:
+      "Tooltip on the 'cleaned up' marker in a history row. Pressing it shows the recognised text with every word clean-up removed or added marked."
+  )
+  static func showChangesAccessibility(_ time: String) -> LocalizedStringResource {
+    .init(
+      "history.original.accessibility",
+      defaultValue: "Show what clean-up changed in the dictation from \(time)",
+      comment:
+        "VoiceOver label for the marker that shows what clean-up changed in one dictation. The placeholder is the time of that dictation."
+    )
+  }
+  static let refined = LocalizedStringResource(
+    "history.refined", defaultValue: "cleaned up",
+    comment:
+      "Marker on a history row whose text was rewritten by the clean-up model before it was pasted. It sits in a narrow row beside the time and the status and clips, so keep it to one or two short words."
+  )
+}
+
+enum RefinementScreenCopy {
+
+  static let enable = LocalizedStringResource(
+    "refinement.enable", defaultValue: "Clean up dictated text",
+    comment: "Switch in Settings → Clean-up. Turns the post-processing pass on.")
+  static let explanation = LocalizedStringResource(
+    "refinement.explanation",
+    defaultValue:
+      "A model on this Mac fixes recognition errors and drops filler words before the text is pasted. On average it adds about half a second to a dictation.",
+    comment: "Footer under the clean-up switch. Says what the pass does and what it costs.")
+  static let needsModel = LocalizedStringResource(
+    "refinement.needsModel",
+    defaultValue: "Download the model below to turn this on.",
+    comment:
+      "Footer under the clean-up switch when its model is not installed, which is why the switch cannot be used."
+  )
+  static let waitLabel = LocalizedStringResource(
+    "refinement.wait", defaultValue: "Wait at most",
+    comment:
+      "Picker in Settings → Clean-up: the longest the clean-up pass may run before the recognised text is used instead. A long dictation needs longer."
+  )
+  static let waitFooter = LocalizedStringResource(
+    "refinement.wait.footer",
+    defaultValue:
+      "A longer dictation is given longer, up to this limit. One of about 850 characters takes about four seconds.",
+    comment:
+      "Footer under the maximum-wait picker. The time clean-up is allowed grows with the length of the dictation and the picker caps it. The figures are measured; keep them."
+  )
+  static let waitTen = LocalizedStringResource(
+    "refinement.wait.ten", defaultValue: "10 seconds",
+    comment: "One choice in the maximum-wait picker.")
+  static let waitThirty = LocalizedStringResource(
+    "refinement.wait.thirty", defaultValue: "30 seconds",
+    comment: "One choice in the maximum-wait picker.")
+  static let waitSixty = LocalizedStringResource(
+    "refinement.wait.sixty", defaultValue: "60 seconds",
+    comment: "One choice in the maximum-wait picker.")
+  static let fallback = LocalizedStringResource(
+    "refinement.fallback",
+    defaultValue:
+      "If the model is slow to answer or returns something implausible, the text is pasted exactly as it was recognised.",
+    comment:
+      "Footer under the clean-up model row. Promises that a failure never costs the dictation.")
+}

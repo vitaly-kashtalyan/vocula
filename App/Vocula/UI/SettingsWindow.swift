@@ -4,8 +4,8 @@ import SwiftUI
 import VoculaKit
 
 enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
-  case status, permissions, keyboard, languages, microphone, models, history, diagnostics,
-    licence, appearance
+  case status, permissions, keyboard, languages, microphone, models, refinement, history,
+    diagnostics, licence, appearance
 
   var id: Self { self }
 
@@ -27,6 +27,10 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
       return .init(
         "settings.section.models", defaultValue: "Models",
         comment: "Sidebar section: the downloadable recognition models.")
+    case .refinement:
+      return .init(
+        "settings.section.refinement", defaultValue: "Clean-up",
+        comment: "Sidebar section: post-processing of the recognised text.")
     case .languages:
       return .init(
         "settings.section.languages", defaultValue: "Languages",
@@ -67,7 +71,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         .init(
           "settings.group.dictation", defaultValue: "Dictation",
           comment: "Sidebar group heading, shown upper-cased."),
-        [.keyboard, .languages, .microphone, .models]
+        [.keyboard, .languages, .microphone, .models, .refinement]
       ),
       (
         "data",
@@ -91,6 +95,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     case .permissions: return "checkmark.shield"
     case .keyboard: return "keyboard"
     case .models: return "cpu"
+    case .refinement: return "wand.and.sparkles"
     case .languages: return "globe"
     case .microphone: return "mic"
     case .history: return "clock.arrow.circlepath"
@@ -214,6 +219,8 @@ struct SettingsWindowView: View {
       PermissionsSettingsSection(model: onboarding, updater: updater)
     case .models:
       ModelPickerView(downloader: downloader, onModelsReady: onModelsReady)
+    case .refinement:
+      RefinementSettingsView(downloader: downloader, onModelsReady: onModelsReady)
     case .languages:
       LanguagePickerView()
     case .keyboard:

@@ -4,16 +4,19 @@ public enum ModelID: String, Codable, Sendable, Equatable, CaseIterable {
   case largeV3Turbo
   case parakeetV3
   case speechDetector
+  case qwenRefine2B
 }
 
 public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
   case whisper
   case parakeet
+  case refiner
 
   public var title: String {
     switch self {
     case .whisper: return "Whisper"
     case .parakeet: return "Parakeet"
+    case .refiner: return "MLX"
     }
   }
 
@@ -37,6 +40,8 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
         comment:
           "Footer under the Parakeet group in Settings → Models. It orients someone who cannot tell the engines apart, so it names behaviour rather than numbers, which would go stale."
       )
+    case .refiner:
+      return ""
     }
   }
 
@@ -46,6 +51,9 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
       return "whisper.cpp v1.9.2 — MIT, The ggml authors"
     case .parakeet:
       return "FluidAudio — Apache-2.0; weights by NVIDIA under CC-BY-4.0"
+    case .refiner:
+      return
+        "MLX — MIT, Apple; swift-transformers — Apache-2.0, Hugging Face; Qwen3.5 weights by Alibaba under Apache-2.0, fine-tuned by Vocula"
     }
   }
 }
@@ -114,6 +122,24 @@ public enum ModelManifest {
         localized: "models.speechDetector", defaultValue: "Speech detector", bundle: .module,
         comment: "Name of the VAD model as shown in the model list."),
       unpacked: nil, contents: []),
+    ModelDescriptor(
+      id: .qwenRefine2B,
+      family: .refiner,
+      fileName: "vocula-cleanup-2b-v1.zip",
+      remoteURL: URL(
+        string:
+          "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/vocula-cleanup-2b-v1.zip"
+      )!,
+      sha256: "5a2ca3de9a9c2f3a6edf1fbbd107ce0e52f2d22056d9015f6e457be8d93a3673",
+      byteSize: 1_488_415_413,
+      version: "Qwen3.5-2B-6bit @ ba2bcf03",
+      licence: "Apache-2.0 (Qwen3.5, modified)",
+      displayName: "Vocula 2B v1",
+      unpacked: "vocula-cleanup-2b-v1",
+      contents: [
+        "model.safetensors", "model.safetensors.index.json", "config.json",
+        "tokenizer.json", "tokenizer_config.json", "vocab.json", "chat_template.jinja",
+      ]),
   ]
 
   public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetV3]

@@ -27,6 +27,7 @@ struct UnlocalizedProseTests {
   private static let dataOnlyFiles: Set<String> = [
     "ModelManifest.swift",
     "StopPhrases.swift",
+    "RefinePrompt.swift",
   ]
 
   private static func appSources() throws -> [(path: String, lines: [String])] {

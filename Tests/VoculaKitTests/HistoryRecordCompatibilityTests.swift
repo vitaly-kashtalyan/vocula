@@ -19,18 +19,24 @@ struct HistoryRecordCompatibilityTests {
     #expect(records.count == 1)
     #expect(records[0].finalText == "hello")
     #expect(records[0].modelID == nil)
+    #expect(records[0].refinedBy == nil)
   }
 
-  @Test("a day carrying a field from a later build still decodes")
+  @Test("a day carrying a field from a later build still decodes, and a rewrite keeps the rest")
   func anUnknownExtraKeyIsIgnored() throws {
     var future = try #require(
       try JSONSerialization.jsonObject(
         with: Data(recordWithoutModelID.utf8)) as? [[String: Any]])
     future[0]["somethingAddedLater"] = "a value this build cannot know"
+    future[0]["refinedBy"] = "qwen3.5-2b-6bit-text"
     let data = try JSONSerialization.data(withJSONObject: future)
 
     let records = try JSONDecoder().decode([DictationRecord].self, from: data)
+    let rewritten = try JSONDecoder().decode(
+      [DictationRecord].self, from: JSONEncoder().encode(records))
     #expect(records.count == 1)
+    #expect(rewritten == records)
+    #expect(rewritten[0].refinedBy == "qwen3.5-2b-6bit-text")
   }
 
   @Test("a missing non-optional field takes the whole day, not the record")

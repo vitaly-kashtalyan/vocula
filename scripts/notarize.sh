@@ -69,7 +69,14 @@ VERSION_OVERRIDE=()
 # built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
 # ours, so FluidAudio compiles for x86_64 and fails on Float16, which Swift does
 # not have there. Only the command line reaches every project in the build.
+# -skipPackagePluginValidation: mlx-swift attaches its CudaBuild plugin to Cmlx,
+# and a machine that never approved it in Xcode refuses to build. No macro is in
+# the graph, so -skipMacroValidation stays off.
+# build/packages, outside $BUILD_DIR: release.yml resolves into it before the
+# signing keychain is unlocked, and the rm -rf above would discard it.
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
+  -skipPackagePluginValidation \
+  -clonedSourcePackagesDirPath build/packages \
   -derivedDataPath "$BUILD_DIR/dd" \
   ARCHS=arm64 \
   ${VERSION_OVERRIDE[@]+"${VERSION_OVERRIDE[@]}"} \
@@ -88,6 +95,10 @@ APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 # again, would silently double the download.
 archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
 [ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
+
+METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib"
+[ -s "$METALLIB" ] || fail "MLX's Metal library is missing: $METALLIB
+   MLX calls exit() the first time the clean-up model runs without it."
 
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)

@@ -25,9 +25,7 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   private var didDecideOnboarding = false
 
   override init() {
-    let store = ModelStore(
-      directory: ApplicationSupport.modelsDirectory,
-      fileSystem: SystemModelFileSystem())
+    let store = ModelStore.app()
     let settings = AppSettings()
     downloader = ModelDownloader(
       store: store,
@@ -90,6 +88,9 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     }
     updater.diagnose = { [weak self] kind, detail in
       self?.coordinator.log(kind, detail)
+    }
+    coordinator.modelsChangedOnDisk = { [weak self] in
+      Task { await self?.downloader.refreshStatuses() }
     }
     Task {
       if Self.isUITesting {

@@ -6,7 +6,8 @@ struct VerbatimUsageTests {
   private static let copyNamespaces = [
     "MenuCopy.", "CommonCopy.", "HistoryScreenCopy.", "LicenceScreenCopy.", "OnboardingScreenCopy.",
     "MicrophoneScreenCopy.", "LanguageScreenCopy.", "DiagnosticsScreenCopy.", "KeyboardScreenCopy.",
-    "ModelScreenCopy.", "StatusScreenCopy.", "AppearanceScreenCopy.", "SidebarCopy.",
+    "ModelScreenCopy.", "StatusScreenCopy.", "RefinementScreenCopy.", "AppearanceScreenCopy.",
+    "SidebarCopy.",
     "SettingsSection.",
   ]
 
@@ -54,6 +55,12 @@ struct VerbatimUsageTests {
     #expect(
       try Self.localizingTextOffenders(in: "Text(subtitle)").count == 1,
       "the Text scan no longer reports a known localizing Text(String)")
+    #expect(
+      try Self.localizingTextOffenders(in: "Text(attributedTitle)").count == 1,
+      "the Text scan lets a String through because its name begins attributed")
+    #expect(
+      try Self.localizingTextOffenders(in: "Text(Self.attributedDiff(from: a, to: b))").isEmpty,
+      "the Text scan reports a call to an AttributedString helper")
     #expect(
       try Self.widgetOffenders(in: "Button(MenuCopy.quit) {}").isEmpty,
       "the widget scan reports copy that goes through a catalog namespace")
@@ -125,7 +132,8 @@ struct VerbatimUsageTests {
   }
 
   static func localizingTextOffenders(in source: String) throws -> [(line: Int, code: String)] {
-    let pattern = try NSRegularExpression(pattern: #"Text\((?!verbatim:|")[a-zA-Z]"#)
+    let pattern = try NSRegularExpression(
+      pattern: #"Text\((?!verbatim:|Self\.attributed\w*\(|")[a-zA-Z]"#)
     var offenders: [(line: Int, code: String)] = []
     for (number, text) in SourceScan.logicalLines(source).enumerated() {
       guard !Self.localizedResources.contains(where: text.contains),
