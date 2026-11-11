@@ -2,9 +2,18 @@ import Foundation
 
 public enum ModelID: String, Codable, Sendable, Equatable, CaseIterable {
   case largeV3Turbo
-  case parakeetV3
+  case parakeetUltra
   case speechDetector
   case qwenRefine2B
+
+  public init?(rawValue: String) {
+    if rawValue == "parakeetV3" {
+      self = .parakeetUltra
+      return
+    }
+    guard let id = Self.allCases.first(where: { $0.rawValue == rawValue }) else { return nil }
+    self = id
+  }
 }
 
 public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
@@ -50,7 +59,8 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
     case .whisper:
       return "whisper.cpp v1.9.2 — MIT, The ggml authors"
     case .parakeet:
-      return "FluidAudio — Apache-2.0; weights by NVIDIA under CC-BY-4.0"
+      return
+        "FluidAudio — Apache-2.0; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0"
     case .refiner:
       return
         "MLX — MIT, Apple; swift-transformers — Apache-2.0, Hugging Face; Qwen3.5 weights by Alibaba under Apache-2.0, fine-tuned by Vocula"
@@ -89,22 +99,23 @@ public enum ModelManifest {
       displayName: "Large v3 Turbo",
       unpacked: nil, contents: []),
     ModelDescriptor(
-      id: .parakeetV3,
+      id: .parakeetUltra,
       family: .parakeet,
-      fileName: "parakeet-tdt-0.6b-v3.zip",
+      fileName: "parakeet-ultra-95eaa59.zip",
       remoteURL: URL(
         string:
-          "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/parakeet-tdt-0.6b-v3.zip"
+          "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/parakeet-ultra-95eaa59.zip"
       )!,
-      sha256: "cba75876b0448f11f7db77ce1acb5f2f0619588fe7b4df77bf4b4ec7859be23c",
-      byteSize: 466_638_996,
-      version: "parakeet-tdt-0.6b-v3 (Core ML)",
-      licence: "CC-BY-4.0 (NVIDIA weights, FluidInference Core ML conversion)",
-      displayName: "Parakeet v3",
-      unpacked: "parakeet-tdt-0.6b-v3",
+      sha256: "f208a416e5327e120f01fa70bf19a7f0c2427cc555c6471dc055b7835e2c6596",
+      byteSize: 554_970_523,
+      version: "parakeet-ultra (Core ML, FluidInference 95eaa59)",
+      licence:
+        "CC-BY-4.0 (moondream Parakeet Ultra, post-trained from NVIDIA Parakeet TDT 0.6B v3; Core ML conversion by FluidInference)",
+      displayName: "Parakeet Ultra",
+      unpacked: "parakeet-ultra-95eaa59",
       contents: [
         "Preprocessor.mlmodelc", "Encoder.mlmodelc", "Decoder.mlmodelc",
-        "JointDecisionv3.mlmodelc", "parakeet_v3_vocab.json",
+        "JointDecisionv3.mlmodelc", "parakeet_vocab.json",
       ]),
     ModelDescriptor(
       id: .speechDetector,
@@ -142,7 +153,7 @@ public enum ModelManifest {
       ]),
   ]
 
-  public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetV3]
+  public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetUltra]
 
   public static var transcriptionModelsByFamily: [(family: ModelFamily, models: [ModelID])] {
     ModelFamily.allCases.compactMap { family in
