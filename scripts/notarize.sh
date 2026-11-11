@@ -100,6 +100,9 @@ METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/defau
 [ -s "$METALLIB" ] || fail "MLX's Metal library is missing: $METALLIB
    MLX calls exit() the first time the clean-up model runs without it."
 
+tts=$(find "$APP" -name 'luxtts_*' -print) || fail "cannot scan $APP for FluidAudio's TTS data"
+[ -z "$tts" ] || fail "FluidAudio's TTS data is in the bundle (GPL-3.0+, CC-BY-SA-4.0): $tts — Package.swift must keep traits: []"
+
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)
 VERSION=$(plist CFBundleShortVersionString)
