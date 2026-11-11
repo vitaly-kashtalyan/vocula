@@ -16,7 +16,7 @@ none.
 |---|---|
 | `Vocula` | The product name. |
 | `Whisper` | The recognition engine, a product name. |
-| `Parakeet` | A second engine, a product name. Not shipped yet — no model in the manifest names it. |
+| `Parakeet` | The second engine, a product name. |
 | `Large v3 Turbo` | The model's upstream name. |
 | `Silero` | The voice-activity model's upstream name. |
 | `fn` | A key, as printed on the keyboard. |

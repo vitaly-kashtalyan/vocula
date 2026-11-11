@@ -67,8 +67,8 @@ VERSION_OVERRIDE=()
 # an archive.
 # ARCHS=arm64 on the COMMAND LINE, not in project.yml: a SwiftPM dependency is
 # built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
-# ours, so FluidAudio compiles for x86_64 and fails on Float16, which Swift does
-# not have there. Only the command line reaches every project in the build.
+# ours, so without it every package also compiles an x86_64 slice nothing ships.
+# Only the command line reaches every project in the build.
 # -skipPackagePluginValidation: mlx-swift attaches its CudaBuild plugin to Cmlx,
 # and a machine that never approved it in Xcode refuses to build. No macro is in
 # the graph, so -skipMacroValidation stays off.
@@ -90,9 +90,9 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
 APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
 
-# Measured, not assumed: nothing else in the repository ever builds Release, so
-# a lost ARCHS=arm64 would first be noticed here — or, if x86_64 ever compiles
-# again, would silently double the download.
+# Measured, not assumed: nothing else in the repository ever builds Release, and
+# x86_64 compiles since FluidAudio 0.18.3, so a lost ARCHS: arm64 would otherwise
+# ship an Intel slice silently and double the download.
 archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
 [ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
 
