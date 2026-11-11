@@ -70,6 +70,32 @@ private func snapshot(of directory: URL) throws -> [String: Data] {
 
 @Suite("Parakeet without any weights on disk", .serialized)
 struct ParakeetWithoutModelTests {
+  @Test(
+    "FluidAudio finds every file it reads for Parakeet Ultra under the names the manifest downloads"
+  )
+  func theManifestNamesWhatFluidAudioReads() throws {
+    let model = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: model) }
+    let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
+    for entry in ModelManifest.descriptor(for: .parakeetUltra).contents {
+      let url = model.appendingPathComponent(entry)
+      if entry.hasSuffix(".mlmodelc") {
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        try Data("junk".utf8).write(to: url.appendingPathComponent("coremldata.bin"))
+      } else {
+        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+        try JSONSerialization.data(withJSONObject: vocabulary).write(to: url)
+      }
+    }
+    let error = #expect(throws: (any Error).self) {
+      try AsrModels.loadLocal(from: model, version: .ultra)
+    }
+    if case .modelNotFound(let name, _)? = error as? AsrModelsError {
+      Issue.record("FluidAudio reads \(name), which the manifest does not download")
+    }
+  }
+
   @Test("A model that will not load is refused without deleting or downloading anything")
   func anUnloadableModelIsLeftAlone() async throws {
     let root = FileManager.default.temporaryDirectory

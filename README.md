@@ -50,7 +50,7 @@ one gesture that always works beats two where one sometimes does.
    [ Silero VAD ]         CPU — finds where the speech is, or salvages a whisper
           │
    [ whisper.cpp ]        Metal GPU — 0.02–0.03× realtime, measured
-    or [ Parakeet ]       Neural Engine — about three times faster, 25 languages
+    or [ Parakeet ]       Neural Engine — several times faster, 25 languages
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -153,7 +153,7 @@ silent recording, a refusal and a dead microphone all cost nothing.
 
 - macOS 26.0 or later.
 - Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
-  Large v3 Turbo, or about 560 MB for Parakeet Ultra, plus the voice-activity
+  Large v3 Turbo, or about 630 MB for Parakeet Ultra, plus the voice-activity
   detector either way, and about 1.5 GB more for the clean-up model if you
   switch it on.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
@@ -209,7 +209,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1078 tests: 825 from `swift test`, 240 in the hosted app bundle, 13 driving the
+1079 tests: 826 from `swift test`, 240 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.

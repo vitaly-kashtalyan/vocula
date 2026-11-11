@@ -91,8 +91,8 @@ APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
 
 # Measured, not assumed: nothing else in the repository ever builds Release, and
-# x86_64 compiles since FluidAudio 0.18.3, so a lost ARCHS: arm64 would otherwise
-# ship an Intel slice silently and double the download.
+# x86_64 compiles since FluidAudio 0.18.3, so losing both this ARCHS=arm64 and
+# project.yml's would ship an Intel slice silently and double the download.
 archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
 [ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
 
@@ -100,8 +100,8 @@ METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/defau
 [ -s "$METALLIB" ] || fail "MLX's Metal library is missing: $METALLIB
    MLX calls exit() the first time the clean-up model runs without it."
 
-tts=$(find "$APP" -name 'luxtts_*' -print) || fail "cannot scan $APP for FluidAudio's TTS data"
-[ -z "$tts" ] || fail "FluidAudio's TTS data is in the bundle (GPL-3.0+, CC-BY-SA-4.0): $tts — Package.swift must keep traits: []"
+extras=$(find "$APP" -name 'FluidAudio_*.bundle' -print) || fail "cannot scan $APP for FluidAudio's resource bundles"
+[ -z "$extras" ] || fail "FluidAudio's resources are in the bundle — its TTS data is GPL-3.0+ and CC-BY-SA-4.0: $extras — Package.swift must keep traits: []"
 
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)

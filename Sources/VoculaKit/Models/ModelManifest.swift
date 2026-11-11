@@ -80,6 +80,7 @@ public struct ModelDescriptor: Codable, Sendable, Equatable {
   public let displayName: String
   public let unpacked: String?
   public let contents: [String]
+  public var expandedBytes: Int64? = nil
 }
 
 public enum ModelManifest {
@@ -116,7 +117,8 @@ public enum ModelManifest {
       contents: [
         "Preprocessor.mlmodelc", "Encoder.mlmodelc", "Decoder.mlmodelc",
         "JointDecisionv3.mlmodelc", "parakeet_vocab.json",
-      ]),
+      ],
+      expandedBytes: 632_162_964),
     ModelDescriptor(
       id: .speechDetector,
       family: .whisper,

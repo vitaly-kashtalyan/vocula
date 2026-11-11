@@ -226,10 +226,12 @@ struct ModelStoreTests {
     #expect(!store(fs).matchesChecksum(.parakeetUltra))
   }
 
-  @Test("room is asked for the archive and its expansion at once")
-  func spaceCountsTheArchiveTwice() {
+  @Test("room is asked for the archive and its expansion at once, at the expansion's real size")
+  func spaceCountsTheArchiveAndItsExpansion() {
     let model = ModelManifest.descriptor(for: .parakeetUltra)
-    #expect(store(FakeFS()).missingBytes(for: [.parakeetUltra]) == model.byteSize * 2)
+    #expect(model.expandedBytes == 632_162_964)
+    #expect(
+      store(FakeFS()).missingBytes(for: [.parakeetUltra]) == model.byteSize + 632_162_964)
   }
 
   @Test("only an expanded model is discarded when it will not load")
