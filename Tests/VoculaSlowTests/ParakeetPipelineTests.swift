@@ -74,11 +74,13 @@ struct ParakeetWithoutModelTests {
     "FluidAudio finds every file it reads for Parakeet Ultra under the names the manifest downloads"
   )
   func theManifestNamesWhatFluidAudioReads() throws {
-    let model = FileManager.default.temporaryDirectory
+    let root = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
-    defer { try? FileManager.default.removeItem(at: model) }
+    let model = root.appendingPathComponent(Repo.parakeetUltra.folderName, isDirectory: true)
+    defer { try? FileManager.default.removeItem(at: root) }
     let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
-    for entry in ModelManifest.descriptor(for: .parakeetUltra).contents {
+    let contents = ModelManifest.descriptor(for: .parakeetUltra).contents
+    for entry in contents {
       let url = model.appendingPathComponent(entry)
       if entry.hasSuffix(".mlmodelc") {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -93,6 +95,17 @@ struct ParakeetWithoutModelTests {
     }
     if case .modelNotFound(let name, _)? = error as? AsrModelsError {
       Issue.record("FluidAudio reads \(name), which the manifest does not download")
+    }
+    #expect(
+      AsrModels.modelsExist(at: model, version: .ultra),
+      "FluidAudio needs a file the manifest does not download")
+    let aside = root.appendingPathComponent("aside")
+    for entry in contents {
+      try FileManager.default.moveItem(at: model.appendingPathComponent(entry), to: aside)
+      #expect(
+        !AsrModels.modelsExist(at: model, version: .ultra),
+        "the manifest downloads \(entry), which FluidAudio does not need")
+      try FileManager.default.moveItem(at: aside, to: model.appendingPathComponent(entry))
     }
   }
 
