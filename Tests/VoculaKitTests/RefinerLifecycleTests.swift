@@ -59,17 +59,18 @@ struct RefinerLifecycleTests {
         (.settingChanged(isEnabled: false), [.unload]),
       ]),
     .init(
-      name: "a failed load with the model on disk switches off, forgets, and discards",
+      name:
+        "a failed load with the model on disk discards and keeps the failure until switched off",
       steps: [
         (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
-        (.settingChanged(isEnabled: false), []),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
+        (.settingChanged(isEnabled: false), [.unload]),
       ]),
     .init(
-      name: "a failure read before the switch-on is seen still discards, once",
+      name: "a failure read before the switch-on is seen still discards",
       steps: [
         (.pipelineStarted(isEnabled: false), []),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
         (.settingChanged(isEnabled: false), []),
       ]),
     .init(
@@ -89,14 +90,14 @@ struct RefinerLifecycleTests {
         (.pipelineStarted(isEnabled: true), [.prewarm]),
       ]),
     .init(
-      name: "a re-download after a failure loads nothing until switched on again",
+      name: "after a failure, switching off unloads and switching on loads again",
       steps: [
         (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
-        (.settingChanged(isEnabled: false), []),
-        (.tornDown, [.unload]),
-        (.pipelineStarted(isEnabled: false), []),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
+        (.settingChanged(isEnabled: false), [.unload]),
         (.settingChanged(isEnabled: true), [.prewarm]),
+        (.tornDown, [.unload]),
+        (.pipelineStarted(isEnabled: true), [.prewarm]),
       ]),
     .init(
       name: "teardown unloads, and a change before the next start touches nothing",
@@ -112,7 +113,7 @@ struct RefinerLifecycleTests {
       steps: [
         (.pipelineStarted(isEnabled: true), [.prewarm]),
         (.tornDown, [.unload]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .discard]),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
       ]),
     .init(
       name: "before any pipeline, nothing is performed",

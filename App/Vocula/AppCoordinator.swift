@@ -303,7 +303,6 @@ final class AppCoordinator: ObservableObject {
       switch action {
       case .prewarm: if let refiner { Task { await refiner.prewarm() } }
       case .unload: if let refiner { Task { await refiner.unload() } }
-      case .switchOff: settings.refineEnabled = false
       case .discard: Task { await removeInstalledModel(.qwenRefine2B) }
       }
     }

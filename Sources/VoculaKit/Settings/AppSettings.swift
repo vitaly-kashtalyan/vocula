@@ -36,10 +36,7 @@ public struct AppSettings: @unchecked Sendable {
 
   public static let refineEnabledKey = "refine.enabled"
 
-  public var refineEnabled: Bool {
-    get { defaults.bool(forKey: Self.refineEnabledKey) }
-    nonmutating set { defaults.set(newValue, forKey: Self.refineEnabledKey) }
-  }
+  public var refineEnabled: Bool { defaults.bool(forKey: Self.refineEnabledKey) }
 
   public static let refineMaximumWaitKey = "refine.maximumWait"
   public static let refineMaximumWaitDefault = 30
