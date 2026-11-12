@@ -218,7 +218,10 @@ final class AppCoordinator: ObservableObject {
         inserter: inserter,
         filter: TextFilter(),
         refiner: refiner,
-        refinementIsEnabled: { [settings] in settings.refineEnabled },
+        refinementIsEnabled: { [settings, store] in
+          RefinementSwitch.isActive(
+            intent: settings.refineEnabled, model: store.status(of: .qwenRefine2B))
+        },
         refinementCeiling: { [settings] in .seconds(settings.refineMaximumWait) },
         history: historyStore,
         modelID: transcriptionModel.rawValue,
@@ -274,7 +277,7 @@ final class AppCoordinator: ObservableObject {
       Task { [weak self] in await self?.forwardDeviceChanges(to: controller) },
     ]
     watchRefinementSetting()
-    perform(refinerLifecycle.handle(.pipelineStarted(isEnabled: settings.refineEnabled)))
+    perform(refinerLifecycle.handle(.pipelineStarted(isEnabled: refinementIsActive)))
     if installed { indicator.show(.idle) }
   }
 
@@ -286,9 +289,14 @@ final class AppCoordinator: ObservableObject {
       MainActor.assumeIsolated {
         guard let self else { return }
         self.perform(
-          self.refinerLifecycle.handle(.settingChanged(isEnabled: self.settings.refineEnabled)))
+          self.refinerLifecycle.handle(.settingChanged(isEnabled: self.refinementIsActive)))
       }
     }
+  }
+
+  private var refinementIsActive: Bool {
+    RefinementSwitch.isActive(
+      intent: settings.refineEnabled, model: modelStore.status(of: .qwenRefine2B))
   }
 
   private func refinerFailedToLoad() {
