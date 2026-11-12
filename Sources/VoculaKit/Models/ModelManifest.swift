@@ -152,7 +152,8 @@ public enum ModelManifest {
       contents: [
         "model.safetensors", "model.safetensors.index.json", "config.json",
         "tokenizer.json", "tokenizer_config.json", "vocab.json", "chat_template.jinja",
-      ]),
+      ],
+      expandedBytes: 1_556_519_683),
   ]
 
   public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetUltra]

@@ -226,12 +226,20 @@ struct ModelStoreTests {
     #expect(!store(fs).matchesChecksum(.parakeetUltra))
   }
 
-  @Test("room is asked for the archive and its expansion at once, at the expansion's real size")
-  func spaceCountsTheArchiveAndItsExpansion() {
-    let model = ModelManifest.descriptor(for: .parakeetUltra)
-    #expect(model.expandedBytes == 632_162_964)
-    #expect(
-      store(FakeFS()).missingBytes(for: [.parakeetUltra]) == model.byteSize + 632_162_964)
+  @Test(
+    "every archive says how large it expands, and room is asked for the archive and that at once")
+  func spaceCountsTheArchiveAndItsExpansion() throws {
+    for model in ModelManifest.current {
+      guard model.unpacked != nil else {
+        #expect(model.expandedBytes == nil && model.contents.isEmpty, "\(model.id)")
+        #expect(store(FakeFS()).missingBytes(for: [model.id]) == model.byteSize)
+        continue
+      }
+      let expanded = try #require(
+        model.expandedBytes, "\(model.id) does not say how large it expands")
+      #expect(!model.contents.isEmpty, "\(model.id)")
+      #expect(store(FakeFS()).missingBytes(for: [model.id]) == model.byteSize + expanded)
+    }
   }
 
   @Test("only an expanded model is discarded when it will not load")
