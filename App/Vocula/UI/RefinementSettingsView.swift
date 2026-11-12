@@ -11,15 +11,36 @@ struct RefinementSettingsView: View {
   private var status: ModelStatus { downloader.statuses[.qwenRefine2B] ?? .missing }
   private var descriptor: ModelDescriptor { ModelManifest.descriptor(for: .qwenRefine2B) }
 
+  private var downloadingThis: Bool { downloader.current == .qwenRefine2B }
+
+  private var intent: Binding<Bool> {
+    Binding(
+      get: { isEnabled },
+      set: { turnedOn in
+        isEnabled = turnedOn
+        switch RefinementSwitch.toggled(
+          on: turnedOn, model: downloader.statuses[.qwenRefine2B],
+          downloadingThis: downloadingThis, busy: downloader.isDownloading)
+        {
+        case .startDownload: Task { await load() }
+        case .cancelDownload: downloader.cancel()
+        case nil: break
+        }
+      })
+  }
+
   var body: some View {
     Section {
-      Toggle(RefinementScreenCopy.enable, isOn: $isEnabled)
-        .disabled(status != .ready)
+      Toggle(RefinementScreenCopy.enable, isOn: intent)
     } footer: {
-      if status == .ready {
+      switch RefinementSwitch.footer(intent: isEnabled, model: status) {
+      case .explanation:
         Text(RefinementScreenCopy.explanation)
-      } else {
-        Text(RefinementScreenCopy.needsModel)
+      case .explanationOffersDownload:
+        Text(RefinementScreenCopy.explanation)
+        Text(RefinementScreenCopy.offersDownload)
+      case .pastesAsRecognised:
+        Text(RefinementScreenCopy.pastesAsRecognised)
       }
     }
 
@@ -31,7 +52,7 @@ struct RefinementSettingsView: View {
       } label: {
         Text(RefinementScreenCopy.waitLabel)
       }
-      .disabled(!isEnabled || status != .ready)
+      .disabled(!RefinementSwitch.isActive(intent: isEnabled, model: status))
     } footer: {
       Text(RefinementScreenCopy.waitFooter)
     }
@@ -42,9 +63,11 @@ struct RefinementSettingsView: View {
         case .ready:
           Text(verbatim: descriptor.licence)
         case .missing, .corrupted, .incomplete:
-          if downloader.current == .qwenRefine2B {
+          if downloadingThis {
             ProgressView(value: downloader.fraction[.qwenRefine2B] ?? 0).frame(width: 100)
-          } else {
+          } else if RefinementSwitch.showsLoad(
+            intent: isEnabled, model: status, downloadingThis: downloadingThis)
+          {
             Button(ModelScreenCopy.load) { Task { await load() } }
               .disabled(downloader.isDownloading)
           }
@@ -53,7 +76,7 @@ struct RefinementSettingsView: View {
         Text(verbatim: descriptor.displayName)
         Text(verbatim: descriptor.statusLine(status))
       }
-      ModelDownloadFailure(message: downloader.lastError)
+      ModelDownloadFailure(message: isEnabled ? downloader.lastError : nil)
     } footer: {
       Text(RefinementScreenCopy.fallback)
     }
@@ -63,7 +86,6 @@ struct RefinementSettingsView: View {
   }
 
   private func load() async {
-    await downloader.downloadOne(.qwenRefine2B)
-    if status == .ready { await onModelsReady() }
+    if await downloader.downloadOne(.qwenRefine2B) { await onModelsReady() }
   }
 }

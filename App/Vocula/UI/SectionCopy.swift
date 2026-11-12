@@ -572,7 +572,7 @@ enum ModelScreenCopy {
   static let load = LocalizedStringResource(
     "models.load", defaultValue: "Load",
     comment:
-      "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about."
+      "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged; on Settings → Clean-up the row shows it only while the clean-up switch is on. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about."
   )
   static let licences = LocalizedStringResource(
     "models.licences", defaultValue: "Licences",
@@ -850,11 +850,18 @@ enum RefinementScreenCopy {
     defaultValue:
       "A model on this Mac fixes recognition errors and drops filler words before the text is pasted. On average it adds about half a second to a dictation.",
     comment: "Footer under the clean-up switch. Says what the pass does and what it costs.")
-  static let needsModel = LocalizedStringResource(
-    "refinement.needsModel",
-    defaultValue: "Download the model below to turn this on.",
+  static let offersDownload = LocalizedStringResource(
+    "refinement.offersDownload",
+    defaultValue: "Turning this on downloads the model below.",
     comment:
-      "Footer under the clean-up switch when its model is not installed, which is why the switch cannot be used."
+      "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the model row in the next section."
+  )
+  static let pastesAsRecognised = LocalizedStringResource(
+    "refinement.pastesAsRecognised",
+    defaultValue:
+      "Until the model below is downloaded, dictations are pasted as they were recognised.",
+    comment:
+      "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the model row in the next section."
   )
   static let waitLabel = LocalizedStringResource(
     "refinement.wait", defaultValue: "Wait at most",

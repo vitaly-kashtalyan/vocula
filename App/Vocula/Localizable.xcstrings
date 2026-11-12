@@ -13202,7 +13202,7 @@
       }
     },
     "models.load" : {
-      "comment" : "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about.",
+      "comment" : "The button on a model's row, and a VERB. It DOWNLOADS: the action calls downloadOne, and the row shows it whenever a model is missing, incomplete or damaged; on Settings → Clean-up the row shows it only while the clean-up switch is on. The name is the app's, not a description of the work, and the damaged status line beside it must name this same word so the reader looks for the control they just read about.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15301,62 +15301,122 @@
         }
       }
     },
-    "refinement.needsModel" : {
-      "comment" : "Footer under the clean-up switch when its model is not installed, which is why the switch cannot be used.",
+    "refinement.offersDownload" : {
+      "comment" : "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the model row in the next section.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Laden Sie das Modell unten herunter, um diese Funktion einzuschalten."
+            "value" : "Beim Einschalten wird das Modell unten heruntergeladen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Download the model below to turn this on."
+            "value" : "Turning this on downloads the model below."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Descarga el modelo de abajo para activar esta opción."
+            "value" : "Al activarlo se descarga el modelo de abajo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Téléchargez le modèle ci-dessous pour activer cette option."
+            "value" : "L’activer télécharge le modèle ci-dessous."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Scarica il modello qui sotto per attivare questa opzione."
+            "value" : "Attivandolo si scarica il modello qui sotto."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Pobierz model poniżej, aby to włączyć."
+            "value" : "Włączenie pobiera model poniżej."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Baixe o modelo abaixo para ativar esta opção."
+            "value" : "Ao ativar, o modelo abaixo é baixado."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Загрузите модель ниже, чтобы включить эту функцию."
+            "value" : "При включении загрузится модель ниже."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Завантажте модель нижче, щоб увімкнути цю функцію."
+            "value" : "Під час увімкнення завантажиться модель нижче."
+          }
+        }
+      }
+    },
+    "refinement.pastesAsRecognised" : {
+      "comment" : "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the model row in the next section.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bis das Modell unten heruntergeladen ist, werden Diktate so eingefügt, wie sie erkannt wurden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Until the model below is downloaded, dictations are pasted as they were recognised."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hasta que se descargue el modelo de abajo, los dictados se pegan tal como se reconocieron."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tant que le modèle ci-dessous n’est pas téléchargé, les dictées sont collées telles qu’elles ont été reconnues."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Finché il modello qui sotto non è scaricato, le dettature vengono incollate così come sono state riconosciute."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dopóki model poniżej nie zostanie pobrany, dyktowany tekst jest wklejany tak, jak został rozpoznany."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Até o modelo abaixo ser baixado, os ditados são colados como foram reconhecidos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Пока модель ниже не загружена, диктовки вставляются такими, какими были распознаны."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Поки модель нижче не завантажено, диктування вставляються такими, якими їх було розпізнано."
           }
         }
       }
