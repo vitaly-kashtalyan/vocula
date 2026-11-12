@@ -65,7 +65,7 @@ VERSION_OVERRIDE=()
 # lets any process attach a debugger to the hardened binary and read its memory.
 # Apple names this setting as the fix for a workflow that does not export from
 # an archive.
-# ARCHS=arm64 on the COMMAND LINE, not in project.yml: a SwiftPM dependency is
+# ARCHS=arm64 on the COMMAND LINE as well as in project.yml: a SwiftPM dependency is
 # built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
 # ours, so without it every package also compiles an x86_64 slice nothing ships.
 # Only the command line reaches every project in the build.

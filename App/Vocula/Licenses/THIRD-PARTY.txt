@@ -40,8 +40,9 @@ pinned to the version this build actually carries, not to a moving branch:
   EventSource     https://github.com/mattt/EventSource/blob/1.5.1/LICENSE.md
   Qwen3.5-2B      https://huggingface.co/Qwen/Qwen3.5-2B/blob/15852e8c16360a2fea060d615a32b45270f8a8fc/LICENSE
 
-swift-syntax and swift-asn1 are fetched beside these packages, but nothing
-compiled into the app uses them, so neither is carried and neither is listed.
+swift-syntax, swift-asn1 and FluidAudio's NemoTextProcessing XCFramework are
+fetched beside these packages, but nothing compiled into the app uses them, so
+none is carried and none is listed.
 
 whisper.cpp is linked as a prebuilt XCFramework rather than compiled here. Its
 corresponding source is the tag above; the exact artefact this build links is

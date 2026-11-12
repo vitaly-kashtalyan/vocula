@@ -74,7 +74,7 @@ Nothing you say. Ever.
 | What | Where it happens |
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release. |
-| Speech detection and transcription | This Mac, on the GPU. |
+| Speech detection and transcription | This Mac, on the GPU — or the Neural Engine with Parakeet. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
@@ -98,8 +98,7 @@ releases the models come from.
 
 No telemetry, no analytics, no crash reporting, no licence server. The
 third-party components in the app are the two recognition engines — whisper.cpp
-and FluidAudio —
-MLX and swift-transformers for the optional clean-up model, and Sparkle, every
+and FluidAudio — MLX and swift-transformers for the optional clean-up model, and Sparkle, every
 one and every package they pull in pinned by exact version, commit or checksum
 in `App/project.yml` and `Package.swift`, so there is no analytics SDK for a
 call to hide in. One thing
@@ -153,7 +152,7 @@ silent recording, a refusal and a dead microphone all cost nothing.
 
 - macOS 26.0 or later.
 - Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
-  Large v3 Turbo, or about 630 MB for Parakeet Ultra, plus the voice-activity
+  Large v3 Turbo, or about 630 MB for Parakeet Ultra (a 555 MB download), plus the voice-activity
   detector either way, and about 1.5 GB more for the clean-up model if you
   switch it on.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
@@ -173,7 +172,8 @@ SDK. The first build needs a network for its dependencies: Sparkle, pinned by
 commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from its
 GitHub release and checked against the SHA-256 pinned in `Package.swift`; and
 FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
-text-normalisation XCFramework against its own checksum; and MLX with
+text-normalisation XCFramework against its own checksum, which this build does
+not link; and MLX with
 swift-transformers, each package pinned by commit in `App/project.yml`.
 MLX compiles its Metal kernels from source, which needs Xcode's separately
 installed Metal Toolchain, and mlx-swift ships a build-tool plugin that
@@ -221,6 +221,12 @@ app builds.
 
 Stated here rather than discovered later.
 
+- **Moving from Parakeet v3 to Parakeet Ultra leaves the old model behind.**
+  Someone who used Parakeet v3 finds Parakeet Ultra selected and not yet
+  downloaded, and downloads it once, 555 MB. The app never deletes
+  `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
+  (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
+  hand once Ultra works.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
