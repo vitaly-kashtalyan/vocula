@@ -227,17 +227,19 @@ Stated here rather than discovered later.
   `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
   (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
   hand once Ultra works.
-- **Turning clean-up off in the last seconds of its download does not undo it.**
-  Off after the transfer but before expansion leaves the 1.49 GB archive at
-  `~/Library/Application Support/app.vocula.mac/Models/vocula-cleanup-2b-v1.zip`
-  until clean-up is turned on again, which deletes it and downloads all of it
-  again; off once expansion has started leaves the finished 1.56 GB model in
-  `vocula-cleanup-2b-v1/` beside it. Nothing in the app removes either; delete
-  them by hand.
+- **Turning clean-up off after its progress bar has filled does not undo the
+  download.** Off while the downloaded archive is being moved into place and
+  checksummed leaves the 1.49 GB archive at
+  `~/Library/Application Support/app.vocula.mac/Models/vocula-cleanup-2b-v1.zip`;
+  turning clean-up on again deletes it and downloads all of it again. Off once
+  expansion has started leaves the finished 1.56 GB model in
+  `vocula-cleanup-2b-v1/` and removes the archive. While clean-up stays off,
+  nothing in the app removes either; delete them by hand.
 - **One model downloads at a time.** Turning clean-up on while the speech model
   is still downloading starts nothing until you press `Load` beside the clean-up
-  model afterwards; turning it on first holds the speech model's download back
-  until the 1.49 GB clean-up model is done or you turn clean-up off.
+  model afterwards. Turning it on first holds the speech model back until the
+  1.49 GB clean-up model is done or you turn clean-up off; the speech model then
+  waits for "Download what is missing" on Settings → Models.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
