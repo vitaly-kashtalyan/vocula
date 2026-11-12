@@ -91,15 +91,16 @@ struct RefinementSettingsView: View {
     } footer: {
       Text(RefinementScreenCopy.fallback)
     }
-    .onChange(of: downloader.lastError) { _, message in
-      if isEnabled, let message { Announce.say(message) }
-    }
     .task {
       if downloader.statuses.isEmpty { await downloader.refreshStatuses() }
     }
   }
 
   private func load() async {
-    if await downloader.downloadOne(.qwenRefine2B), isEnabled { await onModelsReady() }
+    if await downloader.downloadOne(.qwenRefine2B) {
+      if isEnabled { await onModelsReady() }
+    } else if isEnabled, let message = downloader.lastError {
+      Announce.say(message)
+    }
   }
 }

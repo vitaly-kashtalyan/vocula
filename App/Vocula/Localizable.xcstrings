@@ -15122,7 +15122,7 @@
       }
     },
     "refinement.enable" : {
-      "comment" : "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac, turning it on also downloads it.",
+      "comment" : "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac and no other model is downloading, turning it on also downloads it.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15182,7 +15182,7 @@
       }
     },
     "refinement.explanation" : {
-      "comment" : "Footer under the clean-up switch. Says what the pass does and what it costs.",
+      "comment" : "Footer under the clean-up switch. Says what the pass does and what it costs. Also drawn while the model is not yet on this Mac, followed by a line saying that turning the switch on downloads it, so it describes the feature rather than a model already installed. Also spoken by VoiceOver as the switch's hint once the model is on this Mac.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15302,7 +15302,7 @@
       }
     },
     "refinement.offersDownload" : {
-      "comment" : "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker.",
+      "comment" : "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker. Also spoken by VoiceOver on its own, as the switch's hint.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15362,7 +15362,7 @@
       }
     },
     "refinement.pastesAsRecognised" : {
-      "comment" : "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker.",
+      "comment" : "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker. Also spoken by VoiceOver on its own, as the switch's hint.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {

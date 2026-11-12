@@ -2,8 +2,8 @@ import Foundation
 
 public struct RefinerLifecycle: Sendable {
   public enum Event: Equatable, Sendable {
-    case pipelineStarted(isEnabled: Bool)
-    case settingChanged(isEnabled: Bool)
+    case pipelineStarted(isActive: Bool)
+    case settingChanged(isActive: Bool)
     case loadFailed(isEnabled: Bool, model: ModelStatus)
     case tornDown
   }

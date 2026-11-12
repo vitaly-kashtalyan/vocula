@@ -845,25 +845,27 @@ enum RefinementScreenCopy {
   static let enable = LocalizedStringResource(
     "refinement.enable", defaultValue: "Clean up dictated text",
     comment:
-      "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac, turning it on also downloads it."
+      "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac and no other model is downloading, turning it on also downloads it."
   )
   static let explanation = LocalizedStringResource(
     "refinement.explanation",
     defaultValue:
       "A model on this Mac fixes recognition errors and drops filler words before the text is pasted. On average it adds about half a second to a dictation.",
-    comment: "Footer under the clean-up switch. Says what the pass does and what it costs.")
+    comment:
+      "Footer under the clean-up switch. Says what the pass does and what it costs. Also drawn while the model is not yet on this Mac, followed by a line saying that turning the switch on downloads it, so it describes the feature rather than a model already installed. Also spoken by VoiceOver as the switch's hint once the model is on this Mac."
+  )
   static let offersDownload = LocalizedStringResource(
     "refinement.offersDownload",
     defaultValue: "Turning this on downloads the model below.",
     comment:
-      "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker."
+      "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker. Also spoken by VoiceOver on its own, as the switch's hint."
   )
   static let pastesAsRecognised = LocalizedStringResource(
     "refinement.pastesAsRecognised",
     defaultValue:
       "Until the model below is downloaded, dictations are pasted as they were recognised.",
     comment:
-      "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker."
+      "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker. Also spoken by VoiceOver on its own, as the switch's hint."
   )
   static let waitLabel = LocalizedStringResource(
     "refinement.wait", defaultValue: "Wait at most",

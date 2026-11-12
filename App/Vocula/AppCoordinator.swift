@@ -277,7 +277,7 @@ final class AppCoordinator: ObservableObject {
       Task { [weak self] in await self?.forwardDeviceChanges(to: controller) },
     ]
     watchRefinementSetting()
-    perform(refinerLifecycle.handle(.pipelineStarted(isEnabled: refinementIsActive)))
+    perform(refinerLifecycle.handle(.pipelineStarted(isActive: refinementIsActive)))
     if installed { indicator.show(.idle) }
   }
 
@@ -289,7 +289,7 @@ final class AppCoordinator: ObservableObject {
       MainActor.assumeIsolated {
         guard let self else { return }
         self.perform(
-          self.refinerLifecycle.handle(.settingChanged(isEnabled: self.refinementIsActive)))
+          self.refinerLifecycle.handle(.settingChanged(isActive: self.refinementIsActive)))
       }
     }
   }
