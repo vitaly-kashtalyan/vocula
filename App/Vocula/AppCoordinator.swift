@@ -219,8 +219,7 @@ final class AppCoordinator: ObservableObject {
         filter: TextFilter(),
         refiner: refiner,
         refinementIsEnabled: { [settings, store] in
-          RefinementSwitch.isActive(
-            intent: settings.refineEnabled, model: store.status(of: .qwenRefine2B))
+          RefinementSwitch.isActive(settings: settings, store: store)
         },
         refinementCeiling: { [settings] in .seconds(settings.refineMaximumWait) },
         history: historyStore,
@@ -295,8 +294,7 @@ final class AppCoordinator: ObservableObject {
   }
 
   private var refinementIsActive: Bool {
-    RefinementSwitch.isActive(
-      intent: settings.refineEnabled, model: modelStore.status(of: .qwenRefine2B))
+    RefinementSwitch.isActive(settings: settings, store: modelStore)
   }
 
   private func refinerFailedToLoad() {

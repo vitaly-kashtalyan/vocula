@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import VoculaKit
@@ -23,6 +24,21 @@ struct ToggleRow: Sendable, CustomTestStringConvertible {
   let action: RefinementSwitch.Action?
   var testDescription: String {
     "turned \(on ? "on" : "off"), model \(model), download \(download) → \(action.map { "\($0)" } ?? "nothing")"
+  }
+}
+
+private final class PresenceFS: ModelFileSystem, @unchecked Sendable {
+  let present: Set<String>
+  private(set) var hashes = 0
+
+  init(present: Set<String>) { self.present = present }
+
+  func fileExists(at url: URL) -> Bool { present.contains(url.lastPathComponent) }
+  func size(of url: URL) -> Int64? { nil }
+  func availableCapacity(at url: URL) -> Int64? { nil }
+  func sha256(of url: URL) throws -> String {
+    hashes += 1
+    return ""
   }
 }
 
@@ -92,5 +108,34 @@ struct RefinementSwitchTests {
     #expect(
       RefinementSwitch.toggled(on: row.on, model: row.model, download: row.download)
         == row.action)
+  }
+
+  private static func settings(switchOn: Bool) -> AppSettings {
+    let defaults = UserDefaults(suiteName: "test.refine.switch")!
+    defaults.removePersistentDomain(forName: "test.refine.switch")
+    defaults.set(switchOn, forKey: AppSettings.refineEnabledKey)
+    return AppSettings(defaults: defaults)
+  }
+
+  private static let everyEntry = Set(
+    ModelManifest.descriptor(for: .qwenRefine2B).contents.map {
+      URL(fileURLWithPath: $0).lastPathComponent
+    })
+
+  @Test("the pipeline's gate reads the switch and the model on disk, and hashes nothing")
+  func theGateReadsTheSwitchAndTheDisk() {
+    let complete = PresenceFS(present: Self.everyEntry)
+    let store = ModelStore(
+      directory: URL(fileURLWithPath: "/tmp/vocula-gate"), fileSystem: complete)
+    #expect(RefinementSwitch.isActive(settings: Self.settings(switchOn: true), store: store))
+    #expect(
+      RefinementSwitch.isActive(settings: Self.settings(switchOn: false), store: store) == false)
+    #expect(complete.hashes == 0)
+
+    let oneMissing = PresenceFS(present: Self.everyEntry.subtracting([Self.everyEntry.first!]))
+    let broken = ModelStore(
+      directory: URL(fileURLWithPath: "/tmp/vocula-gate"), fileSystem: oneMissing)
+    #expect(
+      RefinementSwitch.isActive(settings: Self.settings(switchOn: true), store: broken) == false)
   }
 }

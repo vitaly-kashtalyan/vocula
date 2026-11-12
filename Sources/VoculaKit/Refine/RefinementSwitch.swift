@@ -17,6 +17,10 @@ public enum RefinementSwitch {
     intent && model == .ready
   }
 
+  public static func isActive(settings: AppSettings, store: ModelStore) -> Bool {
+    isActive(intent: settings.refineEnabled, model: store.status(of: .qwenRefine2B))
+  }
+
   public static func isWanted(_ id: ModelID, intent: Bool) -> Bool {
     id != .qwenRefine2B || intent
   }
