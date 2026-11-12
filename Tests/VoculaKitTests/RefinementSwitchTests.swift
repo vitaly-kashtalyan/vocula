@@ -16,24 +16,13 @@ struct FooterRow: Sendable, CustomTestStringConvertible {
   var testDescription: String { "switch \(intent ? "on" : "off"), model \(model) → \(footer)" }
 }
 
-struct LoadRow: Sendable, CustomTestStringConvertible {
-  let intent: Bool
-  let model: ModelStatus
-  let downloadingThis: Bool
-  let shows: Bool
-  var testDescription: String {
-    "switch \(intent ? "on" : "off"), model \(model), downloading \(downloadingThis) → \(shows)"
-  }
-}
-
 struct ToggleRow: Sendable, CustomTestStringConvertible {
   let on: Bool
-  let model: ModelStatus?
-  let downloadingThis: Bool
-  let busy: Bool
+  let model: ModelStatus
+  let download: RefinementSwitch.Download
   let action: RefinementSwitch.Action?
   var testDescription: String {
-    "turned \(on ? "on" : "off"), model \(model.map { "\($0)" } ?? "unknown"), downloading \(downloadingThis), busy \(busy) → \(action.map { "\($0)" } ?? "nothing")"
+    "turned \(on ? "on" : "off"), model \(model), download \(download) → \(action.map { "\($0)" } ?? "nothing")"
   }
 }
 
@@ -85,45 +74,23 @@ struct RefinementSwitchTests {
     #expect(RefinementSwitch.footer(intent: row.intent, model: row.model) == row.footer)
   }
 
-  static let loadRows: [LoadRow] = [
-    .init(intent: true, model: .missing, downloadingThis: false, shows: true),
-    .init(intent: true, model: .corrupted, downloadingThis: false, shows: true),
-    .init(intent: true, model: .missing, downloadingThis: true, shows: false),
-    .init(intent: false, model: .missing, downloadingThis: false, shows: false),
-    .init(intent: true, model: .ready, downloadingThis: false, shows: false),
-    .init(intent: false, model: .ready, downloadingThis: false, shows: false),
-  ]
-
-  @Test(
-    "the model row offers Load only while the switch is on and nothing is fetching it",
-    arguments: loadRows)
-  func load(_ row: LoadRow) {
-    #expect(
-      RefinementSwitch.showsLoad(
-        intent: row.intent, model: row.model, downloadingThis: row.downloadingThis) == row.shows)
-  }
-
   static let toggleRows: [ToggleRow] = [
-    .init(on: true, model: .missing, downloadingThis: false, busy: false, action: .startDownload),
-    .init(on: true, model: nil, downloadingThis: false, busy: false, action: .startDownload),
-    .init(on: true, model: .corrupted, downloadingThis: false, busy: false, action: .startDownload),
-    .init(on: true, model: .ready, downloadingThis: false, busy: false, action: nil),
-    .init(on: true, model: .missing, downloadingThis: false, busy: true, action: nil),
-    .init(on: true, model: nil, downloadingThis: false, busy: true, action: nil),
-    .init(on: true, model: .missing, downloadingThis: true, busy: true, action: nil),
-    .init(on: false, model: .missing, downloadingThis: true, busy: true, action: .cancelDownload),
-    .init(on: false, model: .ready, downloadingThis: true, busy: true, action: .cancelDownload),
-    .init(on: false, model: .missing, downloadingThis: false, busy: true, action: nil),
-    .init(on: false, model: .missing, downloadingThis: false, busy: false, action: nil),
-    .init(on: false, model: .ready, downloadingThis: false, busy: false, action: nil),
-    .init(on: false, model: nil, downloadingThis: false, busy: false, action: nil),
+    .init(on: true, model: .missing, download: .idle, action: .startDownload),
+    .init(on: true, model: .corrupted, download: .idle, action: .startDownload),
+    .init(on: true, model: .ready, download: .idle, action: nil),
+    .init(on: true, model: .missing, download: .otherModel, action: nil),
+    .init(on: true, model: .missing, download: .thisModel, action: nil),
+    .init(on: false, model: .missing, download: .thisModel, action: .cancelDownload),
+    .init(on: false, model: .ready, download: .thisModel, action: .cancelDownload),
+    .init(on: false, model: .missing, download: .otherModel, action: nil),
+    .init(on: false, model: .missing, download: .idle, action: nil),
+    .init(on: false, model: .ready, download: .idle, action: nil),
   ]
 
   @Test("what turning the switch does", arguments: toggleRows)
   func toggled(_ row: ToggleRow) {
     #expect(
-      RefinementSwitch.toggled(
-        on: row.on, model: row.model, downloadingThis: row.downloadingThis, busy: row.busy)
+      RefinementSwitch.toggled(on: row.on, model: row.model, download: row.download)
         == row.action)
   }
 }

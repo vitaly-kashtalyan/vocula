@@ -9,6 +9,10 @@ public enum RefinementSwitch {
     case startDownload, cancelDownload
   }
 
+  public enum Download: Equatable, Sendable {
+    case idle, thisModel, otherModel
+  }
+
   public static func isActive(intent: Bool, model: ModelStatus) -> Bool {
     intent && model == .ready
   }
@@ -22,14 +26,8 @@ public enum RefinementSwitch {
     return intent ? .pastesAsRecognised : .explanationOffersDownload
   }
 
-  public static func showsLoad(intent: Bool, model: ModelStatus, downloadingThis: Bool) -> Bool {
-    intent && model != .ready && !downloadingThis
-  }
-
-  public static func toggled(
-    on: Bool, model: ModelStatus?, downloadingThis: Bool, busy: Bool
-  ) -> Action? {
-    if on { return model != .ready && !busy ? .startDownload : nil }
-    return downloadingThis ? .cancelDownload : nil
+  public static func toggled(on: Bool, model: ModelStatus, download: Download) -> Action? {
+    if on { return model != .ready && download == .idle ? .startDownload : nil }
+    return download == .thisModel ? .cancelDownload : nil
   }
 }

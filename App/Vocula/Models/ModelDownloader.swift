@@ -59,7 +59,7 @@ final class ModelDownloader: NSObject, ObservableObject {
   init(
     store: ModelStore, requiredModels: @escaping @Sendable () -> [ModelID],
     configuration: URLSessionConfiguration = .default,
-    isWanted: @escaping (ModelID) -> Bool = { _ in true }
+    isWanted: @escaping (ModelID) -> Bool
   ) {
     self.store = store
     self.requiredModels = requiredModels

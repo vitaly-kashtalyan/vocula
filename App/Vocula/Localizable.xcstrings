@@ -15122,7 +15122,7 @@
       }
     },
     "refinement.enable" : {
-      "comment" : "Switch in Settings → Clean-up. Turns the post-processing pass on.",
+      "comment" : "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac, turning it on also downloads it.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15302,7 +15302,7 @@
       }
     },
     "refinement.offersDownload" : {
-      "comment" : "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the model row in the next section.",
+      "comment" : "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -15362,7 +15362,7 @@
       }
     },
     "refinement.pastesAsRecognised" : {
-      "comment" : "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the model row in the next section.",
+      "comment" : "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {

@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import Synchronization
 import Testing
 
 @testable import Vocula
@@ -11,18 +12,17 @@ private final class StubProtocol: URLProtocol {
   nonisolated(unsafe) static var delay: TimeInterval = 0
   nonisolated(unsafe) static var failure: NSError?
   nonisolated(unsafe) static var hangs = false
-  private static let lock = NSLock()
-  nonisolated(unsafe) private static var requested: [URL] = []
+  private static let requested = Mutex<[URL]>([])
 
   static func requests(for url: URL) -> Int {
-    lock.withLock { requested.filter { $0 == url }.count }
+    requested.withLock { $0.count(where: { $0 == url }) }
   }
 
   override class func canInit(with request: URLRequest) -> Bool { true }
   override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
   override func startLoading() {
-    if let url = request.url { Self.lock.withLock { Self.requested.append(url) } }
+    if let url = request.url { Self.requested.withLock { $0.append(url) } }
     if Self.delay > 0 { Thread.sleep(forTimeInterval: Self.delay) }
     if let failure = Self.failure {
       client?.urlProtocol(self, didFailWithError: failure)
@@ -67,7 +67,8 @@ private func uniqueURL() -> URL {
   URL(string: "https://test.invalid/\(UUID().uuidString).bin")!
 }
 
-private func archiveFixture(named name: String, remoteURL: URL) throws -> (Data, ModelDescriptor) {
+private func archiveFixture(remoteURL: URL = uniqueURL()) throws -> (Data, ModelDescriptor) {
+  let name = "test-archive"
   let directory = FileManager.default.temporaryDirectory
     .appendingPathComponent(UUID().uuidString, isDirectory: true)
   let folder = directory.appendingPathComponent(name, isDirectory: true)
@@ -293,7 +294,7 @@ struct ModelDownloaderTests {
     var lines: [(String, String)] = []
     downloader.diagnose = { lines.append(($0, $1)) }
 
-    await downloader.downloadOne(.largeV3Turbo)
+    #expect(await downloader.downloadOne(.largeV3Turbo) == false)
 
     let detail = try #require(lines.first?.1)
     #expect(fields(detail).contains("outcome=noSpace"))
@@ -414,8 +415,8 @@ struct ModelDownloaderTests {
 
   @Test("a model not wanted once transferred is not moved into place")
   func notWantedAfterTheTransferInstallsNothing() async throws {
-    let url = uniqueURL()
-    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    let (zip, model) = try archiveFixture()
+    let url = model.remoteURL
     StubProtocol.status = 200
     StubProtocol.body = zip
     let wanted = WantedAfter(1)
@@ -436,8 +437,7 @@ struct ModelDownloaderTests {
 
   @Test("a model not wanted once verified is not expanded")
   func notWantedAfterVerificationExpandsNothing() async throws {
-    let url = uniqueURL()
-    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    let (zip, model) = try archiveFixture()
     StubProtocol.status = 200
     StubProtocol.body = zip
     let wanted = WantedAfter(2)
@@ -456,8 +456,7 @@ struct ModelDownloaderTests {
 
   @Test("an archive that stays wanted expands and is ready")
   func aWantedArchiveExpands() async throws {
-    let url = uniqueURL()
-    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    let (zip, model) = try archiveFixture()
     StubProtocol.status = 200
     StubProtocol.body = zip
     let wanted = WantedAfter(3)
@@ -533,12 +532,7 @@ struct ModelDownloaderTests {
     #expect(await downloader.downloadOne(.largeV3Turbo) == false)
     #expect(StubProtocol.requests(for: url) == 1)
 
-    var attempts = 0
-    while downloader.isDownloading, attempts < 10_000 {
-      downloader.cancel()
-      await Task.yield()
-      attempts += 1
-    }
+    downloader.cancel()
     await #expect(throws: CancellationError.self) { _ = try await first.value }
   }
 }
@@ -558,7 +552,7 @@ struct ResumeDataTests {
     return (
       ModelDownloader(
         store: store, requiredModels: { [.largeV3Turbo] },
-        configuration: configuration), store, directory
+        configuration: configuration, isWanted: { _ in true }), store, directory
     )
   }
 

@@ -844,7 +844,9 @@ enum RefinementScreenCopy {
 
   static let enable = LocalizedStringResource(
     "refinement.enable", defaultValue: "Clean up dictated text",
-    comment: "Switch in Settings → Clean-up. Turns the post-processing pass on.")
+    comment:
+      "Switch in Settings → Clean-up. Turns the post-processing pass on; when the clean-up model is not on this Mac, turning it on also downloads it."
+  )
   static let explanation = LocalizedStringResource(
     "refinement.explanation",
     defaultValue:
@@ -854,14 +856,14 @@ enum RefinementScreenCopy {
     "refinement.offersDownload",
     defaultValue: "Turning this on downloads the model below.",
     comment:
-      "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the model row in the next section."
+      "Second line of the footer under the clean-up switch, drawn after the explanation while the switch is off and its model is not on this Mac. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker."
   )
   static let pastesAsRecognised = LocalizedStringResource(
     "refinement.pastesAsRecognised",
     defaultValue:
       "Until the model below is downloaded, dictations are pasted as they were recognised.",
     comment:
-      "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the model row in the next section."
+      "Footer under the clean-up switch while the switch is on and its model is not on this Mac, alone in that footer. \"The model below\" is the clean-up model's row, further down this screen, below the maximum-wait picker."
   )
   static let waitLabel = LocalizedStringResource(
     "refinement.wait", defaultValue: "Wait at most",
