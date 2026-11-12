@@ -218,7 +218,9 @@ final class AppCoordinator: ObservableObject {
         inserter: inserter,
         filter: TextFilter(),
         refiner: refiner,
-        refinementIsEnabled: { [settings] in settings.refineEnabled },
+        refinementIsEnabled: { [settings, store] in
+          RefinementSwitch.isActive(settings: settings, store: store)
+        },
         refinementCeiling: { [settings] in .seconds(settings.refineMaximumWait) },
         history: historyStore,
         modelID: transcriptionModel.rawValue,
@@ -274,7 +276,7 @@ final class AppCoordinator: ObservableObject {
       Task { [weak self] in await self?.forwardDeviceChanges(to: controller) },
     ]
     watchRefinementSetting()
-    perform(refinerLifecycle.handle(.pipelineStarted(isEnabled: settings.refineEnabled)))
+    perform(refinerLifecycle.handle(.pipelineStarted(isActive: refinementIsActive)))
     if installed { indicator.show(.idle) }
   }
 
@@ -286,9 +288,13 @@ final class AppCoordinator: ObservableObject {
       MainActor.assumeIsolated {
         guard let self else { return }
         self.perform(
-          self.refinerLifecycle.handle(.settingChanged(isEnabled: self.settings.refineEnabled)))
+          self.refinerLifecycle.handle(.settingChanged(isActive: self.refinementIsActive)))
       }
     }
+  }
+
+  private var refinementIsActive: Bool {
+    RefinementSwitch.isActive(settings: settings, store: modelStore)
   }
 
   private func refinerFailedToLoad() {
@@ -303,7 +309,6 @@ final class AppCoordinator: ObservableObject {
       switch action {
       case .prewarm: if let refiner { Task { await refiner.prewarm() } }
       case .unload: if let refiner { Task { await refiner.unload() } }
-      case .switchOff: settings.refineEnabled = false
       case .discard: Task { await removeInstalledModel(.qwenRefine2B) }
       }
     }

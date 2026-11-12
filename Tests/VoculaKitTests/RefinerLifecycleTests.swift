@@ -13,69 +13,70 @@ struct RefinerLifecycleTests {
   static let scenarios: [LifecycleScenario] = [
     .init(
       name: "starting with clean-up on prewarms",
-      steps: [(.pipelineStarted(isEnabled: true), [.prewarm])]),
+      steps: [(.pipelineStarted(isActive: true), [.prewarm])]),
     .init(
       name: "starting with clean-up off loads nothing",
-      steps: [(.pipelineStarted(isEnabled: false), [])]),
+      steps: [(.pipelineStarted(isActive: false), [])]),
     .init(
       name: "switching on prewarms",
       steps: [
-        (.pipelineStarted(isEnabled: false), []),
-        (.settingChanged(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: false), []),
+        (.settingChanged(isActive: true), [.prewarm]),
       ]),
     .init(
       name: "switching off unloads",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.settingChanged(isEnabled: false), [.unload]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.settingChanged(isActive: false), [.unload]),
       ]),
     .init(
       name: "a defaults change that leaves the switch where it was does nothing",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.settingChanged(isEnabled: true), []),
-        (.settingChanged(isEnabled: false), [.unload]),
-        (.settingChanged(isEnabled: false), []),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.settingChanged(isActive: true), []),
+        (.settingChanged(isActive: false), [.unload]),
+        (.settingChanged(isActive: false), []),
       ]),
     .init(
       name: "off then on fast unloads, then prewarms again",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.settingChanged(isEnabled: false), [.unload]),
-        (.settingChanged(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.settingChanged(isActive: false), [.unload]),
+        (.settingChanged(isActive: true), [.prewarm]),
       ]),
     .init(
       name: "off during a load that then fails deletes nothing",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.settingChanged(isEnabled: false), [.unload]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.settingChanged(isActive: false), [.unload]),
         (.loadFailed(isEnabled: false, model: .ready), []),
       ]),
     .init(
       name: "a failure read before the switch-off is seen keeps the model, then unloads",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
         (.loadFailed(isEnabled: false, model: .ready), []),
-        (.settingChanged(isEnabled: false), [.unload]),
+        (.settingChanged(isActive: false), [.unload]),
       ]),
     .init(
-      name: "a failed load with the model on disk switches off, forgets, and discards",
+      name:
+        "a failed load with the model on disk discards and keeps the failure until switched off",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
-        (.settingChanged(isEnabled: false), []),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
+        (.settingChanged(isActive: false), [.unload]),
       ]),
     .init(
-      name: "a failure read before the switch-on is seen still discards, once",
+      name: "a failure read before the switch-on is seen still discards",
       steps: [
-        (.pipelineStarted(isEnabled: false), []),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
-        (.settingChanged(isEnabled: false), []),
+        (.pipelineStarted(isActive: false), []),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
+        (.settingChanged(isActive: false), []),
       ]),
     .init(
       name: "a failed load before anything was downloaded deletes nothing",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
         (.loadFailed(isEnabled: true, model: .missing), []),
         (.loadFailed(isEnabled: true, model: .incomplete(bytes: 1)), []),
         (.loadFailed(isEnabled: true, model: .corrupted), []),
@@ -83,41 +84,41 @@ struct RefinerLifecycleTests {
     .init(
       name: "the model arriving after a load found nothing: the restart loads it",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
         (.loadFailed(isEnabled: true, model: .missing), []),
         (.tornDown, [.unload]),
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
       ]),
     .init(
-      name: "a re-download after a failure loads nothing until switched on again",
+      name: "after a failure, switching off unloads and switching on loads again",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .unload, .discard]),
-        (.settingChanged(isEnabled: false), []),
+        (.pipelineStarted(isActive: true), [.prewarm]),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
+        (.settingChanged(isActive: false), [.unload]),
+        (.settingChanged(isActive: true), [.prewarm]),
         (.tornDown, [.unload]),
-        (.pipelineStarted(isEnabled: false), []),
-        (.settingChanged(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
       ]),
     .init(
       name: "teardown unloads, and a change before the next start touches nothing",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
         (.tornDown, [.unload]),
-        (.settingChanged(isEnabled: false), []),
-        (.settingChanged(isEnabled: true), []),
+        (.settingChanged(isActive: false), []),
+        (.settingChanged(isActive: true), []),
         (.tornDown, []),
       ]),
     .init(
       name: "a failed load reported after teardown still discards a model on disk",
       steps: [
-        (.pipelineStarted(isEnabled: true), [.prewarm]),
+        (.pipelineStarted(isActive: true), [.prewarm]),
         (.tornDown, [.unload]),
-        (.loadFailed(isEnabled: true, model: .ready), [.switchOff, .discard]),
+        (.loadFailed(isEnabled: true, model: .ready), [.discard]),
       ]),
     .init(
       name: "before any pipeline, nothing is performed",
       steps: [
-        (.settingChanged(isEnabled: true), []),
+        (.settingChanged(isActive: true), []),
         (.loadFailed(isEnabled: false, model: .missing), []),
         (.tornDown, []),
       ]),

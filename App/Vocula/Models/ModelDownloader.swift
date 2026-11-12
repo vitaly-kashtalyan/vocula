@@ -50,6 +50,7 @@ final class ModelDownloader: NSObject, ObservableObject {
   let store: ModelStore
   var diagnose: ((String, String) -> Void)?
   private let requiredModels: @Sendable () -> [ModelID]
+  private let isWanted: (ModelID) -> Bool
   private var task: URLSessionDownloadTask?
   private var continuation: CheckedContinuation<URL, Error>?
   @Published private(set) var current: ModelID?
@@ -57,10 +58,12 @@ final class ModelDownloader: NSObject, ObservableObject {
 
   init(
     store: ModelStore, requiredModels: @escaping @Sendable () -> [ModelID],
-    configuration: URLSessionConfiguration = .default
+    configuration: URLSessionConfiguration = .default,
+    isWanted: @escaping (ModelID) -> Bool
   ) {
     self.store = store
     self.requiredModels = requiredModels
+    self.isWanted = isWanted
     super.init()
     self.session = URLSession(
       configuration: configuration, delegate: self,
@@ -165,29 +168,33 @@ final class ModelDownloader: NSObject, ObservableObject {
     lastError = nil
   }
 
-  func downloadOne(_ id: ModelID) async {
+  @discardableResult
+  func downloadOne(_ id: ModelID) async -> Bool {
     lastError = nil
     await refreshStatuses()
-    guard statuses[id] != .ready else { return }
+    guard statuses[id] != .ready else { return false }
     if let refusal = await spaceRefusal(for: [id]) {
       lastError = refusal
-      return
+      return false
     }
-    do { try await download(id) } catch is CancellationError {
+    let ran: Bool
+    do { ran = try await download(id) } catch is CancellationError {
       await refreshStatuses()
-      return
+      return false
     } catch {
       lastError = error.localizedDescription
       await refreshStatuses()
-      return
+      return false
     }
     await refreshStatuses()
     lastError = nil
+    return ran && statuses[id] == .ready
   }
 
-  func download(_ id: ModelID) async throws {
+  @discardableResult
+  func download(_ id: ModelID) async throws -> Bool {
     do {
-      try await perform(id)
+      return try await perform(id)
     } catch {
       if !(error is CancellationError) {
         diagnose?("model.download", failureDetail(error, for: id))
@@ -220,8 +227,8 @@ final class ModelDownloader: NSObject, ObservableObject {
       .joined(separator: " ")
   }
 
-  private func perform(_ id: ModelID) async throws {
-    guard !isDownloading else { return }
+  private func perform(_ id: ModelID) async throws -> Bool {
+    guard !isDownloading else { return false }
     let store = self.store
     isDownloading = true
     defer {
@@ -241,11 +248,13 @@ final class ModelDownloader: NSObject, ObservableObject {
 
     current = id
     fraction[id] = 0
+    try stillWanted(id)
     let temporary: URL
     do {
       temporary = try await startTask(model, resumingWith: resumeData)
     } catch is ModelDownloadError where resumeData != nil {
       discardResumeData(for: id)
+      try stillWanted(id)
       temporary = try await startTask(model, resumingWith: nil)
     }
     discardResumeData(for: id)
@@ -254,6 +263,7 @@ final class ModelDownloader: NSObject, ObservableObject {
         try? FileManager.default.removeItem(at: temporary)
       }
     }
+    try stillWanted(id)
     try await Task.detached(priority: .utility) {
       try FileManager.default.moveItem(at: temporary, to: destination)
     }.value
@@ -268,12 +278,18 @@ final class ModelDownloader: NSObject, ObservableObject {
       try? FileManager.default.removeItem(at: destination)
       throw ModelDownloadError.checksumMismatch(displayName: model.displayName)
     }
+    try stillWanted(id)
     if let unpacked = model.unpacked {
       try await expand(destination, into: unpacked, model: model)
     }
     fraction[id] = 1
     current = nil
     task = nil
+    return true
+  }
+
+  private func stillWanted(_ id: ModelID) throws {
+    guard isWanted(id) else { throw CancellationError() }
   }
 
   private func startTask(

@@ -2,14 +2,14 @@ import Foundation
 
 public struct RefinerLifecycle: Sendable {
   public enum Event: Equatable, Sendable {
-    case pipelineStarted(isEnabled: Bool)
-    case settingChanged(isEnabled: Bool)
+    case pipelineStarted(isActive: Bool)
+    case settingChanged(isActive: Bool)
     case loadFailed(isEnabled: Bool, model: ModelStatus)
     case tornDown
   }
 
   public enum Action: Equatable, Sendable {
-    case prewarm, unload, switchOff, discard
+    case prewarm, unload, discard
   }
 
   private var isEnabled = false
@@ -30,8 +30,7 @@ public struct RefinerLifecycle: Sendable {
       return enabled ? [.prewarm] : [.unload]
     case .loadFailed(let enabled, let model):
       guard enabled, model == .ready else { return [] }
-      isEnabled = false
-      return hasRefiner ? [.switchOff, .unload, .discard] : [.switchOff, .discard]
+      return [.discard]
     case .tornDown:
       defer { hasRefiner = false }
       return hasRefiner ? [.unload] : []

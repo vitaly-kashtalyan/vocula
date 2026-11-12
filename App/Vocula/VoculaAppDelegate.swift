@@ -29,7 +29,8 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     let settings = AppSettings()
     downloader = ModelDownloader(
       store: store,
-      requiredModels: { [settings.transcriptionModel, .speechDetector] })
+      requiredModels: { [settings.transcriptionModel, .speechDetector] },
+      isWanted: { RefinementSwitch.isWanted($0, intent: settings.refineEnabled) })
     super.init()
   }
 
