@@ -11,11 +11,18 @@ private final class StubProtocol: URLProtocol {
   nonisolated(unsafe) static var delay: TimeInterval = 0
   nonisolated(unsafe) static var failure: NSError?
   nonisolated(unsafe) static var hangs = false
+  private static let lock = NSLock()
+  nonisolated(unsafe) private static var requested: [URL] = []
+
+  static func requests(for url: URL) -> Int {
+    lock.withLock { requested.filter { $0 == url }.count }
+  }
 
   override class func canInit(with request: URLRequest) -> Bool { true }
   override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
   override func startLoading() {
+    if let url = request.url { Self.lock.withLock { Self.requested.append(url) } }
     if Self.delay > 0 { Thread.sleep(forTimeInterval: Self.delay) }
     if let failure = Self.failure {
       client?.urlProtocol(self, didFailWithError: failure)
@@ -45,18 +52,62 @@ private func fields(_ detail: String) -> Set<String> {
   Set(detail.split(separator: " ").map(String.init))
 }
 
-private func descriptor(sha256: String, byteSize: Int64) -> ModelDescriptor {
+private func descriptor(
+  sha256: String, byteSize: Int64,
+  remoteURL: URL = URL(string: "https://test.invalid/model.bin")!
+) -> ModelDescriptor {
   ModelDescriptor(
     id: .largeV3Turbo, family: .whisper, fileName: "test-model.bin",
-    remoteURL: URL(string: "https://test.invalid/model.bin")!,
+    remoteURL: remoteURL,
     sha256: sha256, byteSize: byteSize,
     version: "test", licence: "test", displayName: "Test model", unpacked: nil, contents: [])
+}
+
+private func uniqueURL() -> URL {
+  URL(string: "https://test.invalid/\(UUID().uuidString).bin")!
+}
+
+private func archiveFixture(named name: String, remoteURL: URL) throws -> (Data, ModelDescriptor) {
+  let directory = FileManager.default.temporaryDirectory
+    .appendingPathComponent(UUID().uuidString, isDirectory: true)
+  let folder = directory.appendingPathComponent(name, isDirectory: true)
+  try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+  defer { try? FileManager.default.removeItem(at: directory) }
+  try Data("x".utf8).write(to: folder.appendingPathComponent("a.txt"))
+  let zip = directory.appendingPathComponent("\(name).zip")
+  let ditto = Process()
+  ditto.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+  ditto.arguments = ["-c", "-k", "--keepParent", folder.path, zip.path]
+  try ditto.run()
+  ditto.waitUntilExit()
+  let data = try Data(contentsOf: zip)
+  let model = ModelDescriptor(
+    id: .largeV3Turbo, family: .whisper, fileName: "\(name).zip",
+    remoteURL: remoteURL, sha256: digest(data), byteSize: Int64(data.count),
+    version: "test", licence: "test", displayName: "Test archive",
+    unpacked: name, contents: ["a.txt"])
+  return (data, model)
+}
+
+@MainActor
+private final class WantedAfter {
+  private let allowed: Int
+  private(set) var calls = 0
+
+  init(_ allowed: Int) { self.allowed = allowed }
+
+  func ask(_: ModelID) -> Bool {
+    defer { calls += 1 }
+    return calls < allowed
+  }
 }
 
 @MainActor
 @Suite("Model downloader", .serialized)
 struct ModelDownloaderTests {
-  private func makeDownloader(pinned: ModelDescriptor) -> (ModelDownloader, ModelStore, URL) {
+  private func makeDownloader(
+    pinned: ModelDescriptor, isWanted: @escaping (ModelID) -> Bool = { _ in true }
+  ) -> (ModelDownloader, ModelStore, URL) {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -67,7 +118,7 @@ struct ModelDownloaderTests {
     configuration.protocolClasses = [StubProtocol.self]
     let downloader = ModelDownloader(
       store: store, requiredModels: { [.largeV3Turbo] },
-      configuration: configuration)
+      configuration: configuration, isWanted: isWanted)
     return (downloader, store, directory)
   }
 
@@ -330,11 +381,165 @@ struct ModelDownloaderTests {
     }
     #expect(downloader.isDownloading, "the first transfer never started")
 
-    try await downloader.download(.largeV3Turbo)
+    #expect(try await downloader.download(.largeV3Turbo) == false)
 
-    try await first.value
+    _ = try await first.value
     #expect(store.status(of: .largeV3Turbo) == .ready)
     #expect(try Data(contentsOf: store.url(for: .largeV3Turbo)) == payload)
+  }
+
+  @Test("a model not wanted before its transfer is never requested")
+  func notWantedBeforeTheTransferRequestsNothing() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let url = uniqueURL()
+    let wanted = WantedAfter(0)
+    let (downloader, store, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url),
+      isWanted: wanted.ask)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    await #expect(throws: CancellationError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(StubProtocol.requests(for: url) == 0)
+    #expect(
+      FileManager.default.fileExists(atPath: store.archiveURL(for: .largeV3Turbo).path) == false)
+    #expect(lines.isEmpty)
+    #expect(wanted.calls == 1)
+  }
+
+  @Test("a model not wanted once transferred is not moved into place")
+  func notWantedAfterTheTransferInstallsNothing() async throws {
+    let url = uniqueURL()
+    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    StubProtocol.status = 200
+    StubProtocol.body = zip
+    let wanted = WantedAfter(1)
+    let (downloader, store, directory) = makeDownloader(pinned: model, isWanted: wanted.ask)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    await #expect(throws: CancellationError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(StubProtocol.requests(for: url) == 1)
+    #expect(
+      FileManager.default.fileExists(atPath: store.archiveURL(for: .largeV3Turbo).path) == false)
+    #expect(FileManager.default.fileExists(atPath: store.url(for: .largeV3Turbo).path) == false)
+    #expect(store.status(of: .largeV3Turbo) == .missing)
+    #expect(wanted.calls == 2)
+  }
+
+  @Test("a model not wanted once verified is not expanded")
+  func notWantedAfterVerificationExpandsNothing() async throws {
+    let url = uniqueURL()
+    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    StubProtocol.status = 200
+    StubProtocol.body = zip
+    let wanted = WantedAfter(2)
+    let (downloader, store, directory) = makeDownloader(pinned: model, isWanted: wanted.ask)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    await #expect(throws: CancellationError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(FileManager.default.fileExists(atPath: store.archiveURL(for: .largeV3Turbo).path))
+    #expect(FileManager.default.fileExists(atPath: store.url(for: .largeV3Turbo).path) == false)
+    #expect(store.status(of: .largeV3Turbo) == .missing)
+    #expect(wanted.calls == 3)
+  }
+
+  @Test("an archive that stays wanted expands and is ready")
+  func aWantedArchiveExpands() async throws {
+    let url = uniqueURL()
+    let (zip, model) = try archiveFixture(named: "test-archive", remoteURL: url)
+    StubProtocol.status = 200
+    StubProtocol.body = zip
+    let wanted = WantedAfter(3)
+    let (downloader, store, directory) = makeDownloader(pinned: model, isWanted: wanted.ask)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(try await downloader.download(.largeV3Turbo) == true)
+
+    #expect(store.status(of: .largeV3Turbo) == .ready)
+    #expect(wanted.calls == 3)
+  }
+
+  @Test("downloadOne reports nothing downloaded for a model already ready")
+  func downloadOneReportsFalseForAModelAlreadyReady() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    try await downloader.download(.largeV3Turbo)
+
+    #expect(await downloader.downloadOne(.largeV3Turbo) == false)
+    #expect(StubProtocol.requests(for: url) == 1)
+  }
+
+  @Test("downloadOne reports a completed download")
+  func downloadOneReportsTrueAfterADownload() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(
+        sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: uniqueURL()))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(await downloader.downloadOne(.largeV3Turbo) == true)
+  }
+
+  @Test("downloadOne reports nothing downloaded when the model stops being wanted")
+  func downloadOneReportsFalseWhenNotWanted() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let wanted = WantedAfter(0)
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(
+        sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: uniqueURL()),
+      isWanted: wanted.ask)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(await downloader.downloadOne(.largeV3Turbo) == false)
+    #expect(downloader.lastError == nil)
+  }
+
+  @Test("a request that loses the guard starts no second transfer and reports nothing downloaded")
+  func aRequestThatLosesTheGuardStartsNoSecondTransfer() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.hangs = true
+    defer { StubProtocol.hangs = false }
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let first = Task { try await downloader.download(.largeV3Turbo) }
+    var waits = 0
+    while StubProtocol.requests(for: url) == 0, waits < 500 {
+      try await Task.sleep(for: .milliseconds(10))
+      waits += 1
+    }
+    #expect(StubProtocol.requests(for: url) == 1, "the first transfer never started")
+
+    #expect(await downloader.downloadOne(.largeV3Turbo) == false)
+    #expect(StubProtocol.requests(for: url) == 1)
+
+    var attempts = 0
+    while downloader.isDownloading, attempts < 10_000 {
+      downloader.cancel()
+      await Task.yield()
+      attempts += 1
+    }
+    await #expect(throws: CancellationError.self) { _ = try await first.value }
   }
 }
 
