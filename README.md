@@ -209,7 +209,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1079 tests: 826 from `swift test`, 240 in the hosted app bundle, 13 driving the
+1092 tests: 831 from `swift test`, 248 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
@@ -227,6 +227,11 @@ Stated here rather than discovered later.
   `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
   (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
   hand once Ultra works.
+- **Turning clean-up off in the last seconds of its download does not undo it.**
+  Once the 1.49 GB archive is verified it stays on disk, and once it is being
+  expanded the 1.56 GB model is finished and kept; nothing in the app removes
+  either. And turning clean-up on while the speech model is still downloading
+  starts nothing until you press `Load` beside the clean-up model afterwards.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
