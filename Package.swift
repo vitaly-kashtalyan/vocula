@@ -11,7 +11,7 @@ let package = Package(
     .library(name: "VoculaParakeet", targets: ["VoculaParakeet"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.15.6")
+    .package(url: "https://github.com/FluidInference/FluidAudio.git", exact: "0.18.3", traits: [])
   ],
   targets: [
     .target(name: "VoculaKit", resources: [.process("Resources")]),

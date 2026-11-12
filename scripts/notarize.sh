@@ -65,10 +65,10 @@ VERSION_OVERRIDE=()
 # lets any process attach a debugger to the hardened binary and read its memory.
 # Apple names this setting as the fix for a workflow that does not export from
 # an archive.
-# ARCHS=arm64 on the COMMAND LINE, not in project.yml: a SwiftPM dependency is
+# ARCHS=arm64 on the COMMAND LINE as well as in project.yml: a SwiftPM dependency is
 # built as its own project and inherits neither ARCHS nor EXCLUDED_ARCHS from
-# ours, so FluidAudio compiles for x86_64 and fails on Float16, which Swift does
-# not have there. Only the command line reaches every project in the build.
+# ours, so without it every package also compiles an x86_64 slice nothing ships.
+# Only the command line reaches every project in the build.
 # -skipPackagePluginValidation: mlx-swift attaches its CudaBuild plugin to Cmlx,
 # and a machine that never approved it in Xcode refuses to build. No macro is in
 # the graph, so -skipMacroValidation stays off.
@@ -90,15 +90,15 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
 APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
 
-# Measured, not assumed: nothing else in the repository ever builds Release, so
-# a lost ARCHS=arm64 would first be noticed here — or, if x86_64 ever compiles
-# again, would silently double the download.
 archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
-[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
+[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs — ARCHS=arm64 must stay on the xcodebuild line above and in App/project.yml"
 
 METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib"
 [ -s "$METALLIB" ] || fail "MLX's Metal library is missing: $METALLIB
    MLX calls exit() the first time the clean-up model runs without it."
+
+extras=$(find "$APP" -name 'FluidAudio_*.bundle' -print) || fail "cannot scan $APP for FluidAudio's resource bundles"
+[ -z "$extras" ] || fail "FluidAudio's resources are in the bundle — its TTS data is GPL-3.0+ and CC-BY-SA-4.0: $extras — Package.swift must keep traits: []"
 
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)

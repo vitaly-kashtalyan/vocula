@@ -197,48 +197,66 @@ struct ModelStoreTests {
   @Test("a model delivered as an archive is named twice, and read as a directory")
   func anExpandedModelHasTwoPaths() {
     let subject = store(FakeFS())
-    #expect(subject.url(for: .parakeetV3).lastPathComponent == "parakeet-tdt-0.6b-v3")
-    #expect(subject.archiveURL(for: .parakeetV3).lastPathComponent == "parakeet-tdt-0.6b-v3.zip")
+    #expect(subject.url(for: .parakeetUltra).lastPathComponent == "parakeet-ultra-95eaa59")
+    #expect(
+      subject.archiveURL(for: .parakeetUltra).lastPathComponent == "parakeet-ultra-95eaa59.zip")
     #expect(subject.url(for: transcription) == subject.archiveURL(for: transcription))
   }
 
   @Test("a verified archive is not yet a ready model; the expanded directory is")
   func expansionIsWhatMakesItReady() {
-    let model = ModelManifest.descriptor(for: .parakeetV3)
+    let model = ModelManifest.descriptor(for: .parakeetUltra)
     var fs = FakeFS()
     fs.files[model.fileName] = model.byteSize
     fs.digests[model.fileName] = model.sha256
-    #expect(store(fs).status(of: .parakeetV3) == .missing)
-    #expect(store(fs).matchesChecksum(.parakeetV3))
+    #expect(store(fs).status(of: .parakeetUltra) == .missing)
+    #expect(store(fs).matchesChecksum(.parakeetUltra))
 
     for entry in model.contents { fs.files[entry] = 1 }
-    #expect(store(fs).status(of: .parakeetV3) == .ready)
+    #expect(store(fs).status(of: .parakeetUltra) == .ready)
   }
 
   @Test("the checksum is read off the archive, and a wrong one is refused")
   func checksumReadsTheArchive() {
-    let model = ModelManifest.descriptor(for: .parakeetV3)
+    let model = ModelManifest.descriptor(for: .parakeetUltra)
     var fs = FakeFS()
-    #expect(!store(fs).matchesChecksum(.parakeetV3))
+    #expect(!store(fs).matchesChecksum(.parakeetUltra))
     fs.files[model.fileName] = model.byteSize
     fs.digests[model.fileName] = "wrong"
-    #expect(!store(fs).matchesChecksum(.parakeetV3))
+    #expect(!store(fs).matchesChecksum(.parakeetUltra))
   }
 
-  @Test("room is asked for the archive and its expansion at once")
-  func spaceCountsTheArchiveTwice() {
-    let model = ModelManifest.descriptor(for: .parakeetV3)
-    #expect(store(FakeFS()).missingBytes(for: [.parakeetV3]) == model.byteSize * 2)
+  @Test(
+    "every archive says how large it expands, and room is asked for the archive and that at once")
+  func spaceCountsTheArchiveAndItsExpansion() throws {
+    for model in ModelManifest.current {
+      guard model.unpacked != nil else {
+        #expect(model.expandedBytes == nil && model.contents.isEmpty, "\(model.id)")
+        #expect(store(FakeFS()).missingBytes(for: [model.id]) == model.byteSize)
+        continue
+      }
+      let expanded = try #require(
+        model.expandedBytes, "\(model.id) does not say how large it expands")
+      #expect(!model.contents.isEmpty, "\(model.id)")
+      #expect(store(FakeFS()).missingBytes(for: [model.id]) == model.byteSize + expanded)
+    }
   }
 
   @Test("only an expanded model is discarded when it will not load")
   func onlyAnExpandedModelIsReinstalled() {
     let subject = store(FakeFS())
-    #expect(subject.needsReinstall(after: .modelUnreadable, model: .parakeetV3))
+    #expect(subject.needsReinstall(after: .modelUnreadable, model: .parakeetUltra))
     #expect(!subject.needsReinstall(after: .modelUnreadable, model: transcription))
     for failure in SessionFailure.allCases where failure != .modelUnreadable {
-      #expect(!subject.needsReinstall(after: failure, model: .parakeetV3))
+      #expect(!subject.needsReinstall(after: failure, model: .parakeetUltra))
     }
+  }
+
+  @Test("a stored model id reads back as itself, and a Parakeet v3 one as Parakeet Ultra")
+  func storedModelIDsResolve() {
+    for id in ModelID.allCases { #expect(ModelID(rawValue: id.rawValue) == id) }
+    #expect(ModelID(rawValue: "parakeetV3") == .parakeetUltra)
+    #expect(ModelID(rawValue: "parakeetV4") == nil)
   }
 
   @Test("an injected manifest is used for paths, sizes and digests")

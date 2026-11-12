@@ -129,7 +129,7 @@ public struct ModelStore: Sendable {
       case .ready: return total
       case .incomplete(let bytes): return total + (entry.model.byteSize - bytes)
       case .missing, .corrupted:
-        return total + entry.model.byteSize * (entry.model.unpacked == nil ? 1 : 2)
+        return total + entry.model.byteSize + (entry.model.expandedBytes ?? 0)
       }
     }
   }

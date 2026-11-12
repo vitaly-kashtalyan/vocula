@@ -119,7 +119,8 @@ takes you to it.
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
 **The models, once each**: the recognition models the first time you use the
-app, and the clean-up model only when you ask for it. Each file is
+app, or again when you ask after an update replaces one, and the clean-up model
+only when you ask for it. Each file is
 verified against a checksum built into the app, and a file that does not match
 it is deleted rather than used.
 

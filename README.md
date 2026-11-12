@@ -50,7 +50,7 @@ one gesture that always works beats two where one sometimes does.
    [ Silero VAD ]         CPU — finds where the speech is, or salvages a whisper
           │
    [ whisper.cpp ]        Metal GPU — 0.02–0.03× realtime, measured
-    or [ Parakeet ]       Neural Engine — about three times faster, 25 languages
+    or [ Parakeet ]       Neural Engine — several times faster, 25 languages
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -74,7 +74,7 @@ Nothing you say. Ever.
 | What | Where it happens |
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release. |
-| Speech detection and transcription | This Mac, on the GPU. |
+| Speech detection and transcription | This Mac, on the GPU — or the Neural Engine with Parakeet. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
@@ -98,8 +98,7 @@ releases the models come from.
 
 No telemetry, no analytics, no crash reporting, no licence server. The
 third-party components in the app are the two recognition engines — whisper.cpp
-and FluidAudio, the latter carrying a prebuilt text-normalisation framework —
-MLX and swift-transformers for the optional clean-up model, and Sparkle, every
+and FluidAudio — MLX and swift-transformers for the optional clean-up model, and Sparkle, every
 one and every package they pull in pinned by exact version, commit or checksum
 in `App/project.yml` and `Package.swift`, so there is no analytics SDK for a
 call to hide in. One thing
@@ -153,7 +152,7 @@ silent recording, a refusal and a dead microphone all cost nothing.
 
 - macOS 26.0 or later.
 - Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
-  Large v3 Turbo, or about 470 MB for Parakeet v3, plus the voice-activity
+  Large v3 Turbo, or about 630 MB for Parakeet Ultra (a 555 MB download), plus the voice-activity
   detector either way, and about 1.5 GB more for the clean-up model if you
   switch it on.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
@@ -162,9 +161,9 @@ silent recording, a refusal and a dead microphone all cost nothing.
 
 Apple Silicon only, and the binary is built for `arm64` alone. Recognition runs
 on the GPU and the Neural Engine; an Intel Mac has neither in a form this can
-use, so the answer there is not a slower build but a different product. Parakeet
-will not even compile for `x86_64` — FluidAudio uses `Float16`, which Swift does
-not have on Intel.
+use, so the answer there is not a slower build but a different product. That is
+a choice, not a compiler limit: the project would build for `x86_64` too, and
+is kept to `arm64` on purpose.
 
 ## Build it yourself
 
@@ -173,7 +172,8 @@ SDK. The first build needs a network for its dependencies: Sparkle, pinned by
 commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from its
 GitHub release and checked against the SHA-256 pinned in `Package.swift`; and
 FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
-text-normalisation XCFramework against its own checksum; and MLX with
+text-normalisation XCFramework against its own checksum, which this build does
+not link; and MLX with
 swift-transformers, each package pinned by commit in `App/project.yml`.
 MLX compiles its Metal kernels from source, which needs Xcode's separately
 installed Metal Toolchain, and mlx-swift ships a build-tool plugin that
@@ -209,7 +209,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1074 tests: 822 from `swift test`, 239 in the hosted app bundle, 13 driving the
+1079 tests: 826 from `swift test`, 240 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
@@ -221,6 +221,12 @@ app builds.
 
 Stated here rather than discovered later.
 
+- **Moving from Parakeet v3 to Parakeet Ultra leaves the old model behind.**
+  Someone who used Parakeet v3 finds Parakeet Ultra selected and not yet
+  downloaded, and downloads it once, 555 MB. The app never deletes
+  `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
+  (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
+  hand once Ultra works.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
