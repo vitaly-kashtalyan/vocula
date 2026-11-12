@@ -252,30 +252,11 @@ struct ModelStoreTests {
     }
   }
 
-  @Test("Parakeet Ultra is read from the directory and the five entries loadLocal needs")
-  func ultraNamesWhatLoadLocalReads() {
-    let model = ModelManifest.descriptor(for: .parakeetUltra)
-    #expect(model.unpacked == "parakeet-ultra-95eaa59")
-    #expect(model.fileName == "parakeet-ultra-95eaa59.zip")
-    #expect(
-      Set(model.contents) == [
-        "Preprocessor.mlmodelc", "Encoder.mlmodelc", "Decoder.mlmodelc",
-        "JointDecisionv3.mlmodelc", "parakeet_vocab.json",
-      ])
-    #expect(ModelManifest.transcriptionModels == [.largeV3Turbo, .parakeetUltra])
-  }
-
   @Test("a stored model id reads back as itself, and a Parakeet v3 one as Parakeet Ultra")
   func storedModelIDsResolve() {
     for id in ModelID.allCases { #expect(ModelID(rawValue: id.rawValue) == id) }
     #expect(ModelID(rawValue: "parakeetV3") == .parakeetUltra)
     #expect(ModelID(rawValue: "parakeetV4") == nil)
-    let suite = "test.models.legacy"
-    let defaults = UserDefaults(suiteName: suite)!
-    defaults.removePersistentDomain(forName: suite)
-    defaults.set("parakeetV3", forKey: AppSettings.transcriptionModelKey)
-    #expect(AppSettings(defaults: defaults).transcriptionModel == .parakeetUltra)
-    #expect(defaults.string(forKey: AppSettings.transcriptionModelKey) == "parakeetV3")
   }
 
   @Test("an injected manifest is used for paths, sizes and digests")

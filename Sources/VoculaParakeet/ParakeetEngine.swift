@@ -70,10 +70,7 @@ public actor ParakeetEngine: Transcribing {
 
   private func beginLoading() -> Task<(AsrManager, Int), Error> {
     Task { [modelDirectory] in
-      let models: AsrModels
-      do {
-        models = try AsrModels.loadLocal(from: modelDirectory, version: .ultra)
-      } catch {
+      guard let models = try? AsrModels.loadLocal(from: modelDirectory, version: .ultra) else {
         throw TranscriptionError.modelNotLoaded
       }
       let created = AsrManager(config: .default)

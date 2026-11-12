@@ -90,11 +90,8 @@ xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
 APP="$BUILD_DIR/dd/Build/Products/Release/Vocula.app"
 [ -d "$APP" ] || fail "no app at $APP"
 
-# Measured, not assumed: nothing else in the repository ever builds Release, and
-# x86_64 compiles since FluidAudio 0.18.3, so losing both this ARCHS=arm64 and
-# project.yml's would ship an Intel slice silently and double the download.
 archs=$(lipo -archs "$APP/Contents/MacOS/Vocula") || fail "cannot read the built architectures"
-[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs"
+[ "$archs" = "arm64" ] || fail "expected arm64 alone, built: $archs — ARCHS=arm64 must stay on the xcodebuild line above and in App/project.yml"
 
 METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/default.metallib"
 [ -s "$METALLIB" ] || fail "MLX's Metal library is missing: $METALLIB

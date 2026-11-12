@@ -22,6 +22,14 @@ struct AppSettingsTests {
     #expect(settings.hasCompletedOnboarding == false)
   }
 
+  @Test("someone who chose Parakeet v3 is on Parakeet Ultra, and the stored value is left alone")
+  func aParakeetV3ChoiceReadsAsUltra() {
+    let defaults = fresh("test.settings.parakeetV3")
+    defaults.set("parakeetV3", forKey: AppSettings.transcriptionModelKey)
+    #expect(AppSettings(defaults: defaults).transcriptionModel == .parakeetUltra)
+    #expect(defaults.string(forKey: AppSettings.transcriptionModelKey) == "parakeetV3")
+  }
+
   @Test("a language the user chose outlives the default changing under them")
   func aStoredSelectionWins() {
     let defaults = fresh("test.settings.storedLanguages")

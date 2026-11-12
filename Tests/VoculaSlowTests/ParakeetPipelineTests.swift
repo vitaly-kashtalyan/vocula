@@ -53,22 +53,31 @@ struct ParakeetPipelineTests {
   }
 }
 
-private func snapshot(of directory: URL) throws -> [String: Data] {
-  let base = directory.resolvingSymlinksInPath().path + "/"
-  var files: [String: Data] = [:]
-  let walk = FileManager.default.enumerator(
-    at: directory, includingPropertiesForKeys: [.isRegularFileKey])
-  while let url = walk?.nextObject() as? URL {
-    guard try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true else {
+private func fakeUltra(at model: URL) throws {
+  let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
+  try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+  for entry in ModelManifest.descriptor(for: .parakeetUltra).contents {
+    let url = model.appendingPathComponent(entry)
+    guard entry.hasSuffix(".mlmodelc") else {
+      try JSONSerialization.data(withJSONObject: vocabulary).write(to: url)
       continue
     }
-    let path = url.resolvingSymlinksInPath().path
-    files[String(path.dropFirst(base.count))] = try Data(contentsOf: url)
+    let weights = url.appendingPathComponent("weights", isDirectory: true)
+    try FileManager.default.createDirectory(at: weights, withIntermediateDirectories: true)
+    try Data("junk".utf8).write(to: url.appendingPathComponent("coremldata.bin"))
+    try Data("junk".utf8).write(to: weights.appendingPathComponent("weight.bin"))
   }
-  return files
 }
 
-@Suite("Parakeet without any weights on disk", .serialized)
+private func snapshot(of directory: URL) -> [String: Data] {
+  Dictionary(
+    uniqueKeysWithValues: (FileManager.default.subpaths(atPath: directory.path) ?? [])
+      .compactMap { path in
+        (try? Data(contentsOf: directory.appendingPathComponent(path))).map { (path, $0) }
+      })
+}
+
+@Suite("Parakeet without any weights on disk")
 struct ParakeetWithoutModelTests {
   @Test(
     "FluidAudio finds every file it reads for Parakeet Ultra under the names the manifest downloads"
@@ -78,18 +87,8 @@ struct ParakeetWithoutModelTests {
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     let model = root.appendingPathComponent(Repo.parakeetUltra.folderName, isDirectory: true)
     defer { try? FileManager.default.removeItem(at: root) }
-    let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
+    try fakeUltra(at: model)
     let contents = ModelManifest.descriptor(for: .parakeetUltra).contents
-    for entry in contents {
-      let url = model.appendingPathComponent(entry)
-      if entry.hasSuffix(".mlmodelc") {
-        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
-        try Data("junk".utf8).write(to: url.appendingPathComponent("coremldata.bin"))
-      } else {
-        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
-        try JSONSerialization.data(withJSONObject: vocabulary).write(to: url)
-      }
-    }
     let error = #expect(throws: (any Error).self) {
       try AsrModels.loadLocal(from: model, version: .ultra)
     }
@@ -115,18 +114,8 @@ struct ParakeetWithoutModelTests {
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
     let model = root.appendingPathComponent("parakeet-ultra", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: root) }
-    try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
-    let vocabulary = Dictionary(uniqueKeysWithValues: (0..<8192).map { (String($0), "t\($0)") })
-    try JSONSerialization.data(withJSONObject: vocabulary)
-      .write(to: model.appendingPathComponent("parakeet_vocab.json"))
-    for bundle in ["Preprocessor", "Encoder", "Decoder", "JointDecisionv3"] {
-      let weights = model.appendingPathComponent("\(bundle).mlmodelc/weights", isDirectory: true)
-      try FileManager.default.createDirectory(at: weights, withIntermediateDirectories: true)
-      try Data("junk".utf8).write(
-        to: weights.deletingLastPathComponent().appendingPathComponent("coremldata.bin"))
-      try Data("junk".utf8).write(to: weights.appendingPathComponent("weight.bin"))
-    }
-    let before = try snapshot(of: model)
+    try fakeUltra(at: model)
+    let before = snapshot(of: model)
     #expect(before.count == 9)
     let host = ModelRegistry.baseURL
     ModelRegistry.baseURL = "http://127.0.0.1:9"
@@ -137,7 +126,7 @@ struct ParakeetWithoutModelTests {
       try await engine.transcribe(
         [Float](repeating: 0.1, count: 16000), languages: .pinned("en"), deadline: .seconds(30))
     }
-    #expect(try snapshot(of: model) == before)
+    #expect(snapshot(of: model) == before)
   }
 
   @Test("Every code this app offers for Parakeet is one FluidAudio knows")
