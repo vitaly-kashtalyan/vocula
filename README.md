@@ -152,7 +152,8 @@ silent recording, a refusal and a dead microphone all cost nothing.
 
 - macOS 26.0 or later.
 - Disk for the speech model, which downloads by itself at first launch: about
-  630 MB for Parakeet Ultra (a 555 MB download), or about 1.6 GB for Whisper
+  630 MB for Parakeet Ultra once installed (a 555 MB download that needs about
+  1.2 GB free while it expands), or about 1.6 GB for Whisper
   Large v3 Turbo when one of your languages is outside Parakeet's 25 or macOS
   does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
@@ -251,7 +252,8 @@ Stated here rather than discovered later.
 - **The automatic download does not say when it is waiting or has given up.**
   On an iPhone hotspot, with Low Data Mode or with no network, Status reads
   "downloading 0%" until ordinary Wi-Fi or Ethernet returns. A transfer that
-  keeps losing the network stops after four attempts until the next launch, and
+  keeps failing — a lost network or a server error — stops after four attempts
+  until the next launch; with too little free disk it does not start at all; and
   a file that fails its checksum or will not expand is deleted and downloaded
   again in full at every launch. Neither reaches the screen; Settings →
   Diagnostics records both, and "Download what is missing" on Settings → Models
@@ -265,8 +267,8 @@ Stated here rather than discovered later.
   `vocula-cleanup-2b-v1/` and removes the archive. While clean-up stays off,
   nothing in the app removes either; delete them by hand.
 - **One model downloads at a time.** While the speech model's automatic
-  download waits for a good network or runs, turning clean-up on or pressing
-  its `Load` starts nothing; Settings → Models' Cancel releases it, and `Load`
+  download waits for a good network or runs, turning clean-up on starts nothing
+  and its `Load` is greyed out; Settings → Models' Cancel releases it, and `Load`
   fetches the clean-up model once the downloader is free. Turning
   clean-up on first holds the speech model back until the 1.49 GB clean-up model
   is done or you turn clean-up off; the speech model then downloads at the next

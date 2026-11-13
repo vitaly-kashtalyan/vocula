@@ -121,7 +121,8 @@ takes you to it.
 
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-**The speech model, by itself, whenever a launch finds it missing**: the first
+**The speech model and its voice-activity detector, by themselves, whenever a
+launch finds them missing**: the first
 launch; the first after an update that changes the engine, or after you pick an
 engine on Settings → Models without downloading it; the first after a model was
 removed — and at once when a model that will not load is replaced by Whisper. By
