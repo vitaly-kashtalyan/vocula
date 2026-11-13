@@ -71,10 +71,7 @@ struct ModelPickerView: View {
   }
 
   private func select(_ id: ModelID) {
-    AppSettings().switchEngine(
-      from: ModelManifest.descriptor(for: transcriptionModel).family,
-      to: ModelManifest.descriptor(for: id).family)
-    transcriptionModel = id
+    AppSettings().selectTranscriptionModel(id)
     Task { await activateIfReady() }
   }
 
