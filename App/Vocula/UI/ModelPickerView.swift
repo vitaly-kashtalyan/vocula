@@ -67,16 +67,16 @@ struct ModelPickerView: View {
 
   private func load(_ id: ModelID) async {
     await downloader.downloadOne(id)
-    await activateIfReady()
+    await activateIfReady(transcriptionModel)
   }
 
   private func select(_ id: ModelID) {
     AppSettings().selectTranscriptionModel(id)
-    Task { await activateIfReady() }
+    Task { await activateIfReady(id) }
   }
 
-  private func activateIfReady() async {
-    guard downloader.statuses[transcriptionModel] == .ready else { return }
+  private func activateIfReady(_ id: ModelID) async {
+    guard downloader.statuses[id] == .ready else { return }
     await onModelsReady()
   }
 }
