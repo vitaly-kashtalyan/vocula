@@ -70,6 +70,7 @@ final class AppCoordinator: ObservableObject {
   private var refinementObserver: (any NSObjectProtocol)?
   private var refinerLifecycle = RefinerLifecycle()
   var modelsChangedOnDisk: (() -> Void)?
+  var fetchMissingModels: (() -> Void)?
 
   func finishInFlightWork() async {
     guard let controller else { return }
@@ -700,11 +701,28 @@ final class AppCoordinator: ObservableObject {
   private var modelStore: ModelStore { .app() }
 
   private func discardInstalledModel(_ id: ModelID) async {
-    guard await removeInstalledModel(id) else { return }
-    tearDownPipeline()
-    menu.iconState = .error(MenuBarController.modelsNotDownloaded)
-    menu.showsDownloadAction = true
-    startMonitorOnly()
+    guard await removeInstalledModel(id), runningModel == id else { return }
+    let next = EngineFallback.handOver(removed: id, selected: settings.transcriptionModel)
+    if let next {
+      settings.selectTranscriptionModel(next)
+      log("model.switched", "model=\(next.rawValue)")
+    }
+    fetchMissingModels?()
+    guard !isSwitchingModels else { return }
+    guard next != nil else {
+      tearDownPipeline()
+      menu.iconState = .error(MenuBarController.modelsNotDownloaded)
+      menu.showsDownloadAction = true
+      startMonitorOnly()
+      return
+    }
+    isSwitchingModels = true
+    Task {
+      defer { isSwitchingModels = false }
+      await finishInFlightWork()
+      tearDownPipeline()
+      await start()
+    }
   }
 
   @discardableResult
