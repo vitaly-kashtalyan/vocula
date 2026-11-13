@@ -121,8 +121,10 @@ takes you to it.
 
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-**The speech model, by itself, whenever it is missing**: at the first launch,
-after an update that changes the engine, and after a model was removed. By
+**The speech model, by itself, whenever a launch finds it missing**: the first
+launch; the first after an update that changes the engine, or after you pick an
+engine on Settings → Models without downloading it; the first after a model was
+removed — and at once when a model that will not load is replaced by Whisper. By
 itself it never uses a connection macOS marks as expensive or Low Data — an
 iPhone hotspot, a cellular link — and waits for another instead; Cancel on
 Settings → Models, then its button, downloads on request over whatever you are

@@ -5,7 +5,7 @@ Whisper knows.
 No account, no subscription, no server, and nothing you say ever leaves your
 Mac. That is checkable rather than promised: the app reaches the network in two
 places, both of them this repository's own releases — it fetches the speech
-model when it is missing (and the clean-up model, if you ask for it), and asks once a day
+model at launch when it is missing (and the clean-up model, if you ask for it), and asks once a day
 whether a newer version exists.
 
 ### Install

@@ -25,7 +25,7 @@ Dictation for macOS that runs entirely on your Mac, in up to 100 languages.</p>
 
 There is no account and no sign-in, and nothing you dictate ever leaves this
 Mac. The app talks to exactly two places, both on GitHub: it fetches the speech
-model by itself whenever it is missing (and the clean-up model, if you ask for it), and — while you leave the
+model by itself at launch whenever it is missing (and the clean-up model, if you ask for it), and — while you leave the
 switch on — it asks once a day whether a newer version of Vocula exists. Your licence is checked here, offline.
 
 ## How it works
@@ -78,7 +78,7 @@ Nothing you say. Ever.
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | This project's GitHub releases. The speech model is fetched by itself whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. SHA-256 verified. |
+| Model download | This project's GitHub releases. The speech model is fetched by itself at launch whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. SHA-256 verified. |
 | Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
@@ -153,7 +153,8 @@ silent recording, a refusal and a dead microphone all cost nothing.
 - macOS 26.0 or later.
 - Disk for the speech model, which downloads by itself at first launch: about
   630 MB for Parakeet Ultra (a 555 MB download), or about 1.6 GB for Whisper
-  Large v3 Turbo when one of your languages is outside Parakeet's 25, plus the
+  Large v3 Turbo when one of your languages is outside Parakeet's 25 or macOS
+  does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
   model, downloaded when you ask for it — by switching clean-up on, or with its
   `Load` button.
@@ -235,16 +236,26 @@ Stated here rather than discovered later.
   this version chooses one from your languages at its first launch: when all of
   them are among Parakeet's 25, it selects Parakeet Ultra and downloads it by
   itself, 555 MB. Whisper keeps dictating until Ultra arrives and then stays on
-  disk (1.62 GB); the app never deletes it. Parakeet keeps to one alphabet per
-  phrase, so an English term inside Russian or Ukrainian speech may come out
-  transliterated. To go back, pick Whisper on Settings → Models.
+  disk (1.62 GB); the app never deletes it. Parakeet spells an English term
+  inside Russian or Ukrainian speech in Latin only some of the time, and never
+  when one language is pinned; for mixed technical speech Whisper is the better
+  engine. To go back, pick Whisper on Settings → Models.
 - **A Parakeet Ultra that will not load on your Mac is replaced by Whisper.** The
   app deletes it, selects Whisper — which hears every language — and downloads
-  Whisper by itself (1.6 GB) when it is not on disk. It stays on Whisper, even if
+  Whisper by itself (1.6 GB) when it is not on disk — at the next launch if the
+  clean-up model is downloading. It stays on Whisper, even if
   you had picked Ultra, until you pick Ultra again on Settings → Models.
 - **A dictation in progress when a model the app downloaded by itself arrives
   can be lost.** Recognition restarts on the new model, waiting at most three
   seconds for a dictation still in flight.
+- **The automatic download does not say when it is waiting or has given up.**
+  On an iPhone hotspot, with Low Data Mode or with no network, Status reads
+  "downloading 0%" until ordinary Wi-Fi or Ethernet returns. A transfer that
+  keeps losing the network stops after four attempts until the next launch, and
+  a file that fails its checksum or will not expand is deleted and downloaded
+  again in full at every launch. Neither reaches the screen; Settings →
+  Diagnostics records both, and "Download what is missing" on Settings → Models
+  shows the error.
 - **Turning clean-up off after its progress bar has filled does not undo the
   download.** Off while the downloaded archive is being moved into place and
   checksummed leaves the 1.49 GB archive at
