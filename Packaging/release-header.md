@@ -5,14 +5,15 @@ Whisper knows.
 No account, no subscription, no server, and nothing you say ever leaves your
 Mac. That is checkable rather than promised: the app reaches the network in two
 places, both of them this repository's own releases — it fetches the speech
-model once (and the clean-up model, if you ask for it), and asks once a day
+model when it is missing (and the clean-up model, if you ask for it), and asks once a day
 whether a newer version exists.
 
 ### Install
 
 Open **Vocula.dmg** and drag Vocula into Applications **before launching it** —
 macOS ties the permissions you grant to where the app lives. Then allow the
-microphone and Accessibility, and let it download the 1.6 GB speech model once.
+microphone and Accessibility; it downloads its speech model by itself — 555 MB,
+or 1.6 GB when one of your languages needs Whisper.
 
 Requires macOS 26 and Apple Silicon. `Vocula.zip` is the same build, for
 scripts and package managers.

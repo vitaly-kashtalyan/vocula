@@ -25,7 +25,7 @@ Dictation for macOS that runs entirely on your Mac, in up to 100 languages.</p>
 
 There is no account and no sign-in, and nothing you dictate ever leaves this
 Mac. The app talks to exactly two places, both on GitHub: it fetches the speech
-model once (and the clean-up model, if you ask for it), and — while you leave the
+model by itself whenever it is missing (and the clean-up model, if you ask for it), and — while you leave the
 switch on — it asks once a day whether a newer version of Vocula exists. Your licence is checked here, offline.
 
 ## How it works
@@ -49,8 +49,8 @@ one gesture that always works beats two where one sometimes does.
           │
    [ Silero VAD ]         CPU — finds where the speech is, or salvages a whisper
           │
-   [ whisper.cpp ]        Metal GPU — 0.02–0.03× realtime, measured
-    or [ Parakeet ]       Neural Engine — several times faster, 25 languages
+   [ Parakeet ]           Neural Engine — the default when your languages are among its 25
+    or [ whisper.cpp ]    Metal GPU — every language, 0.02–0.03× realtime, measured
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -74,11 +74,11 @@ Nothing you say. Ever.
 | What | Where it happens |
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release. |
-| Speech detection and transcription | This Mac, on the GPU — or the Neural Engine with Parakeet. |
+| Speech detection and transcription | This Mac, on the Neural Engine with Parakeet — or the GPU with Whisper. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | This project's GitHub releases, once, on first run — the clean-up model only when you ask for it. SHA-256 verified. |
+| Model download | This project's GitHub releases. The speech model is fetched by itself whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. SHA-256 verified. |
 | Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
@@ -87,7 +87,7 @@ the command that proves there is no third:
 
 ```sh
 git grep -l "URLSession\|SUFeedURL" -- App/Vocula App/project.yml Sources
-# App/Vocula/Models/ModelDownloader.swift    the models, once each
+# App/Vocula/Models/ModelDownloader.swift    the speech model by itself when missing, the clean-up model on request
 # App/project.yml                            SUFeedURL, the daily version check
 ```
 
@@ -151,10 +151,11 @@ silent recording, a refusal and a dead microphone all cost nothing.
 ## Requirements
 
 - macOS 26.0 or later.
-- Disk for the models, downloaded once on first run: about 1.6 GB for Whisper
-  Large v3 Turbo, or about 630 MB for Parakeet Ultra (a 555 MB download), plus the voice-activity
-  detector either way, and about 1.5 GB more for the clean-up model if you
-  switch it on.
+- Disk for the speech model, which downloads by itself at first launch: about
+  630 MB for Parakeet Ultra (a 555 MB download), or about 1.6 GB for Whisper
+  Large v3 Turbo when one of your languages is outside Parakeet's 25, plus the
+  voice-activity detector either way; and about 1.5 GB more for the clean-up
+  model, downloaded when you switch it on.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
@@ -209,7 +210,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1093 tests: 832 from `swift test`, 248 in the hosted app bundle, 13 driving the
+1123 tests: 852 from `swift test`, 258 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
@@ -222,8 +223,9 @@ app builds.
 Stated here rather than discovered later.
 
 - **Moving from Parakeet v3 to Parakeet Ultra leaves the old model behind.**
-  Someone who used Parakeet v3 finds Parakeet Ultra selected and not yet
-  downloaded, and downloads it once, 555 MB. The app never deletes
+  Someone who used Parakeet v3 finds Parakeet Ultra selected, and it downloads
+  by itself, 555 MB; Whisper, if it is on disk and hears every ticked language,
+  dictates meanwhile. The app never deletes
   `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
   (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
   hand once Ultra works.
@@ -235,11 +237,18 @@ Stated here rather than discovered later.
   expansion has started leaves the finished 1.56 GB model in
   `vocula-cleanup-2b-v1/` and removes the archive. While clean-up stays off,
   nothing in the app removes either; delete them by hand.
-- **One model downloads at a time.** Turning clean-up on while the speech model
-  is still downloading starts nothing until you press `Load` beside the clean-up
-  model afterwards. Turning it on first holds the speech model back until the
-  1.49 GB clean-up model is done or you turn clean-up off; the speech model then
-  waits for "Download what is missing" on Settings → Models.
+- **One model downloads at a time.** While the speech model's automatic
+  download waits for a good network or runs, turning clean-up on or pressing
+  its `Load` starts nothing; Settings → Models' Cancel releases it. Turning
+  clean-up on first holds the speech model back until the 1.49 GB clean-up model
+  is done or you turn clean-up off; the speech model then downloads at the next
+  launch, or with "Download what is missing" on Settings → Models.
+- **A language Parakeet cannot hear, missing from your Mac's language list,
+  lands you on Parakeet.** The engine is chosen from the languages ticked in
+  Vocula and the ones listed in System Settings → Language & Region. Someone on
+  an English Mac who speaks Japanese — or another language outside Parakeet's
+  25 — starts on Parakeet, and that language is absent from Languages until
+  Whisper is picked on Settings → Models.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.

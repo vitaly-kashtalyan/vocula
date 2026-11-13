@@ -26,12 +26,13 @@ opening a headset takes it out of stereo.
 **The audio is never saved.** It is recognised in memory and discarded. There is
 no setting to keep it, and no file it could be recovered from.
 
-Recognition runs entirely on this Mac, using a model that was downloaded once.
+Recognition runs entirely on this Mac, using a model downloaded from this
+project's GitHub releases.
 No audio, no text and no metadata about what you dictate leave the machine at
 any point.
 
 **Clean-up, if you switch it on, runs on this Mac as well.** A language model,
-downloaded once, rewrites the transcript to remove filler before it is pasted.
+downloaded when you switch it on, rewrites the transcript to remove filler before it is pasted.
 It sees that text and nothing else, and the code that runs it makes no network
 request.
 When its result loses a number, a negation or a question, or changes the
@@ -118,11 +119,15 @@ takes you to it.
 
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-**The models, once each**: the recognition models the first time you use the
-app, or again when you ask after an update replaces one, and the clean-up model
-only when you ask for it. Each file is
-verified against a checksum built into the app, and a file that does not match
-it is deleted rather than used.
+**The speech model, by itself, whenever it is missing**: at the first launch,
+after an update that changes the engine, and after a model was removed. By
+itself it never uses a connection macOS marks as expensive or Low Data — an
+iPhone hotspot, a cellular link — and waits for another instead; the button on
+Settings → Models downloads on request over whatever you are connected to.
+Which file is fetched depends on the languages your Mac lists, so GitHub can
+tell whether one of them is outside the 25 that Parakeet hears. **The clean-up
+model only when you ask for it.** Each file is verified against a checksum built
+into the app, and a file that does not match it is deleted rather than used.
 
 **A version check, once a day**, while the switch on Settings → Permissions is
 on — it ships on, and you can turn it off there. It asks for one small signed

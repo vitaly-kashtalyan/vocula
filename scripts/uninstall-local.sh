@@ -3,7 +3,7 @@
 #
 # Removes the installed app and every trace it leaves, so the next
 # ./scripts/install-local.sh is the run a buyer gets. Destroys real data: every
-# dictation ever made, its encryption key, the settings, and 1.6 GB of weights.
+# dictation ever made, its encryption key, the settings, and the downloaded models.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [ -f App/project.yml ] || { echo "uninstall: not the repository root" >&2; exit 1; }
@@ -15,7 +15,7 @@ gone() { printf '  removed  %s\n' "$*"; removed=$((removed + 1)); }
 absent() { printf '  absent   %s\n' "$*"; }
 
 echo "This deletes $APP, every dictation in its history, its encryption key,"
-echo "its settings, and 1.6 GB of downloaded models."
+echo "its settings, and the downloaded models."
 printf 'Type "yes" to continue: '
 read -r answer
 [ "$answer" = "yes" ] || { echo "uninstall: nothing was done"; exit 1; }
