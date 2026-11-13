@@ -149,15 +149,21 @@ final class AppCoordinator: ObservableObject {
     MicrophonePriorityMigration.reconcile(settings: settings, snapshot: inputs)
     menu.watchInputDevices()
     let store = ModelStore.app()
-    let transcriptionModel = settings.transcriptionModel
-    let modelsAreReady = await Task.detached(priority: .utility) {
-      store.isReady([transcriptionModel, .speechDetector])
+    let selected = settings.transcriptionModel
+    let languages = settings.languages.codes
+    let running = await Task.detached(priority: .utility) { () -> ModelID? in
+      guard store.isReady([.speechDetector]) else { return nil }
+      return EngineFallback.running(
+        selected: selected, languages: languages, isReady: { store.isReady([$0]) })
     }.value
-    guard modelsAreReady else {
+    guard let transcriptionModel = running else {
       menu.iconState = .error(MenuBarController.modelsNotDownloaded)
       menu.showsDownloadAction = true
       startMonitorOnly()
       return
+    }
+    if transcriptionModel != selected {
+      log("model.fallback", "model=\(transcriptionModel.rawValue)")
     }
     menu.showsDownloadAction = false
     menu.iconState = .idle
