@@ -706,8 +706,7 @@ final class AppCoordinator: ObservableObject {
 
   private func discardInstalledModel(_ id: ModelID) async {
     guard await removeInstalledModel(id), runningModel == id else { return }
-    let next = EngineFallback.handOver(removed: id, selected: settings.transcriptionModel)
-    if let next {
+    if let next = EngineFallback.handOver(removed: id, selected: settings.transcriptionModel) {
       settings.selectTranscriptionModel(next)
       log("model.switched", "model=\(next.rawValue)")
     }

@@ -298,8 +298,7 @@ final class ModelDownloader: NSObject, ObservableObject {
     let temporary: URL
     do {
       temporary = try await startTask(model, resumingWith: resumeData, over: session)
-    } catch let error as ModelDownloadError where resumeData != nil {
-      if Self.lostTheNetwork(error) { throw error }
+    } catch let error as ModelDownloadError where resumeData != nil && !Self.lostTheNetwork(error) {
       discardResumeData(for: id)
       try stillWanted(id)
       temporary = try await startTask(model, resumingWith: nil, over: session)
@@ -335,10 +334,8 @@ final class ModelDownloader: NSObject, ObservableObject {
     return true
   }
 
-  nonisolated static func lostTheNetwork(_ error: Error) -> Bool {
-    guard case .transport(let underlying as URLError) = error as? ModelDownloadError else {
-      return false
-    }
+  static func lostTheNetwork(_ error: ModelDownloadError) -> Bool {
+    guard case .transport(let underlying as URLError) = error else { return false }
     return [.networkConnectionLost, .notConnectedToInternet, .timedOut].contains(underlying.code)
   }
 

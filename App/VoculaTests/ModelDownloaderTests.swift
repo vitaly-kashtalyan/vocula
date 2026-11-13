@@ -107,8 +107,7 @@ private final class WantedAfter {
 @Suite("Model downloader", .serialized)
 struct ModelDownloaderTests {
   private func makeDownloader(
-    pinned: ModelDescriptor, isWanted: @escaping (ModelID) -> Bool = { _ in true },
-    isSecondCopy: Bool = false
+    pinned: ModelDescriptor, isWanted: @escaping (ModelID) -> Bool = { _ in true }
   ) -> (ModelDownloader, ModelStore, URL) {
     let directory = FileManager.default.temporaryDirectory
       .appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -120,7 +119,7 @@ struct ModelDownloaderTests {
     configuration.protocolClasses = [StubProtocol.self]
     let downloader = ModelDownloader(
       store: store, requiredModels: { [.largeV3Turbo] },
-      configuration: configuration, isWanted: isWanted, isSecondCopy: isSecondCopy)
+      configuration: configuration, isWanted: isWanted, isSecondCopy: false)
     return (downloader, store, directory)
   }
 
