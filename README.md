@@ -74,7 +74,7 @@ Nothing you say. Ever.
 | What | Where it happens |
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release. |
-| Speech detection and transcription | This Mac, on the Neural Engine with Parakeet — or the GPU with Whisper. |
+| Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
@@ -155,7 +155,8 @@ silent recording, a refusal and a dead microphone all cost nothing.
   630 MB for Parakeet Ultra (a 555 MB download), or about 1.6 GB for Whisper
   Large v3 Turbo when one of your languages is outside Parakeet's 25, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
-  model, downloaded when you switch it on.
+  model, downloaded when you ask for it — by switching clean-up on, or with its
+  `Load` button.
 - Two permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, and **Microphone**.
@@ -224,11 +225,26 @@ Stated here rather than discovered later.
 
 - **Moving from Parakeet v3 to Parakeet Ultra leaves the old model behind.**
   Someone who used Parakeet v3 finds Parakeet Ultra selected, and it downloads
-  by itself, 555 MB; Whisper, if it is on disk and hears every ticked language,
-  dictates meanwhile. The app never deletes
+  by itself, 555 MB; Whisper, if it is on disk, dictates meanwhile. The app never
+  deletes
   `~/Library/Application Support/app.vocula.mac/Models/parakeet-tdt-0.6b-v3/`
   (about 470 MB) or a `parakeet-tdt-0.6b-v3.zip` left beside it; delete them by
   hand once Ultra works.
+- **An update moves you to Parakeet Ultra unless you picked an engine, or speak
+  a language it cannot hear.** If you never chose an engine on Settings → Models,
+  this version chooses one from your languages at its first launch: when all of
+  them are among Parakeet's 25, it selects Parakeet Ultra and downloads it by
+  itself, 555 MB. Whisper keeps dictating until Ultra arrives and then stays on
+  disk (1.62 GB); the app never deletes it. Parakeet keeps to one alphabet per
+  phrase, so an English term inside Russian or Ukrainian speech may come out
+  transliterated. To go back, pick Whisper on Settings → Models.
+- **A Parakeet Ultra that will not load on your Mac is replaced by Whisper.** The
+  app deletes it, selects Whisper — which hears every language — and downloads
+  Whisper by itself (1.6 GB) when it is not on disk. It stays on Whisper, even if
+  you had picked Ultra, until you pick Ultra again on Settings → Models.
+- **A dictation in progress when a model the app downloaded by itself arrives
+  can be lost.** Recognition restarts on the new model, waiting at most three
+  seconds for a dictation still in flight.
 - **Turning clean-up off after its progress bar has filled does not undo the
   download.** Off while the downloaded archive is being moved into place and
   checksummed leaves the 1.49 GB archive at
@@ -239,7 +255,8 @@ Stated here rather than discovered later.
   nothing in the app removes either; delete them by hand.
 - **One model downloads at a time.** While the speech model's automatic
   download waits for a good network or runs, turning clean-up on or pressing
-  its `Load` starts nothing; Settings → Models' Cancel releases it. Turning
+  its `Load` starts nothing; Settings → Models' Cancel releases it, and `Load`
+  fetches the clean-up model once the downloader is free. Turning
   clean-up on first holds the speech model back until the 1.49 GB clean-up model
   is done or you turn clean-up off; the speech model then downloads at the next
   launch, or with "Download what is missing" on Settings → Models.
@@ -248,7 +265,8 @@ Stated here rather than discovered later.
   Vocula and the ones listed in System Settings → Language & Region. Someone on
   an English Mac who speaks Japanese — or another language outside Parakeet's
   25 — starts on Parakeet, and that language is absent from Languages until
-  Whisper is picked on Settings → Models.
+  Whisper is picked on Settings → Models; it then downloads with "Download what is
+  missing", or by itself at the next launch.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
