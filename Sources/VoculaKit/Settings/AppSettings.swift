@@ -109,12 +109,6 @@ public struct AppSettings: @unchecked Sendable {
     languages = storedLanguages(for: family) ?? EngineLanguages.narrow(languages, to: family)
   }
 
-  public func switchEngine(from outgoing: ModelFamily, to incoming: ModelFamily) {
-    guard outgoing != incoming else { return }
-    rememberLanguages(for: outgoing)
-    restoreLanguages(for: incoming)
-  }
-
   public var licenceKey: String {
     get { defaults.string(forKey: Self.licenceKeyKey) ?? Self.licenceKeyDefault }
     nonmutating set { defaults.set(newValue, forKey: Self.licenceKeyKey) }
@@ -149,14 +143,19 @@ public struct AppSettings: @unchecked Sendable {
 
   public func chooseTranscriptionModelIfUnset(systemLanguages: [String]) {
     guard defaults.object(forKey: Self.transcriptionModelKey) == nil else { return }
-    transcriptionModel = EngineDefault.choose(
-      languages: languages.codes + EngineDefault.baseCodes(systemLanguages))
+    let system = EngineDefault.baseCodes(systemLanguages)
+    transcriptionModel =
+      system.isEmpty
+      ? .largeV3Turbo : EngineDefault.choose(languages: languages.codes + system)
   }
 
   public func selectTranscriptionModel(_ id: ModelID) {
-    switchEngine(
-      from: ModelManifest.descriptor(for: transcriptionModel).family,
-      to: ModelManifest.descriptor(for: id).family)
+    let outgoing = ModelManifest.descriptor(for: transcriptionModel).family
+    let incoming = ModelManifest.descriptor(for: id).family
+    if outgoing != incoming {
+      rememberLanguages(for: outgoing)
+      restoreLanguages(for: incoming)
+    }
     transcriptionModel = id
   }
 

@@ -2,7 +2,8 @@ import Foundation
 
 public enum EngineDefault {
   public static func choose(languages: [String]) -> ModelID {
-    languages.allSatisfy(EngineLanguages.parakeetCodes.contains) ? .parakeetUltra : .largeV3Turbo
+    languages.allSatisfy { EngineLanguages.supports($0, .parakeet) }
+      ? .parakeetUltra : .largeV3Turbo
   }
 
   public static func baseCodes(_ identifiers: [String]) -> [String] {

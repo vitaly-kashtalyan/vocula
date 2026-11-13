@@ -168,6 +168,13 @@ struct AppSettingsTests {
     #expect(storedEngine(defaults) == "largeV3Turbo")
   }
 
+  @Test("a Mac whose language list cannot be read chooses Whisper, which hears every language")
+  func anUnreadableSystemListChoosesWhisper() {
+    let defaults = fresh("test.settings.chooses.unreadable")
+    AppSettings(defaults: defaults).chooseTranscriptionModelIfUnset(systemLanguages: [])
+    #expect(storedEngine(defaults) == "largeV3Turbo")
+  }
+
   @Test("a stored engine is never rewritten, whatever it says")
   func aStoredEngineIsNeverRewritten() {
     let cases: [(stored: String, system: [String])] = [
