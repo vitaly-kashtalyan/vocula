@@ -523,12 +523,7 @@ struct ModelDownloaderTests {
     defer { try? FileManager.default.removeItem(at: directory) }
 
     let first = Task { try await downloader.download(.largeV3Turbo) }
-    var waits = 0
-    while StubProtocol.requests(for: url) == 0, waits < 500 {
-      try await Task.sleep(for: .milliseconds(10))
-      waits += 1
-    }
-    #expect(StubProtocol.requests(for: url) == 1, "the first transfer never started")
+    try await waitForTheTransfer(to: url)
 
     #expect(await downloader.downloadOne(.largeV3Turbo) == false)
     #expect(StubProtocol.requests(for: url) == 1)
@@ -597,7 +592,10 @@ struct ModelDownloaderTests {
   func anAutomaticTransportFailureIsRetriedThreeTimesQuietly() async {
     StubProtocol.status = 500
     StubProtocol.body = Data()
-    defer { StubProtocol.status = 200 }
+    defer {
+      StubProtocol.status = 200
+      StubProtocol.body = payload
+    }
     let url = uniqueURL()
     let (downloader, _, directory) = makeDownloader(
       pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))

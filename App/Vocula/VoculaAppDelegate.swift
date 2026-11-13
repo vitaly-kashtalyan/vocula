@@ -114,7 +114,8 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   }
 
   private static var systemLanguages: [String] {
-    UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?["AppleLanguages"]
+    UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?[
+      InterfaceLanguages.defaultsKey]
       as? [String] ?? []
   }
 

@@ -1,9 +1,4 @@
 #!/bin/bash
-# Usage: ./scripts/uninstall-local.sh
-#
-# Removes the installed app and every trace it leaves, so the next
-# ./scripts/install-local.sh is the run a buyer gets. Destroys real data: every
-# dictation ever made, its encryption key, the settings, and the downloaded models.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [ -f App/project.yml ] || { echo "uninstall: not the repository root" >&2; exit 1; }

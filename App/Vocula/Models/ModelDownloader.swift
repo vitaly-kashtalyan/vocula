@@ -190,22 +190,24 @@ final class ModelDownloader: NSObject, ObservableObject {
     await refreshStatuses()
     guard await spaceRefusal(for: ids) == nil else { return false }
     var downloaded = false
-    models: for id in ids where statuses[id] != .ready {
-      for _ in 0...Self.automaticRetries {
-        do {
-          guard try await download(id, over: automaticSession) else { break models }
-          downloaded = true
-          continue models
-        } catch ModelDownloadError.transport {
-          continue
-        } catch {
-          break models
-        }
-      }
-      break
+    for id in ids where statuses[id] != .ready {
+      guard await fetchRetrying(id) else { break }
+      downloaded = true
     }
     await refreshStatuses()
     return downloaded && allReady
+  }
+
+  private func fetchRetrying(_ id: ModelID) async -> Bool {
+    for _ in 0...Self.automaticRetries {
+      do {
+        return try await download(id, over: automaticSession)
+      } catch ModelDownloadError.transport {
+      } catch {
+        return false
+      }
+    }
+    return false
   }
 
   @discardableResult
@@ -334,11 +336,10 @@ final class ModelDownloader: NSObject, ObservableObject {
   }
 
   nonisolated static func lostTheNetwork(_ error: Error) -> Bool {
-    guard case .transport(let underlying) = error as? ModelDownloadError else { return false }
-    let transport = underlying as NSError
-    return transport.domain == NSURLErrorDomain
-      && [NSURLErrorNetworkConnectionLost, NSURLErrorNotConnectedToInternet, NSURLErrorTimedOut]
-        .contains(transport.code)
+    guard case .transport(let underlying as URLError) = error as? ModelDownloadError else {
+      return false
+    }
+    return [.networkConnectionLost, .notConnectedToInternet, .timedOut].contains(underlying.code)
   }
 
   private func stillWanted(_ id: ModelID) throws {

@@ -611,8 +611,12 @@ final class AppCoordinator: ObservableObject {
   func modelsDidBecomeReady() async {
     guard !isSwitchingModels else { return }
     isSwitchingModels = true
-    defer { isSwitchingModels = false }
     log("model.download", "outcome=ready")
+    await restartPipeline()
+  }
+
+  private func restartPipeline() async {
+    defer { isSwitchingModels = false }
     await finishInFlightWork()
     tearDownPipeline()
     await start()
@@ -709,20 +713,8 @@ final class AppCoordinator: ObservableObject {
     }
     fetchMissingModels?()
     guard !isSwitchingModels else { return }
-    guard next != nil else {
-      tearDownPipeline()
-      menu.iconState = .error(MenuBarController.modelsNotDownloaded)
-      menu.showsDownloadAction = true
-      startMonitorOnly()
-      return
-    }
     isSwitchingModels = true
-    Task {
-      defer { isSwitchingModels = false }
-      await finishInFlightWork()
-      tearDownPipeline()
-      await start()
-    }
+    Task { await restartPipeline() }
   }
 
   @discardableResult
