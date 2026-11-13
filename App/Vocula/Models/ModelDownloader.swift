@@ -54,19 +54,32 @@ final class ModelDownloader: NSObject, ObservableObject {
   private var task: URLSessionDownloadTask?
   private var continuation: CheckedContinuation<URL, Error>?
   @Published private(set) var current: ModelID?
-  private var session: URLSession!
+  private(set) var session: URLSession!
+  private(set) var automaticSession: URLSession!
+  private let isSecondCopy: Bool
+
+  static let automaticRetries = 3
 
   init(
     store: ModelStore, requiredModels: @escaping @Sendable () -> [ModelID],
     configuration: URLSessionConfiguration = .default,
-    isWanted: @escaping (ModelID) -> Bool
+    isWanted: @escaping (ModelID) -> Bool,
+    isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy
   ) {
     self.store = store
     self.requiredModels = requiredModels
     self.isWanted = isWanted
+    self.isSecondCopy = isSecondCopy
     super.init()
     self.session = URLSession(
       configuration: configuration, delegate: self,
+      delegateQueue: nil)
+    let waiting = configuration.copy() as! URLSessionConfiguration
+    waiting.waitsForConnectivity = true
+    waiting.allowsExpensiveNetworkAccess = false
+    waiting.allowsConstrainedNetworkAccess = false
+    self.automaticSession = URLSession(
+      configuration: waiting, delegate: self,
       delegateQueue: nil)
   }
 
@@ -168,6 +181,33 @@ final class ModelDownloader: NSObject, ObservableObject {
     lastError = nil
   }
 
+  func downloadAutomatically() async -> Bool {
+    guard !isSecondCopy, !isDownloading else { return false }
+    let store = self.store
+    let ids = requiredModels()
+    let ready = await Task.detached(priority: .utility) { store.isReady(ids) }.value
+    guard !ready else { return false }
+    await refreshStatuses()
+    guard await spaceRefusal(for: ids) == nil else { return false }
+    var downloaded = false
+    models: for id in ids where statuses[id] != .ready {
+      for _ in 0...Self.automaticRetries {
+        do {
+          guard try await download(id, over: automaticSession) else { break models }
+          downloaded = true
+          continue models
+        } catch ModelDownloadError.transport {
+          continue
+        } catch {
+          break models
+        }
+      }
+      break
+    }
+    await refreshStatuses()
+    return downloaded && allReady
+  }
+
   @discardableResult
   func downloadOne(_ id: ModelID) async -> Bool {
     lastError = nil
@@ -193,8 +233,12 @@ final class ModelDownloader: NSObject, ObservableObject {
 
   @discardableResult
   func download(_ id: ModelID) async throws -> Bool {
+    try await download(id, over: session)
+  }
+
+  private func download(_ id: ModelID, over session: URLSession) async throws -> Bool {
     do {
-      return try await perform(id)
+      return try await perform(id, over: session)
     } catch {
       if !(error is CancellationError) {
         diagnose?("model.download", failureDetail(error, for: id))
@@ -227,7 +271,7 @@ final class ModelDownloader: NSObject, ObservableObject {
       .joined(separator: " ")
   }
 
-  private func perform(_ id: ModelID) async throws -> Bool {
+  private func perform(_ id: ModelID, over session: URLSession) async throws -> Bool {
     guard !isDownloading else { return false }
     let store = self.store
     isDownloading = true
@@ -251,12 +295,12 @@ final class ModelDownloader: NSObject, ObservableObject {
     try stillWanted(id)
     let temporary: URL
     do {
-      temporary = try await startTask(model, resumingWith: resumeData)
+      temporary = try await startTask(model, resumingWith: resumeData, over: session)
     } catch let error as ModelDownloadError where resumeData != nil {
       if Self.lostTheNetwork(error) { throw error }
       discardResumeData(for: id)
       try stillWanted(id)
-      temporary = try await startTask(model, resumingWith: nil)
+      temporary = try await startTask(model, resumingWith: nil, over: session)
     }
     discardResumeData(for: id)
     defer {
@@ -303,7 +347,8 @@ final class ModelDownloader: NSObject, ObservableObject {
 
   private func startTask(
     _ model: ModelDescriptor,
-    resumingWith resumeData: Data?
+    resumingWith resumeData: Data?,
+    over session: URLSession
   ) async throws -> URL {
     try await withCheckedThrowingContinuation { continuation in
       self.continuation = continuation
@@ -329,7 +374,10 @@ final class ModelDownloader: NSObject, ObservableObject {
     })
   }
 
-  func shutdown() { session.invalidateAndCancel() }
+  func shutdown() {
+    session.invalidateAndCancel()
+    automaticSession.invalidateAndCancel()
+  }
 
   @Published private(set) var statuses: [ModelID: ModelStatus] = [:]
 
