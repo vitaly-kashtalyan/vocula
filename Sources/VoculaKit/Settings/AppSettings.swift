@@ -147,6 +147,19 @@ public struct AppSettings: @unchecked Sendable {
     nonmutating set { defaults.set(newValue.rawValue, forKey: Self.transcriptionModelKey) }
   }
 
+  public func chooseTranscriptionModelIfUnset(systemLanguages: [String]) {
+    guard defaults.object(forKey: Self.transcriptionModelKey) == nil else { return }
+    transcriptionModel = EngineDefault.choose(
+      languages: languages.codes + EngineDefault.baseCodes(systemLanguages))
+  }
+
+  public func selectTranscriptionModel(_ id: ModelID) {
+    switchEngine(
+      from: ModelManifest.descriptor(for: transcriptionModel).family,
+      to: ModelManifest.descriptor(for: id).family)
+    transcriptionModel = id
+  }
+
   public var appearance: AppearancePreference {
     get { AppearancePreference(stored: defaults.string(forKey: AppearancePreference.storageKey)) }
     nonmutating set { defaults.set(newValue.rawValue, forKey: AppearancePreference.storageKey) }

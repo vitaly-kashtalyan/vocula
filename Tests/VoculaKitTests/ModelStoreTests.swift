@@ -92,16 +92,16 @@ struct ModelStoreTests {
     #expect(store.url(for: .largeV3Turbo).deletingLastPathComponent().path == directory.path)
   }
 
-  @Test("a fresh install starts on Whisper, and an unknown model falls back to it")
-  func whisperIsTheDefaultEngine() {
-    #expect(ModelManifest.defaultTranscriptionModel == .largeV3Turbo)
-    #expect(ModelManifest.descriptor(for: .largeV3Turbo).family == .whisper)
+  @Test("a fresh install reads as Parakeet Ultra, and an unknown model falls back to it")
+  func ultraIsTheDefaultEngine() {
+    #expect(ModelManifest.defaultTranscriptionModel == .parakeetUltra)
+    #expect(ModelManifest.descriptor(for: .parakeetUltra).family == .parakeet)
 
     let defaults = UserDefaults(suiteName: "test.models.default")!
     defaults.removePersistentDomain(forName: "test.models.default")
-    #expect(AppSettings(defaults: defaults).transcriptionModel == .largeV3Turbo)
+    #expect(AppSettings(defaults: defaults).transcriptionModel == .parakeetUltra)
     defaults.set("aModelThisBuildDoesNotHave", forKey: AppSettings.transcriptionModelKey)
-    #expect(AppSettings(defaults: defaults).transcriptionModel == .largeV3Turbo)
+    #expect(AppSettings(defaults: defaults).transcriptionModel == .parakeetUltra)
   }
 
   @Test("a missing file is missing")
