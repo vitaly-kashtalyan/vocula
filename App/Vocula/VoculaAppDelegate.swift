@@ -93,11 +93,16 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
     coordinator.modelsChangedOnDisk = { [weak self] in
       Task { await self?.downloader.refreshStatuses() }
     }
+    coordinator.fetchMissingModels = { [weak self] in self?.fetchMissingModels() }
     Task {
       if Self.isUITesting {
         coordinator.startMonitorOnly()
       } else {
+        if !Self.isSecondCopy {
+          AppSettings().chooseTranscriptionModelIfUnset(systemLanguages: Self.systemLanguages)
+        }
         await coordinator.start()
+        fetchMissingModels()
       }
       launchDidFinish = true
       _ = LaunchInterfaceLanguage.code
@@ -105,6 +110,18 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       reopenSettingsIfAsked()
       openSettingsIfTheMenuBarIconIsHidden()
       startUpdaterIfAllowed()
+    }
+  }
+
+  private static var systemLanguages: [String] {
+    UserDefaults.standard.persistentDomain(forName: UserDefaults.globalDomain)?["AppleLanguages"]
+      as? [String] ?? []
+  }
+
+  private func fetchMissingModels() {
+    Task {
+      guard await downloader.downloadAutomatically() else { return }
+      await coordinator.modelsDidBecomeReady()
     }
   }
 
