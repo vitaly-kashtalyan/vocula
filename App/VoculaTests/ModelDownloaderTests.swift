@@ -119,7 +119,7 @@ struct ModelDownloaderTests {
     configuration.protocolClasses = [StubProtocol.self]
     let downloader = ModelDownloader(
       store: store, requiredModels: { [.largeV3Turbo] },
-      configuration: configuration, isWanted: isWanted)
+      configuration: configuration, isWanted: isWanted, isSecondCopy: false)
     return (downloader, store, directory)
   }
 
@@ -522,18 +522,182 @@ struct ModelDownloaderTests {
     defer { try? FileManager.default.removeItem(at: directory) }
 
     let first = Task { try await downloader.download(.largeV3Turbo) }
-    var waits = 0
-    while StubProtocol.requests(for: url) == 0, waits < 500 {
-      try await Task.sleep(for: .milliseconds(10))
-      waits += 1
-    }
-    #expect(StubProtocol.requests(for: url) == 1, "the first transfer never started")
+    try await waitForTheTransfer(to: url)
 
     #expect(await downloader.downloadOne(.largeV3Turbo) == false)
     #expect(StubProtocol.requests(for: url) == 1)
 
     downloader.cancel()
     await #expect(throws: CancellationError.self) { _ = try await first.value }
+  }
+
+  private func waitForTheTransfer(to url: URL) async throws {
+    var waits = 0
+    while StubProtocol.requests(for: url) == 0, waits < 500 {
+      try await Task.sleep(for: .milliseconds(10))
+      waits += 1
+    }
+    try #require(StubProtocol.requests(for: url) == 1, "the transfer never started")
+  }
+
+  @Test("the automatic session waits for a good network; the button's does not")
+  func theAutomaticSessionWaitsAndRefusesExpensiveNetworks() {
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count)))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let automatic = downloader.automaticSession.configuration
+    #expect(automatic.waitsForConnectivity)
+    #expect(!automatic.allowsExpensiveNetworkAccess)
+    #expect(!automatic.allowsConstrainedNetworkAccess)
+    #expect(automatic.protocolClasses?.first == StubProtocol.self)
+    let button = downloader.session.configuration
+    #expect(!button.waitsForConnectivity)
+    #expect(button.allowsExpensiveNetworkAccess)
+    #expect(button.allowsConstrainedNetworkAccess)
+  }
+
+  @Test("a missing model is fetched by itself, and true says it arrived", .timeLimit(.minutes(1)))
+  func anAutomaticDownloadInstallsAndSaysSo() async {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let (downloader, store, directory) = makeDownloader(
+      pinned: descriptor(
+        sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: uniqueURL()))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(await downloader.downloadAutomatically())
+    #expect(store.status(of: .largeV3Turbo) == .ready)
+    #expect(downloader.lastError == nil)
+  }
+
+  @Test("nothing missing fetches nothing and says false", .timeLimit(.minutes(1)))
+  func nothingMissingDownloadsNothing() async {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(await downloader.downloadAutomatically())
+    #expect(await downloader.downloadAutomatically() == false)
+    #expect(StubProtocol.requests(for: url) == 1)
+  }
+
+  @Test(
+    "a transport failure is retried three times and never reaches the screen",
+    .timeLimit(.minutes(1)))
+  func anAutomaticTransportFailureIsRetriedThreeTimesQuietly() async {
+    StubProtocol.status = 500
+    StubProtocol.body = Data()
+    defer {
+      StubProtocol.status = 200
+      StubProtocol.body = payload
+    }
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+    var lines: [(String, String)] = []
+    downloader.diagnose = { lines.append(($0, $1)) }
+
+    #expect(await downloader.downloadAutomatically() == false)
+
+    #expect(StubProtocol.requests(for: url) == 1 + ModelDownloader.automaticRetries)
+    #expect(downloader.lastError == nil)
+    #expect(lines.count == 1 + ModelDownloader.automaticRetries)
+    #expect(lines.allSatisfy { $0.0 == "model.download" && $0.1.contains("outcome=failed") })
+  }
+
+  @Test("a checksum failure is not retried", .timeLimit(.minutes(1)))
+  func anAutomaticChecksumFailureIsNotRetried() async {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(
+        sha256: String(repeating: "0", count: 64), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    #expect(await downloader.downloadAutomatically() == false)
+    #expect(StubProtocol.requests(for: url) == 1)
+  }
+
+  @Test("a second copy fetches nothing by itself", .timeLimit(.minutes(1)))
+  func aSecondCopyDownloadsNothingByItself() async {
+    #expect(VoculaAppDelegate.isSecondCopy)
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    let url = uniqueURL()
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent(UUID().uuidString, isDirectory: true)
+    try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let store = ModelStore(
+      directory: directory, fileSystem: SystemModelFileSystem(),
+      manifest: [
+        descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url)
+      ])
+    let configuration = URLSessionConfiguration.ephemeral
+    configuration.protocolClasses = [StubProtocol.self]
+    let downloader = ModelDownloader(
+      store: store, requiredModels: { [.largeV3Turbo] },
+      configuration: configuration, isWanted: { _ in true })
+
+    #expect(await downloader.downloadAutomatically() == false)
+    #expect(StubProtocol.requests(for: url) == 0)
+  }
+
+  @Test(
+    "a busy downloader starts no automatic download and leaves an expansion's staging directory alone",
+    .timeLimit(.minutes(1)))
+  func aBusyDownloaderStartsNoAutomaticDownload() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.hangs = true
+    defer { StubProtocol.hangs = false }
+    let url = uniqueURL()
+    let (_, model) = try archiveFixture(remoteURL: url)
+    let (downloader, store, directory) = makeDownloader(pinned: model)
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let first = Task { try await downloader.download(.largeV3Turbo) }
+    try await waitForTheTransfer(to: url)
+    #expect(await downloader.session.allTasks.count == 1)
+    #expect(await downloader.automaticSession.allTasks.isEmpty)
+    let staging = store.directory.appendingPathComponent(
+      "test-archive.unpacking", isDirectory: true)
+    try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+
+    #expect(await downloader.downloadAutomatically() == false)
+    #expect(FileManager.default.fileExists(atPath: staging.path))
+    #expect(StubProtocol.requests(for: url) == 1)
+
+    downloader.cancel()
+    await #expect(throws: CancellationError.self) { _ = try await first.value }
+  }
+
+  @Test(
+    "an automatic download travels on the waiting session, never the button's",
+    .timeLimit(.minutes(1)))
+  func anAutomaticDownloadTravelsOnTheWaitingSession() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.hangs = true
+    defer { StubProtocol.hangs = false }
+    let url = uniqueURL()
+    let (downloader, _, directory) = makeDownloader(
+      pinned: descriptor(sha256: digest(payload), byteSize: Int64(payload.count), remoteURL: url))
+    defer { try? FileManager.default.removeItem(at: directory) }
+
+    let automatic = Task { await downloader.downloadAutomatically() }
+    try await waitForTheTransfer(to: url)
+    #expect(await downloader.automaticSession.allTasks.count == 1)
+    #expect(await downloader.session.allTasks.isEmpty)
+
+    downloader.cancel()
+    #expect(await automatic.value == false)
   }
 }
 
@@ -579,6 +743,47 @@ struct ResumeDataTests {
     let (downloader, store, directory) = makeDownloader()
     defer { try? FileManager.default.removeItem(at: directory) }
 
+    try staleBlob().write(to: resumeURL(in: directory))
+
+    try await downloader.download(.largeV3Turbo)
+    #expect(store.status(of: .largeV3Turbo) == .ready)
+    #expect(FileManager.default.fileExists(atPath: resumeURL(in: directory).path) == false)
+  }
+
+  @Test("only a lost network keeps the resume data; anything else starts over")
+  func onlyALostNetworkKeepsTheResumeData() {
+    func transport(_ code: Int) -> ModelDownloadError {
+      .transport(NSError(domain: NSURLErrorDomain, code: code))
+    }
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorNetworkConnectionLost)))
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorNotConnectedToInternet)))
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorTimedOut)))
+    #expect(!ModelDownloader.lostTheNetwork(transport(NSURLErrorCannotOpenFile)))
+    #expect(
+      !ModelDownloader.lostTheNetwork(
+        ModelDownloadError.transport(NSError(domain: "http", code: 416))))
+    #expect(!ModelDownloader.lostTheNetwork(ModelDownloadError.checksumMismatch(displayName: "x")))
+  }
+
+  @Test("a resumed transfer that loses the network keeps its resume data for the next attempt")
+  func aResumeThatLosesTheNetworkKeepsItsBlob() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.failure = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost)
+    defer { StubProtocol.failure = nil }
+    let (downloader, _, directory) = makeDownloader()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let blob = try staleBlob()
+    try blob.write(to: resumeURL(in: directory))
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(try Data(contentsOf: resumeURL(in: directory)) == blob)
+  }
+
+  private func staleBlob() throws -> Data {
     let stale: [String: Any] = [
       "NSURLSessionResumeInfoVersion": 2,
       "NSURLSessionResumeCurrentRequest":
@@ -589,13 +794,8 @@ struct ResumeDataTests {
       "NSURLSessionDownloadURL": "https://test.invalid/model.bin",
       "NSURLSessionResumeBytesReceived": 1024,
     ]
-    let blob = try PropertyListSerialization.data(
+    return try PropertyListSerialization.data(
       fromPropertyList: stale,
       format: .binary, options: 0)
-    try blob.write(to: resumeURL(in: directory))
-
-    try await downloader.download(.largeV3Turbo)
-    #expect(store.status(of: .largeV3Turbo) == .ready)
-    #expect(FileManager.default.fileExists(atPath: resumeURL(in: directory).path) == false)
   }
 }

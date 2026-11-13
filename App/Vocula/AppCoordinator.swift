@@ -70,6 +70,7 @@ final class AppCoordinator: ObservableObject {
   private var refinementObserver: (any NSObjectProtocol)?
   private var refinerLifecycle = RefinerLifecycle()
   var modelsChangedOnDisk: (() -> Void)?
+  var fetchMissingModels: (() -> Void)?
 
   func finishInFlightWork() async {
     guard let controller else { return }
@@ -149,15 +150,21 @@ final class AppCoordinator: ObservableObject {
     MicrophonePriorityMigration.reconcile(settings: settings, snapshot: inputs)
     menu.watchInputDevices()
     let store = ModelStore.app()
-    let transcriptionModel = settings.transcriptionModel
-    let modelsAreReady = await Task.detached(priority: .utility) {
-      store.isReady([transcriptionModel, .speechDetector])
+    let selected = settings.transcriptionModel
+    let languages = settings.languages.codes
+    let running = await Task.detached(priority: .utility) { () -> ModelID? in
+      guard store.isReady([.speechDetector]) else { return nil }
+      return EngineFallback.running(
+        selected: selected, languages: languages, isReady: { store.isReady([$0]) })
     }.value
-    guard modelsAreReady else {
+    guard let transcriptionModel = running else {
       menu.iconState = .error(MenuBarController.modelsNotDownloaded)
       menu.showsDownloadAction = true
       startMonitorOnly()
       return
+    }
+    if transcriptionModel != selected {
+      log("model.fallback", "model=\(transcriptionModel.rawValue)")
     }
     menu.showsDownloadAction = false
     menu.iconState = .idle
@@ -604,8 +611,12 @@ final class AppCoordinator: ObservableObject {
   func modelsDidBecomeReady() async {
     guard !isSwitchingModels else { return }
     isSwitchingModels = true
-    defer { isSwitchingModels = false }
     log("model.download", "outcome=ready")
+    await restartPipeline()
+  }
+
+  private func restartPipeline() async {
+    defer { isSwitchingModels = false }
     await finishInFlightWork()
     tearDownPipeline()
     await start()
@@ -694,11 +705,15 @@ final class AppCoordinator: ObservableObject {
   private var modelStore: ModelStore { .app() }
 
   private func discardInstalledModel(_ id: ModelID) async {
-    guard await removeInstalledModel(id) else { return }
-    tearDownPipeline()
-    menu.iconState = .error(MenuBarController.modelsNotDownloaded)
-    menu.showsDownloadAction = true
-    startMonitorOnly()
+    guard await removeInstalledModel(id), runningModel == id else { return }
+    if let next = EngineFallback.handOver(removed: id, selected: settings.transcriptionModel) {
+      settings.selectTranscriptionModel(next)
+      log("model.switched", "model=\(next.rawValue)")
+    }
+    fetchMissingModels?()
+    guard !isSwitchingModels else { return }
+    isSwitchingModels = true
+    Task { await restartPipeline() }
   }
 
   @discardableResult

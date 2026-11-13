@@ -139,6 +139,72 @@ struct AppSettingsTests {
     #expect(settings.languages.autoDetect == false)
   }
 
+  private func storedEngine(_ defaults: UserDefaults) -> String? {
+    defaults.string(forKey: AppSettings.transcriptionModelKey)
+  }
+
+  @Test("an absent engine is chosen from the languages and written")
+  func anAbsentEngineIsChosenAndWritten() {
+    let defaults = fresh("test.settings.chooses.parakeet")
+    AppSettings(defaults: defaults)
+      .chooseTranscriptionModelIfUnset(systemLanguages: ["en-US", "pl-PL", "ru-PL"])
+    #expect(storedEngine(defaults) == "parakeetUltra")
+  }
+
+  @Test("a language on the Mac's list that Parakeet cannot hear chooses Whisper")
+  func aSystemLanguageParakeetCannotHearChoosesWhisper() {
+    let defaults = fresh("test.settings.chooses.systemWhisper")
+    AppSettings(defaults: defaults)
+      .chooseTranscriptionModelIfUnset(systemLanguages: ["en-US", "ja-JP"])
+    #expect(storedEngine(defaults) == "largeV3Turbo")
+  }
+
+  @Test("a ticked language Parakeet cannot hear chooses Whisper")
+  func aTickedLanguageParakeetCannotHearChoosesWhisper() {
+    let defaults = fresh("test.settings.chooses.tickedWhisper")
+    let settings = AppSettings(defaults: defaults)
+    settings.languages = LanguageSelection(codes: ["en", "zh"], autoDetect: true)
+    settings.chooseTranscriptionModelIfUnset(systemLanguages: ["en-US"])
+    #expect(storedEngine(defaults) == "largeV3Turbo")
+  }
+
+  @Test("a Mac whose language list cannot be read chooses Whisper, which hears every language")
+  func anUnreadableSystemListChoosesWhisper() {
+    let defaults = fresh("test.settings.chooses.unreadable")
+    AppSettings(defaults: defaults).chooseTranscriptionModelIfUnset(systemLanguages: [])
+    #expect(storedEngine(defaults) == "largeV3Turbo")
+  }
+
+  @Test("a stored engine is never rewritten, whatever it says")
+  func aStoredEngineIsNeverRewritten() {
+    let cases: [(stored: String, system: [String])] = [
+      ("largeV3Turbo", ["en-US"]),
+      ("parakeetV3", ["ja-JP"]),
+      ("aModelThisBuildDoesNotHave", ["en-US"]),
+    ]
+    for (index, item) in cases.enumerated() {
+      let defaults = fresh("test.settings.chooses.stored.\(index)")
+      defaults.set(item.stored, forKey: AppSettings.transcriptionModelKey)
+      AppSettings(defaults: defaults).chooseTranscriptionModelIfUnset(systemLanguages: item.system)
+      #expect(storedEngine(defaults) == item.stored)
+    }
+  }
+
+  @Test("selecting another engine moves the languages with it")
+  func selectingAnotherEngineMovesTheLanguagesWithIt() {
+    let defaults = fresh("test.settings.select")
+    let settings = AppSettings(defaults: defaults)
+    settings.transcriptionModel = .parakeetUltra
+    settings.languages = LanguageSelection(codes: ["ru"], autoDetect: true)
+    settings.setLanguages(LanguageSelection(codes: ["ru", "ja"], autoDetect: true), for: .whisper)
+
+    settings.selectTranscriptionModel(.largeV3Turbo)
+
+    #expect(storedEngine(defaults) == "largeV3Turbo")
+    #expect(settings.languages.codes == ["ru", "ja"])
+    #expect(settings.storedLanguages(for: .parakeet)?.codes == ["ru"])
+  }
+
   @Test("an engine never visited inherits the selection in force, narrowed")
   func aFirstVisitInheritsRatherThanResets() {
     let settings = AppSettings(defaults: fresh("test.settings.languages.firstVisit"))

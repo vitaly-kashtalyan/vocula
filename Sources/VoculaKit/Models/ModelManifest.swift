@@ -165,7 +165,7 @@ public enum ModelManifest {
     }
   }
 
-  public static let defaultTranscriptionModel: ModelID = .largeV3Turbo
+  public static let defaultTranscriptionModel: ModelID = .parakeetUltra
 
   public static func descriptor(for id: ModelID) -> ModelDescriptor {
     guard let model = current.first(where: { $0.id == id }) else {

@@ -80,6 +80,8 @@ public final class DiagnosticLog: @unchecked Sendable {
   private static let allowedKinds: Set<String> = [
     "session.start", "session.stop", "session.cancel", "session.failed",
     "model.discarded",
+    "model.fallback",
+    "model.switched",
     "refine.failed",
     "refine.done",
     "update.failed",

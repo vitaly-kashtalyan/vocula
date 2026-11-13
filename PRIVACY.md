@@ -26,12 +26,13 @@ opening a headset takes it out of stereo.
 **The audio is never saved.** It is recognised in memory and discarded. There is
 no setting to keep it, and no file it could be recovered from.
 
-Recognition runs entirely on this Mac, using a model that was downloaded once.
+Recognition runs entirely on this Mac, using a model downloaded from this
+project's GitHub releases.
 No audio, no text and no metadata about what you dictate leave the machine at
 any point.
 
 **Clean-up, if you switch it on, runs on this Mac as well.** A language model,
-downloaded once, rewrites the transcript to remove filler before it is pasted.
+downloaded when you ask for it, rewrites the transcript to remove filler before it is pasted.
 It sees that text and nothing else, and the code that runs it makes no network
 request.
 When its result loses a number, a negation or a question, or changes the
@@ -111,18 +112,28 @@ learns that you dictated at 14:32 and how long you held the key — never what
 the text was, and never which language you spoke. A dictation that simply
 worked writes no outcome line; what it can write is a measurement of how unsure
 the language detector was, as bare percentages that name no language, and, with
-clean-up on, how long a slow pass took or why its result was not used. It holds the last 2,000 events. "Reveal the Diagnostic Log in Finder" in the menu
+clean-up on, how long a slow pass took or why its result was not used. Lines
+about a model name the recognition engine, which says whether one of your
+languages is outside the 25 that Parakeet hears. It holds the last 2,000 events. "Reveal the Diagnostic Log in Finder" in the menu
 takes you to it.
 
 ## What leaves this Mac
 
 Two things, and both go to this project's own GitHub releases, over HTTPS.
 
-**The models, once each**: the recognition models the first time you use the
-app, or again when you ask after an update replaces one, and the clean-up model
-only when you ask for it. Each file is
-verified against a checksum built into the app, and a file that does not match
-it is deleted rather than used.
+**The speech model and its voice-activity detector, by themselves, whenever a
+launch finds them missing**: the first
+launch; the first after an update that changes the engine, or after you pick an
+engine on Settings → Models without downloading it; the first after a model was
+removed — and at once when a model that will not load is replaced by Whisper. By
+itself it never uses a connection macOS marks as expensive or Low Data — an
+iPhone hotspot, a cellular link — and waits for another instead; Cancel on
+Settings → Models, then its button, downloads on request over whatever you are
+connected to. Which file is fetched depends on the languages your Mac lists and
+the ones you ticked, so GitHub can tell whether one of them is outside the 25
+that Parakeet hears. **The clean-up
+model only when you ask for it.** Each file is verified against a checksum built
+into the app, and a file that does not match it is deleted rather than used.
 
 **A version check, once a day**, while the switch on Settings → Permissions is
 on — it ships on, and you can turn it off there. It asks for one small signed
