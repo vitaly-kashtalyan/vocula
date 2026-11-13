@@ -579,6 +579,47 @@ struct ResumeDataTests {
     let (downloader, store, directory) = makeDownloader()
     defer { try? FileManager.default.removeItem(at: directory) }
 
+    try staleBlob().write(to: resumeURL(in: directory))
+
+    try await downloader.download(.largeV3Turbo)
+    #expect(store.status(of: .largeV3Turbo) == .ready)
+    #expect(FileManager.default.fileExists(atPath: resumeURL(in: directory).path) == false)
+  }
+
+  @Test("only a lost network keeps the resume data; anything else starts over")
+  func onlyALostNetworkKeepsTheResumeData() {
+    func transport(_ code: Int) -> ModelDownloadError {
+      .transport(NSError(domain: NSURLErrorDomain, code: code))
+    }
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorNetworkConnectionLost)))
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorNotConnectedToInternet)))
+    #expect(ModelDownloader.lostTheNetwork(transport(NSURLErrorTimedOut)))
+    #expect(!ModelDownloader.lostTheNetwork(transport(NSURLErrorCannotOpenFile)))
+    #expect(
+      !ModelDownloader.lostTheNetwork(
+        ModelDownloadError.transport(NSError(domain: "http", code: 416))))
+    #expect(!ModelDownloader.lostTheNetwork(ModelDownloadError.checksumMismatch(displayName: "x")))
+  }
+
+  @Test("a resumed transfer that loses the network keeps its resume data for the next attempt")
+  func aResumeThatLosesTheNetworkKeepsItsBlob() async throws {
+    StubProtocol.status = 200
+    StubProtocol.body = payload
+    StubProtocol.failure = NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost)
+    defer { StubProtocol.failure = nil }
+    let (downloader, _, directory) = makeDownloader()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let blob = try staleBlob()
+    try blob.write(to: resumeURL(in: directory))
+
+    await #expect(throws: ModelDownloadError.self) {
+      try await downloader.download(.largeV3Turbo)
+    }
+
+    #expect(try Data(contentsOf: resumeURL(in: directory)) == blob)
+  }
+
+  private func staleBlob() throws -> Data {
     let stale: [String: Any] = [
       "NSURLSessionResumeInfoVersion": 2,
       "NSURLSessionResumeCurrentRequest":
@@ -589,13 +630,8 @@ struct ResumeDataTests {
       "NSURLSessionDownloadURL": "https://test.invalid/model.bin",
       "NSURLSessionResumeBytesReceived": 1024,
     ]
-    let blob = try PropertyListSerialization.data(
+    return try PropertyListSerialization.data(
       fromPropertyList: stale,
       format: .binary, options: 0)
-    try blob.write(to: resumeURL(in: directory))
-
-    try await downloader.download(.largeV3Turbo)
-    #expect(store.status(of: .largeV3Turbo) == .ready)
-    #expect(FileManager.default.fileExists(atPath: resumeURL(in: directory).path) == false)
   }
 }
