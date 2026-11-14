@@ -51,6 +51,7 @@ one gesture that always works beats two where one sometimes does.
           │
    [ Parakeet ]           Neural Engine — the default when your languages are among its 25
     or [ whisper.cpp ]    Metal GPU — every language, 0.02–0.03× realtime, measured
+                          on whisper.cpp 1.9.2
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -213,7 +214,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1124 tests: 853 from `swift test`, 258 in the hosted app bundle, 13 driving the
+1125 tests: 854 from `swift test`, 258 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.
