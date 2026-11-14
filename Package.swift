@@ -18,8 +18,8 @@ let package = Package(
     .binaryTarget(
       name: "whisper",
       url:
-        "https://github.com/ggml-org/whisper.cpp/releases/download/v1.9.2/whisper-v1.9.2-xcframework.zip",
-      checksum: "af74fed13ea7f2d5ca2a39d9f58ec177713fafd7cab63aef4e27b79f3ceca80b"),
+        "https://github.com/ggml-org/whisper.cpp/releases/download/b5454/whisper-b5454-xcframework.zip",
+      checksum: "e57f8c48933000acabc13bb913fbe82805d483a2deff692cc6738836bd92393b"),
     .target(name: "VoculaWhisper", dependencies: ["VoculaKit", "whisper"]),
     .target(
       name: "VoculaParakeet",

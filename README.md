@@ -51,6 +51,7 @@ one gesture that always works beats two where one sometimes does.
           │
    [ Parakeet ]           Neural Engine — the default when your languages are among its 25
     or [ whisper.cpp ]    Metal GPU — every language, 0.02–0.03× realtime, measured
+                          on whisper.cpp 1.9.2
           │
    [ one line ]           newlines and tabs become spaces, so a paste cannot run
           │
@@ -173,8 +174,9 @@ is kept to `arm64` on purpose.
 
 Xcode 26 or later — the package needs the Swift 6.2 toolchain and the macOS 26
 SDK. The first build needs a network for its dependencies: Sparkle, pinned by
-commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from its
-GitHub release and checked against the SHA-256 pinned in `Package.swift`; and
+commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from the
+GitHub build page its release names and checked against the SHA-256 pinned in
+`Package.swift`; and
 FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
 text-normalisation XCFramework against its own checksum, which this build does
 not link; and MLX with
@@ -213,7 +215,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1124 tests: 853 from `swift test`, 258 in the hosted app bundle, 13 driving the
+1125 tests: 854 from `swift test`, 258 in the hosted app bundle, 13 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout.

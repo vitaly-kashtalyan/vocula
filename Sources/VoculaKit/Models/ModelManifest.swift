@@ -57,7 +57,7 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
   public var engineCredit: String {
     switch self {
     case .whisper:
-      return "whisper.cpp v1.9.2 — MIT, The ggml authors"
+      return "whisper.cpp v1.9.5 — MIT, The ggml authors"
     case .parakeet:
       return
         "FluidAudio — Apache-2.0; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0"
