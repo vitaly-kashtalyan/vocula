@@ -11,9 +11,8 @@ struct WhisperVersionTests {
     try String(contentsOf: root.appendingPathComponent(path), encoding: .utf8)
   }
 
-  private static func captures(_ pattern: String, in text: String) throws -> [String]? {
-    guard let match = try Regex(pattern).firstMatch(in: text) else { return nil }
-    return match.output.dropFirst().compactMap { $0.substring.map(String.init) }
+  private static func capture(_ pattern: String, in text: String) throws -> String? {
+    try Regex(pattern).firstMatch(in: text)?.output[1].substring.map(String.init)
   }
 
   @Test("the build page, the licence tag, the notice and the credit form one chain")
@@ -21,33 +20,26 @@ struct WhisperVersionTests {
     let package = try Self.read("Package.swift")
     let notice = try Self.read("App/Vocula/Licenses/THIRD-PARTY.txt")
 
-    let pages = try Self.captures(
-      #"https://github\.com/ggml-org/whisper\.cpp/releases/download/b(\d+)/whisper-b(\d+)-xcframework\.zip"#,
-      in: package)
-    let foundBuild = pages.flatMap { $0.count == 2 && $0[0] == $0[1] ? $0[0] : nil }
-    let packageChecksum = try Self.captures(
-      #"whisper-b\d+-xcframework\.zip"\s*,\s*checksum:\s*"([0-9a-f]{64})""#, in: package)?.first
-    let noticeChecksum = try Self.captures(
-      #"whisper-b\d+-xcframework\.zip\s*\n\s*SHA-256\s+([0-9a-f]{64})"#, in: notice)?.first
-    let foundTag = try Self.captures(
-      #"ggml-org/whisper\.cpp/blob/v([0-9][0-9.]*)/LICENSE"#, in: notice)?.first
-    let creditVersion = try Self.captures(
-      #"^whisper\.cpp v([0-9][0-9.]*) "#, in: ModelFamily.whisper.engineCredit)?.first
-
     let build = try #require(
-      foundBuild,
+      try Self.capture(#"releases/download/b(\d+)/whisper-b\1-xcframework\.zip"#, in: package),
       "Package.swift links no whisper.cpp build page (b<N>) — the marker moved or the URL predates 1.9.3"
     )
+    let checksum = try #require(
+      try Self.capture(
+        #"whisper-b\d+-xcframework\.zip"\s*,\s*checksum:\s*"([0-9a-f]{64})""#, in: package),
+      "Package.swift names no checksum after the whisper.cpp artefact")
+    let tag = try #require(
+      try Self.capture(#"ggml-org/whisper\.cpp/blob/v([0-9][0-9.]*)/LICENSE"#, in: notice),
+      "THIRD-PARTY.txt names no whisper.cpp licence tag")
+
     let artefact =
       "https://github.com/ggml-org/whisper.cpp/releases/download/b\(build)/whisper-b\(build)-xcframework.zip"
     #expect(
-      notice.contains(artefact), "THIRD-PARTY.txt does not name the artefact Package.swift links")
-    #expect(packageChecksum?.count == 64 && noticeChecksum == packageChecksum)
-    let tag = try #require(foundTag, "THIRD-PARTY.txt names no whisper.cpp licence tag")
+      notice.contains("\(artefact)\n  SHA-256  \(checksum)"),
+      "THIRD-PARTY.txt does not name the artefact and digest Package.swift links")
     #expect(
       notice.contains("b\(build), which is the same commit as tag v\(tag)"),
       "the notice does not tie b\(build) to v\(tag)")
-    #expect(
-      creditVersion == tag, "licence tag v\(tag) against credit v\(creditVersion ?? "∅")")
+    #expect(ModelFamily.whisper.engineCredit.hasPrefix("whisper.cpp v\(tag) "))
   }
 }
