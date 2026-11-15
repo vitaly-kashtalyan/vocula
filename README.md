@@ -118,6 +118,8 @@ length, along with what none of this protects you from.
 
 Download the signed, notarised build from
 [vocula.app](https://vocula.app), or [build it yourself](#build-it-yourself).
+Drag Vocula into Applications and open it from there: a copy opened from the
+disk image cannot update itself.
 
 ## Buying a build
 
@@ -215,10 +217,12 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1125 tests: 854 from `swift test`, 258 in the hosted app bundle, 13 driving the
+1144 tests: 859 from `swift test`, 267 in the hosted app bundle, 18 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
-suite against a translated interface, which is the run that catches layout.
+suite against a translated interface, which is the run that catches layout. Two of
+the 18 check English copy and skip whenever a language is set, so a run without
+one is the only run that executes them.
 
 `swift test` never compiles `App/`, so a green run says nothing about whether the
 app builds.
@@ -282,6 +286,13 @@ Stated here rather than discovered later.
   25 — starts on Parakeet, and that language is absent from Languages until
   Whisper is picked on Settings → Models; it then downloads with "Download what is
   missing", or by itself at the next launch.
+- **A copy run from its disk image, or from the folder it was downloaded to,
+  never updates.** The updater refuses to replace an app on a read-only volume —
+  the mounted disk image, or the read-only copy macOS runs a downloaded app from
+  until the Finder has moved it — and such a copy does not even ask whether a
+  newer version exists. Settings → Permissions says so at the top. Quit Vocula,
+  drag it by itself into Applications in the Finder (if it is already there, drag
+  it out and back in), and open it from there.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.

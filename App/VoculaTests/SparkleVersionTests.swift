@@ -17,20 +17,27 @@ struct SparkleVersionTests {
     }
   }
 
-  @Test("the workflow, the notice and the licence link agree")
+  @Test("the workflow, the notice, the licence link and the placement rule agree")
   func spellingsAgree() throws {
-    let workflow = Self.versions(
-      in: try Self.read(".github/workflows/release.yml"),
-      after: "sparkle-project/Sparkle/releases/download/")
-    let notice = Self.versions(
-      in: try Self.read("App/Vocula/UI/ModelPickerView.swift"), after: "Sparkle ")
-    let licence = Self.versions(
-      in: try Self.read("App/Vocula/Licenses/THIRD-PARTY.txt"),
-      after: "sparkle-project/Sparkle/blob/")
+    let sources = [
+      "the workflow": Self.versions(
+        in: try Self.read(".github/workflows/release.yml"),
+        after: "sparkle-project/Sparkle/releases/download/"),
+      "the notice": Self.versions(
+        in: try Self.read("App/Vocula/UI/ModelPickerView.swift"), after: "Sparkle "),
+      "the licence link": Self.versions(
+        in: try Self.read("App/Vocula/Licenses/THIRD-PARTY.txt"),
+        after: "sparkle-project/Sparkle/blob/"),
+      "the placement rule": Self.versions(
+        in: try Self.read("Tests/VoculaKitTests/InstallPlacementTests.swift"), after: "Sparkle "),
+    ]
 
-    let found = workflow + notice + licence
-    #expect(found.count >= 3, "scanned nothing — the markers moved, not the versions")
-    #expect(Set(found).count == 1, "Sparkle is named as \(Set(found).sorted())")
+    for (source, versions) in sources {
+      #expect(
+        !versions.isEmpty, "\(source) names no Sparkle version — the marker moved, not the version")
+    }
+    let found = Set(sources.values.joined())
+    #expect(found.count == 1, "Sparkle is named as \(found.sorted())")
   }
 
   @Test("the package is pinned by a revision, which a tag cannot satisfy")

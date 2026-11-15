@@ -1,0 +1,76 @@
+import Foundation
+import Testing
+import VoculaKit
+
+@testable import Vocula
+
+@Suite("The read-only answer is statfs's, read once at launch")
+struct InstallPlacementWiringTests {
+  @Test("the sealed system volume reads read-only")
+  func theSealedSystemVolumeIsReadOnly() {
+    #expect(UpdaterController.volumeIsReadOnly(atPath: "/System/Applications"))
+  }
+
+  @Test("the Applications folder reads writable, though it is a firmlink out of the sealed volume")
+  func theApplicationsFolderIsWritable() {
+    #expect(!UpdaterController.volumeIsReadOnly(atPath: "/Applications"))
+  }
+
+  @Test("a path that does not exist is not read-only, as Sparkle answers")
+  func aMissingPathIsNotReadOnly() {
+    #expect(!UpdaterController.volumeIsReadOnly(atPath: "/nonexistent-\(UUID().uuidString)"))
+  }
+
+  @Test("a second copy may pretend either placement, so a UI test can draw it")
+  func aSecondCopyMayPretend() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "translocated"], isSecondCopy: true)
+        == .translocated)
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "readOnlyVolume"], isSecondCopy: true)
+        == .readOnlyVolume)
+  }
+
+  @Test("the installed copy ignores the argument, so a stale one never fakes the warning")
+  func theInstalledCopyNeverPretends() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "translocated"], isSecondCopy: false)
+        == nil)
+  }
+
+  @Test("a missing or unknown word pretends nothing")
+  func aMissingOrUnknownWordPretendsNothing() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement"], isSecondCopy: true) == nil)
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "diskImage"], isSecondCopy: true) == nil)
+  }
+
+  @Test("the test host, a DerivedData copy, has no placement problem")
+  @MainActor
+  func theTestHostHasNoProblem() {
+    #expect(UpdaterController().placementProblem == nil)
+  }
+}
+
+@Suite("Each case draws its own pair of keys")
+struct PlacementCopyTests {
+  @Test("a disk image draws the disk-image title and footer")
+  func aDiskImageDrawsTheDiskImageKeys() {
+    let copy = OnboardingScreenCopy.placement(.readOnlyVolume)
+    #expect(copy.title.key == "onboarding.placement.diskImage.title")
+    #expect(copy.footer.key == "onboarding.placement.diskImage.footer")
+  }
+
+  @Test("a translocated copy draws its own title and footer")
+  func aTranslocatedCopyDrawsItsOwnKeys() {
+    let copy = OnboardingScreenCopy.placement(.translocated)
+    #expect(copy.title.key == "onboarding.placement.translocated.title")
+    #expect(copy.footer.key == "onboarding.placement.translocated.footer")
+  }
+}
