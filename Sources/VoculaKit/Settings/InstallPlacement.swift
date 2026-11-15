@@ -1,6 +1,6 @@
 import Foundation
 
-public enum InstallPlacement: Equatable, Sendable {
+public enum InstallPlacement: String, Equatable, Sendable {
   case translocated
   case readOnlyVolume
 

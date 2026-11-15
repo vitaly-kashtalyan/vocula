@@ -26,6 +26,36 @@ struct InstallPlacementWiringTests {
     #expect(!UpdaterController.volumeIsReadOnly(atPath: "/nonexistent-\(UUID().uuidString)"))
   }
 
+  @Test("a second copy may pretend either placement, so a UI test can draw it")
+  func aSecondCopyMayPretend() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "translocated"], isSecondCopy: true)
+        == .translocated)
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "readOnlyVolume"], isSecondCopy: true)
+        == .readOnlyVolume)
+  }
+
+  @Test("the installed copy ignores the argument, so a stale one never fakes the warning")
+  func theInstalledCopyNeverPretends() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "translocated"], isSecondCopy: false)
+        == nil)
+  }
+
+  @Test("a missing or unknown word pretends nothing")
+  func aMissingOrUnknownWordPretendsNothing() {
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement"], isSecondCopy: true) == nil)
+    #expect(
+      UpdaterController.pretendedPlacement(
+        arguments: ["Vocula", "-VoculaPretendPlacement", "diskImage"], isSecondCopy: true) == nil)
+  }
+
   @Test("the test host, a DerivedData copy, has no placement problem")
   @MainActor
   func theTestHostHasNoProblem() {

@@ -43,6 +43,13 @@ struct InstallPlacementTests {
         volumeIsReadOnly: false) == nil)
   }
 
+  @Test("each case is named by the word a launch argument can carry")
+  func eachCaseHasALaunchArgumentWord() {
+    #expect(InstallPlacement(rawValue: "translocated") == .translocated)
+    #expect(InstallPlacement(rawValue: "readOnlyVolume") == .readOnlyVolume)
+    #expect(InstallPlacement(rawValue: "diskImage") == nil)
+  }
+
   @Test("the translocation marker is matched case-sensitively, as Sparkle matches it")
   func theMarkerIsCaseSensitive() {
     #expect(

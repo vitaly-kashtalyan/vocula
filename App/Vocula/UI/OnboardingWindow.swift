@@ -111,12 +111,14 @@ struct PermissionsSettingsSection: View {
       Section {
         Label {
           Text(OnboardingScreenCopy.placementTitle(placement))
+            .accessibilityIdentifier("placement.\(placement.rawValue)")
         } icon: {
           Image(systemName: "exclamationmark.circle")
             .foregroundStyle(Theme.warning)
         }
       } footer: {
         Text(OnboardingScreenCopy.placementFooter(placement))
+          .accessibilityIdentifier("placement.footer")
       }
     }
     if let failure = model.openFailure {

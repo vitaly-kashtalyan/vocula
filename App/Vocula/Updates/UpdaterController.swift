@@ -13,9 +13,22 @@ final class UpdaterController: NSObject, ObservableObject {
 
   var diagnose: ((String, String) -> Void)?
 
-  let placementProblem: InstallPlacement? = InstallPlacement.problem(
-    bundlePath: Bundle.main.bundlePath,
-    volumeIsReadOnly: UpdaterController.volumeIsReadOnly(atPath: Bundle.main.bundlePath))
+  let placementProblem: InstallPlacement? =
+    UpdaterController.pretendedPlacement(
+      arguments: ProcessInfo.processInfo.arguments, isSecondCopy: VoculaAppDelegate.isSecondCopy)
+    ?? InstallPlacement.problem(
+      bundlePath: Bundle.main.bundlePath,
+      volumeIsReadOnly: UpdaterController.volumeIsReadOnly(atPath: Bundle.main.bundlePath))
+
+  nonisolated static func pretendedPlacement(arguments: [String], isSecondCopy: Bool)
+    -> InstallPlacement?
+  {
+    guard isSecondCopy, let flag = arguments.firstIndex(of: "-VoculaPretendPlacement") else {
+      return nil
+    }
+    let value = arguments.index(after: flag)
+    return value < arguments.endIndex ? InstallPlacement(rawValue: arguments[value]) : nil
+  }
 
   nonisolated static func volumeIsReadOnly(atPath path: String) -> Bool {
     var info = statfs()
