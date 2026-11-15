@@ -14342,7 +14342,7 @@
       }
     },
     "onboarding.placement.diskImage.title" : {
-      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs straight from its disk image. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term for a .dmg in this language.",
+      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs straight from its disk image; it may wrap onto a second line. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term for a .dmg in this language.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -14402,7 +14402,7 @@
       }
     },
     "onboarding.placement.translocated.footer" : {
-      "comment" : "Footer under the warning at the top of the Permissions screen that Vocula runs from the folder it was downloaded to; wraps over several lines. Vocula is the app's name and is never translated. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb. \"by itself\" and \"drag it out and back in\" are load-bearing: moving it together with other items, or into the folder it already sits in, leaves it running from the download location.",
+      "comment" : "Footer under the warning at the top of the Permissions screen that Vocula runs from the folder it was downloaded to; wraps over several lines. Vocula is the app's name and is never translated. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb. Keep the meaning of \"by itself\" and \"drag it out and back in\": moved together with other items, or into the folder it already sits in, the app keeps running from the download location and the warning stays.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -14462,7 +14462,7 @@
       }
     },
     "onboarding.placement.translocated.title" : {
-      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs from the folder a downloaded zip was unpacked into. Vocula is the app's name and is never translated.",
+      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs from the folder the app itself was downloaded to, unpacked from a zip; it may wrap onto a second line. Vocula is the app's name and is never translated.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {

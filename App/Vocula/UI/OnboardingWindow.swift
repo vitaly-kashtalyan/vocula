@@ -110,14 +110,14 @@ struct PermissionsSettingsSection: View {
     if let placement = updater.placementProblem {
       Section {
         Label {
-          Text(OnboardingScreenCopy.placementTitle(placement))
+          Text(OnboardingScreenCopy.placement(placement).title)
             .accessibilityIdentifier("placement.\(placement.rawValue)")
         } icon: {
           Image(systemName: "exclamationmark.circle")
             .foregroundStyle(Theme.warning)
         }
       } footer: {
-        Text(OnboardingScreenCopy.placementFooter(placement))
+        Text(OnboardingScreenCopy.placement(placement).footer)
           .accessibilityIdentifier("placement.footer")
       }
     }

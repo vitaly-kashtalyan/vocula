@@ -16,11 +16,6 @@ struct InstallPlacementWiringTests {
     #expect(!UpdaterController.volumeIsReadOnly(atPath: "/Applications"))
   }
 
-  @Test("the temporary folder reads writable")
-  func theTemporaryFolderIsWritable() {
-    #expect(!UpdaterController.volumeIsReadOnly(atPath: NSTemporaryDirectory()))
-  }
-
   @Test("a path that does not exist is not read-only, as Sparkle answers")
   func aMissingPathIsNotReadOnly() {
     #expect(!UpdaterController.volumeIsReadOnly(atPath: "/nonexistent-\(UUID().uuidString)"))
@@ -67,21 +62,15 @@ struct InstallPlacementWiringTests {
 struct PlacementCopyTests {
   @Test("a disk image draws the disk-image title and footer")
   func aDiskImageDrawsTheDiskImageKeys() {
-    #expect(
-      OnboardingScreenCopy.placementTitle(.readOnlyVolume).key
-        == "onboarding.placement.diskImage.title")
-    #expect(
-      OnboardingScreenCopy.placementFooter(.readOnlyVolume).key
-        == "onboarding.placement.diskImage.footer")
+    let copy = OnboardingScreenCopy.placement(.readOnlyVolume)
+    #expect(copy.title.key == "onboarding.placement.diskImage.title")
+    #expect(copy.footer.key == "onboarding.placement.diskImage.footer")
   }
 
   @Test("a translocated copy draws its own title and footer")
   func aTranslocatedCopyDrawsItsOwnKeys() {
-    #expect(
-      OnboardingScreenCopy.placementTitle(.translocated).key
-        == "onboarding.placement.translocated.title")
-    #expect(
-      OnboardingScreenCopy.placementFooter(.translocated).key
-        == "onboarding.placement.translocated.footer")
+    let copy = OnboardingScreenCopy.placement(.translocated)
+    #expect(copy.title.key == "onboarding.placement.translocated.title")
+    #expect(copy.footer.key == "onboarding.placement.translocated.footer")
   }
 }

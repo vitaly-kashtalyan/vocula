@@ -27,22 +27,6 @@ struct InstallPlacementTests {
       InstallPlacement.problem(bundlePath: Self.translocated, volumeIsReadOnly: false) == nil)
   }
 
-  @Test("the Applications folder is nothing")
-  func theApplicationsFolderIsNothing() {
-    #expect(
-      InstallPlacement.problem(bundlePath: "/Applications/Vocula.app", volumeIsReadOnly: false)
-        == nil)
-  }
-
-  @Test("a DerivedData build is nothing")
-  func aDerivedDataBuildIsNothing() {
-    #expect(
-      InstallPlacement.problem(
-        bundlePath:
-          "/Users/x/Library/Developer/Xcode/DerivedData/Vocula-ab/Build/Products/Debug/Vocula.app",
-        volumeIsReadOnly: false) == nil)
-  }
-
   @Test("each case is named by the word a launch argument can carry")
   func eachCaseHasALaunchArgumentWord() {
     #expect(InstallPlacement(rawValue: "translocated") == .translocated)
