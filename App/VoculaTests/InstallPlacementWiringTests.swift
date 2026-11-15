@@ -32,3 +32,26 @@ struct InstallPlacementWiringTests {
     #expect(UpdaterController().placementProblem == nil)
   }
 }
+
+@Suite("Each case draws its own pair of keys")
+struct PlacementCopyTests {
+  @Test("a disk image draws the disk-image title and footer")
+  func aDiskImageDrawsTheDiskImageKeys() {
+    #expect(
+      OnboardingScreenCopy.placementTitle(.readOnlyVolume).key
+        == "onboarding.placement.diskImage.title")
+    #expect(
+      OnboardingScreenCopy.placementFooter(.readOnlyVolume).key
+        == "onboarding.placement.diskImage.footer")
+  }
+
+  @Test("a translocated copy draws its own title and footer")
+  func aTranslocatedCopyDrawsItsOwnKeys() {
+    #expect(
+      OnboardingScreenCopy.placementTitle(.translocated).key
+        == "onboarding.placement.translocated.title")
+    #expect(
+      OnboardingScreenCopy.placementFooter(.translocated).key
+        == "onboarding.placement.translocated.footer")
+  }
+}

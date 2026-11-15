@@ -1,4 +1,5 @@
 import Foundation
+import VoculaKit
 
 enum CommonCopy {
   static let cancel = LocalizedStringResource(
@@ -311,6 +312,43 @@ enum OnboardingScreenCopy {
   static let showMenuBarIcon = LocalizedStringResource(
     "onboarding.menuBarHidden.show", defaultValue: "Show",
     comment: "Button that puts the menu bar icon back. One word — it sits in a narrow row.")
+  static func placementTitle(_ placement: InstallPlacement) -> LocalizedStringResource {
+    switch placement {
+    case .readOnlyVolume: diskImageTitle
+    case .translocated: translocatedTitle
+    }
+  }
+  static func placementFooter(_ placement: InstallPlacement) -> LocalizedStringResource {
+    switch placement {
+    case .readOnlyVolume: diskImageFooter
+    case .translocated: translocatedFooter
+    }
+  }
+  private static let diskImageTitle = LocalizedStringResource(
+    "onboarding.placement.diskImage.title", defaultValue: "Vocula is running from the disk image",
+    comment:
+      "Title of a warning at the top of the Permissions screen, shown only when Vocula runs straight from its disk image. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term for a .dmg in this language."
+  )
+  private static let diskImageFooter = LocalizedStringResource(
+    "onboarding.placement.diskImage.footer",
+    defaultValue:
+      "It cannot be updated from here, and it is gone once the disk image is ejected or the Mac restarts. Quit Vocula, drag it into Applications, and open it from there.",
+    comment:
+      "Footer under the warning at the top of the Permissions screen that Vocula runs straight from its disk image; wraps over several lines. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb."
+  )
+  private static let translocatedTitle = LocalizedStringResource(
+    "onboarding.placement.translocated.title",
+    defaultValue: "Vocula is running from the folder it was downloaded to",
+    comment:
+      "Title of a warning at the top of the Permissions screen, shown only when Vocula runs from the folder a downloaded zip was unpacked into. Vocula is the app's name and is never translated."
+  )
+  private static let translocatedFooter = LocalizedStringResource(
+    "onboarding.placement.translocated.footer",
+    defaultValue:
+      "It cannot be updated from here. Quit Vocula, then in the Finder drag it by itself into Applications — if it is already there, drag it out and back in — and open it from there.",
+    comment:
+      "Footer under the warning at the top of the Permissions screen that Vocula runs from the folder it was downloaded to; wraps over several lines. Vocula is the app's name and is never translated. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb. \"by itself\" and \"drag it out and back in\" are load-bearing: moving it together with other items, or into the folder it already sits in, leaves it running from the download location."
+  )
   static let typingCounts = LocalizedStringResource(
     "onboarding.typing.counts",
     defaultValue: "Counts every dictation that reached the caret, as far back as the history goes.",

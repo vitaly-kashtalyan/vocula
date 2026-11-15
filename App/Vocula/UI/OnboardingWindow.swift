@@ -107,6 +107,18 @@ struct PermissionsSettingsSection: View {
   }
 
   var body: some View {
+    if let placement = updater.placementProblem {
+      Section {
+        Label {
+          Text(OnboardingScreenCopy.placementTitle(placement))
+        } icon: {
+          Image(systemName: "exclamationmark.circle")
+            .foregroundStyle(Theme.warning)
+        }
+      } footer: {
+        Text(OnboardingScreenCopy.placementFooter(placement))
+      }
+    }
     if let failure = model.openFailure {
       Section { Text(verbatim: failure).foregroundStyle(.red) }
     }
