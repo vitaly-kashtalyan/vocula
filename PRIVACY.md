@@ -136,7 +136,9 @@ model only when you ask for it.** Each file is verified against a checksum built
 into the app, and a file that does not match it is deleted rather than used.
 
 **A version check, once a day**, while the switch on Settings → Permissions is
-on — it ships on, and you can turn it off there. It asks for one small signed
+on — it ships on, and you can turn it off there. A copy opened straight from its
+disk image, or from the folder it was downloaded to, makes no check at all: the
+updater refuses before asking. It asks for one small signed
 XML file and nothing else. What GitHub learns from it is what any web server
 learns from any request: your IP address, the app's name and version in the
 User-Agent, and the shape of the TLS connection. Nothing about you, your
