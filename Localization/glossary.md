@@ -42,6 +42,8 @@ These are read off a real Mac in the target language, never invented.
 | `System Settings → Sound → Input` | `refusal.silentInput.volumeDown` |
 | `Press 🌐 key to → Do Nothing` | The globe row's title, verbatim from the Keyboard pane |
 | `Finder` | Reveal in Finder, and the diagnostics menu item |
+| `Applications` | The Finder's folder, in the placement warning's footers (the `/Applications` PATH above stays untranslated) |
+| `disk image` | The Finder's term for a .dmg, in the placement warning |
 | `Dock` | The appearance note about the indicator strip |
 | `Spotlight` | The ⌘Space binding warning |
 | `Terminal` | The tccutil instruction |

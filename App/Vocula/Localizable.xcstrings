@@ -14281,6 +14281,246 @@
         }
       }
     },
+    "onboarding.placement.diskImage.footer" : {
+      "comment" : "Footer under the warning at the top of the Permissions screen that Vocula runs straight from its disk image; wraps over several lines. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Von hier aus lässt es sich nicht aktualisieren, und es ist verschwunden, sobald das Disk-Image ausgeworfen oder der Mac neu gestartet wird. Beenden Sie Vocula, ziehen Sie es in „Programme“ und öffnen Sie es dort."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "It cannot be updated from here, and it is gone once the disk image is ejected or the Mac restarts. Quit Vocula, drag it into Applications, and open it from there."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desde aquí no se puede actualizar, y desaparece en cuanto se expulsa la imagen de disco o se reinicia el Mac. Sal de Vocula, arrástrala a Aplicaciones y ábrela desde allí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elle ne peut pas être mise à jour depuis cet emplacement, et elle disparaît dès que l’image disque est éjectée ou que le Mac redémarre. Quittez Vocula, faites-la glisser dans Applications, puis ouvrez-la depuis cet emplacement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Da qui non può essere aggiornata e sparisce non appena l’immagine disco viene espulsa o il Mac si riavvia. Esci da Vocula, trascinala in Applicazioni e aprila da lì."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stąd nie da się jej uaktualnić, a zniknie po wysunięciu obrazu dysku lub ponownym uruchomieniu Maca. Zakończ Vocula, przeciągnij ją do folderu Aplikacje i otwórz ją stamtąd."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Daqui ele não pode ser atualizado e some assim que a imagem de disco é ejetada ou o Mac é reiniciado. Encerre o Vocula, arraste-o para Aplicativos e abra-o de lá."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Отсюда её нельзя обновить, а после извлечения образа или перезагрузки Mac её не станет. Завершите Vocula, перетащите её в «Программы» и откройте оттуда."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Звідси її не можна оновити, а після вилучення образу або перезапуску Mac її не стане. Завершіть Vocula, перетягніть її до «Програм» і відкрийте звідти."
+          }
+        }
+      }
+    },
+    "onboarding.placement.diskImage.title" : {
+      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs straight from its disk image. Vocula is the app's name and is never translated. \"disk image\" is the Finder's own term for a .dmg in this language.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula läuft direkt vom Disk-Image"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula is running from the disk image"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula se está ejecutando desde la imagen de disco"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula est lancée directement depuis l’image disque"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula è in esecuzione direttamente dall’immagine disco"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula działa bezpośrednio z obrazu dysku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula está sendo executado diretamente da imagem de disco"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula запущена прямо из образа диска"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula запущено просто з образу диска"
+          }
+        }
+      }
+    },
+    "onboarding.placement.translocated.footer" : {
+      "comment" : "Footer under the warning at the top of the Permissions screen that Vocula runs from the folder it was downloaded to; wraps over several lines. Vocula is the app's name and is never translated. Applications is the folder's name as the Finder shows it in this language (de Programme, ru Программы). \"Quit\" is the app menu's own verb. \"by itself\" and \"drag it out and back in\" are load-bearing: moving it together with other items, or into the folder it already sits in, leaves it running from the download location.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Von hier aus lässt es sich nicht aktualisieren. Beenden Sie Vocula, ziehen Sie es dann im Finder einzeln in „Programme“ – liegt es dort schon, ziehen Sie es heraus und wieder hinein – und öffnen Sie es dort."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "It cannot be updated from here. Quit Vocula, then in the Finder drag it by itself into Applications — if it is already there, drag it out and back in — and open it from there."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Desde aquí no se puede actualizar. Sal de Vocula y, en el Finder, arrástrala sola a Aplicaciones (si ya está allí, sácala y vuelve a meterla) y ábrela desde allí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Elle ne peut pas être mise à jour depuis cet emplacement. Quittez Vocula, puis dans le Finder faites-la glisser seule dans Applications (si elle s’y trouve déjà, sortez-la puis remettez-la) et ouvrez-la depuis cet emplacement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Da qui non può essere aggiornata. Esci da Vocula, poi nel Finder trascinala da sola in Applicazioni (se è già lì, trascinala fuori e poi di nuovo dentro) e aprila da lì."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stąd nie da się jej uaktualnić. Zakończ Vocula, a potem w Finderze przeciągnij ją osobno do folderu Aplikacje (jeśli już tam jest, wyciągnij ją i włóż z powrotem) i otwórz ją stamtąd."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Daqui ele não pode ser atualizado. Encerre o Vocula e, no Finder, arraste-o sozinho para Aplicativos (se ele já estiver lá, tire-o e coloque-o de volta) e abra-o de lá."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Отсюда её нельзя обновить. Завершите Vocula, затем в Finder перетащите её в «Программы» отдельно от других файлов — если она уже там, вытащите её оттуда и верните обратно — и откройте оттуда."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Звідси її не можна оновити. Завершіть Vocula, потім у Finder перетягніть її до «Програм» окремо від інших файлів — якщо вона вже там, витягніть її і поверніть назад — і відкрийте звідти."
+          }
+        }
+      }
+    },
+    "onboarding.placement.translocated.title" : {
+      "comment" : "Title of a warning at the top of the Permissions screen, shown only when Vocula runs from the folder a downloaded zip was unpacked into. Vocula is the app's name and is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula läuft aus dem Ordner, in den es geladen wurde"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula is running from the folder it was downloaded to"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula se está ejecutando desde la carpeta en la que se descargó"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula est lancée depuis le dossier où elle a été téléchargée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula è in esecuzione dalla cartella in cui è stata scaricata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula działa z folderu, do którego została pobrana"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula está sendo executado da pasta para onde foi baixado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula запущена из папки, куда её скачали"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula запущено з папки, куди її завантажили"
+          }
+        }
+      }
+    },
     "onboarding.privacyFooter" : {
       "comment" : "The promise the app is bought for. It states encryption, that the key does not travel, and the retention window; all three must survive translation. The year must agree with HistoryRetention.days.",
       "extractionState" : "extracted_with_value",
