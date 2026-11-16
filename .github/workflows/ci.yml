@@ -6,6 +6,8 @@ on:
   pull_request:
   workflow_dispatch:
   workflow_call:
+  schedule:
+    - cron: '23 5 * * 1'
 
 # A called workflow inherits the caller's token scope, and release.yml calls
 # this one under `contents: write`; without this the job holds a token that can
@@ -28,7 +30,19 @@ jobs:
           ./scripts/check-purity.sh
           ./scripts/check-localization.sh
 
+      - name: Fetch the models-v1 release
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/releases"
+          gh api repos/vitaly-kashtalyan/vocula/releases/tags/models-v1 > "$RUNNER_TEMP/releases/models-v1.json"
+          gh api repos/vitaly-kashtalyan/vocula/releases/latest > "$RUNNER_TEMP/releases/latest.json"
+
       - name: swift test
+        env:
+          VOCULA_RELEASES: ${{ runner.temp }}/releases
         run: swift test
 
       # MLX compiles its Metal kernels from source, and Xcode 26 ships that
