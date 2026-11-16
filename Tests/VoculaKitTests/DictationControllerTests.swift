@@ -85,7 +85,7 @@ private final class FakeEngine: Transcribing, @unchecked Sendable {
   var text = "hello"
   var language = "en"
   var error: TranscriptionError?
-  var delay: Duration = .zero
+  var firstPassWaitsFor: AsyncStream<Void>?
   var calls = 0
   var lastSampleCount = 0
   var firstTokenProbability: Float?
@@ -97,7 +97,7 @@ private final class FakeEngine: Transcribing, @unchecked Sendable {
   ) async throws -> Transcription {
     calls += 1
     lastSampleCount = samples.count
-    if delay != .zero { try? await Task.sleep(for: delay) }
+    if calls == 1, let firstPassWaitsFor { for await _ in firstPassWaitsFor {} }
     if let error { throw error }
     return Transcription(
       text: text, language: language,
@@ -639,8 +639,9 @@ struct DictationControllerTests {
   func overflowRefuses() async {
     var timings = Timings.default
     timings.maxPending = 1
+    let (held, release) = AsyncStream<Void>.makeStream()
     let engine = FakeEngine()
-    engine.delay = .milliseconds(400)
+    engine.firstPassWaitsFor = held
     let audio = FakeAudio()
     let controller = makeController(audio: audio, engine: engine, timings: timings)
 
@@ -648,6 +649,7 @@ struct DictationControllerTests {
     await controller.handle(.stop(session: 1, reason: .releasedHold))
     await controller.handle(.start(session: 2))
     #expect(await audio.started == 1)
+    release.finish()
     await controller.drain()
   }
 
@@ -777,12 +779,15 @@ struct DictationControllerTests {
     #expect(clipboard.writes == ["hello"])
   }
 
-  @Test("a session that waited past the queue deadline fails with queueTimeout")
+  @Test(
+    "a session that waited past the queue deadline fails with queueTimeout",
+    .timeLimit(.minutes(1)))
   func queueTimeoutIsRecorded() async {
     var timings = Timings.default
     timings.queueWait = .milliseconds(50)
+    let (held, release) = AsyncStream<Void>.makeStream()
     let engine = FakeEngine()
-    engine.delay = .milliseconds(300)
+    engine.firstPassWaitsFor = held
     let history = FakeHistory()
     let controller = makeController(engine: engine, history: history, timings: timings)
 
@@ -790,6 +795,8 @@ struct DictationControllerTests {
     await controller.handle(.stop(session: 1, reason: .releasedHold))
     await controller.handle(.start(session: 2))
     await controller.handle(.stop(session: 2, reason: .releasedHold))
+    for await case .finished in controller.status { break }
+    release.finish()
     await controller.drain()
 
     let reasons = await history.states.compactMap(\.2)
