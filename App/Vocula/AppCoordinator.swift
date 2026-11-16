@@ -84,6 +84,8 @@ final class AppCoordinator: ObservableObject {
   private var signalPump: Task<Void, Never>?
   private var pipelineTasks: [Task<Void, Never>] = []
   private var isStarting = false
+  private var accessibilityWatch: AccessibilityWatch?
+  private var accessibilityPoll: Timer?
   @Published private(set) var bindingModel: BindingSettingsModel?
   private var refusalDismissTask: Task<Void, Never>?
   private var refusalDedup = RefusalDedup()
@@ -285,6 +287,34 @@ final class AppCoordinator: ObservableObject {
     watchRefinementSetting()
     perform(refinerLifecycle.handle(.pipelineStarted(isActive: refinementIsActive)))
     if installed { indicator.show(.idle) }
+    watchAccessibility()
+  }
+
+  private func watchAccessibility() {
+    guard !VoculaAppDelegate.isSecondCopy, accessibilityPoll == nil else { return }
+    accessibilityWatch = AccessibilityWatch(trusted: AXIsProcessTrusted())
+    let poll = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+      MainActor.assumeIsolated { self?.pollAccessibility() }
+    }
+    poll.tolerance = 0.5
+    RunLoop.main.add(poll, forMode: .common)
+    accessibilityPoll = poll
+  }
+
+  private func pollAccessibility() {
+    let trusted = AXIsProcessTrusted()
+    switch accessibilityWatch?.observe(trusted: trusted, monitorExists: monitor != nil) {
+    case .tearDown:
+      tearDownPipeline()
+      menu.iconState = .keyLost(MenuBarController.accessibilityRevokedWhileRunning)
+      log("permission.accessibility", "ok=false")
+    case .restart:
+      log("permission.accessibility", "ok=true")
+      tearDownPipeline()
+      Task { await start() }
+    case nil:
+      break
+    }
   }
 
   private func watchRefinementSetting() {
@@ -580,6 +610,7 @@ final class AppCoordinator: ObservableObject {
       log("tap.install", "ok=\(installed)")
       if !installed { menu.iconState = .error(MenuBarController.tapInstallFailed) }
     }
+    watchAccessibility()
   }
 
   private func makeOnTapLost() -> (Int) -> Void {
@@ -775,6 +806,8 @@ final class AppCoordinator: ObservableObject {
   }
 
   func shutdown() {
+    accessibilityPoll?.invalidate()
+    accessibilityPoll = nil
     tearDownPipeline()
     retentionTask?.cancel()
     retentionTask = nil
