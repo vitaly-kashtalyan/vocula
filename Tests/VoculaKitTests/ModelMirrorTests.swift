@@ -21,7 +21,7 @@ private let environment = ProcessInfo.processInfo.environment
   @Test("the check catches each kind of fault")
   func catchesEachKindOfFault() throws {
     #expect(pins.count == ModelManifest.current.count + retired.count)
-    try #require(ModelManifest.current.count >= 4 && !retired.isEmpty)
+    try #require(pins.count >= 5 && !retired.isEmpty)
     let directory = try temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
 
@@ -51,6 +51,11 @@ private let environment = ProcessInfo.processInfo.environment
     moved["browser_download_url"] =
       "https://github.com/someone-else/vocula/releases/download/models-v1/" + firstName
     assets.append(moved)
+    assets.append([
+      "browser_download_url":
+        "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/unpinned.bin",
+      "size": 1, "digest": "sha256:" + String(repeating: "1", count: 64),
+    ])
     try write(assets, latestTag: "models-v1")
 
     let leadingNames = try check(directory: directory).map {
@@ -59,7 +64,7 @@ private let environment = ProcessInfo.processInfo.environment
     #expect(
       leadingNames
         == [0, 2, 3, lastRetired].map { pins[$0].url.lastPathComponent }
-        + [firstName, "latest release"])
+        + [firstName, "unpinned.bin", "latest release"])
     withKnownIssue("planted in a temporary copy, not the live release") {
       try recordViolations(in: directory)
     }
