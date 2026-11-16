@@ -84,8 +84,7 @@ final class AppCoordinator: ObservableObject {
   private var signalPump: Task<Void, Never>?
   private var pipelineTasks: [Task<Void, Never>] = []
   private var isStarting = false
-  private var accessibilityWatch: AccessibilityWatch?
-  private var accessibilityPoll: Timer?
+  private var accessibilityPoll: (watch: AccessibilityWatch, timer: Timer)?
   @Published private(set) var bindingModel: BindingSettingsModel?
   private var refusalDismissTask: Task<Void, Never>?
   private var refusalDedup = RefusalDedup()
@@ -126,6 +125,7 @@ final class AppCoordinator: ObservableObject {
 
   func start() async {
     guard monitor == nil, !isStarting else { return }
+    watchAccessibility()
     isStarting = true
     defer { isStarting = false }
     await recorder.setDiagnose { [weak self] kind, detail in
@@ -287,23 +287,23 @@ final class AppCoordinator: ObservableObject {
     watchRefinementSetting()
     perform(refinerLifecycle.handle(.pipelineStarted(isActive: refinementIsActive)))
     if installed { indicator.show(.idle) }
-    watchAccessibility()
   }
 
   private func watchAccessibility() {
     guard !VoculaAppDelegate.isSecondCopy, accessibilityPoll == nil else { return }
-    accessibilityWatch = AccessibilityWatch(trusted: AXIsProcessTrusted())
-    let poll = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
+    let timer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
       MainActor.assumeIsolated { self?.pollAccessibility() }
     }
-    poll.tolerance = 0.5
-    RunLoop.main.add(poll, forMode: .common)
-    accessibilityPoll = poll
+    timer.tolerance = 0.5
+    RunLoop.main.add(timer, forMode: .common)
+    accessibilityPoll = (AccessibilityWatch(trusted: AXIsProcessTrusted()), timer)
   }
 
   private func pollAccessibility() {
-    let trusted = AXIsProcessTrusted()
-    switch accessibilityWatch?.observe(trusted: trusted, monitorExists: monitor != nil) {
+    let monitorExists = monitor != nil
+    switch accessibilityPoll?.watch.observe(
+      trusted: AXIsProcessTrusted(), monitorExists: monitorExists)
+    {
     case .tearDown:
       tearDownPipeline()
       menu.iconState = .keyLost(MenuBarController.accessibilityRevokedWhileRunning)
@@ -610,7 +610,6 @@ final class AppCoordinator: ObservableObject {
       log("tap.install", "ok=\(installed)")
       if !installed { menu.iconState = .error(MenuBarController.tapInstallFailed) }
     }
-    watchAccessibility()
   }
 
   private func makeOnTapLost() -> (Int) -> Void {
@@ -806,8 +805,7 @@ final class AppCoordinator: ObservableObject {
   }
 
   func shutdown() {
-    accessibilityPoll?.invalidate()
-    accessibilityPoll = nil
+    accessibilityPoll?.timer.invalidate()
     tearDownPipeline()
     retentionTask?.cancel()
     retentionTask = nil

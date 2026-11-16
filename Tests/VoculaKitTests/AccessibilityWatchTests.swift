@@ -4,17 +4,11 @@ import Testing
 
 @Suite("Accessibility watch")
 struct AccessibilityWatchTests {
-  @Test("a revocation with a monitor tears the pipeline down")
-  func aRevocationWithAMonitorTearsDown() {
+  @Test("a grant after a revocation restarts even while a rebuilt monitor exists")
+  func aGrantAfterARevocationRestartsWithAMonitor() {
     var watch = AccessibilityWatch(trusted: true)
     #expect(watch.observe(trusted: false, monitorExists: true) == .tearDown)
-  }
-
-  @Test("a grant after a revocation restarts the pipeline")
-  func aGrantAfterARevocationRestarts() {
-    var watch = AccessibilityWatch(trusted: true)
-    _ = watch.observe(trusted: false, monitorExists: true)
-    #expect(watch.observe(trusted: true, monitorExists: false) == .restart)
+    #expect(watch.observe(trusted: true, monitorExists: true) == .restart)
   }
 
   @Test("a monitor that reappears while revoked is torn down again")
