@@ -2,7 +2,24 @@ import Foundation
 import Testing
 import VoculaKit
 
+private let environment = ProcessInfo.processInfo.environment
+
 @Suite struct ModelMirrorTests {
+  @Test(
+    "the mirror matches every pin",
+    .enabled(
+      if: environment["VOCULA_RELEASES"] != nil || environment["GITHUB_ACTIONS"] != nil,
+      "VOCULA_RELEASES is not set; it names a directory holding models-v1.json and latest.json from the GitHub API"
+    ))
+  func mirrorMatchesEveryPin() throws {
+    let path = try #require(
+      environment["VOCULA_RELEASES"],
+      "on GitHub Actions the release documents must be fetched before swift test")
+    for message in try check(directory: URL(fileURLWithPath: path)) {
+      Issue.record(Comment(rawValue: message))
+    }
+  }
+
   @Test("the check catches each kind of fault")
   func catchesEachKindOfFault() throws {
     #expect(pins.count == ModelManifest.current.count + retired.count)
