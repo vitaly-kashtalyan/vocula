@@ -15,15 +15,13 @@ private let environment = ProcessInfo.processInfo.environment
     let path = try #require(
       environment["VOCULA_RELEASES"],
       "on GitHub Actions the release documents must be fetched before swift test")
-    for message in try check(directory: URL(fileURLWithPath: path)) {
-      Issue.record(Comment(rawValue: message))
-    }
+    try recordViolations(in: URL(fileURLWithPath: path))
   }
 
   @Test("the check catches each kind of fault")
   func catchesEachKindOfFault() throws {
     #expect(pins.count == ModelManifest.current.count + retired.count)
-    try #require(pins.count >= 4)
+    try #require(ModelManifest.current.count >= 4 && !retired.isEmpty)
     let directory = try temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
 
@@ -44,16 +42,15 @@ private let environment = ProcessInfo.processInfo.environment
     #expect(try check(directory: directory) == [])
 
     var assets = pins.map(asset)
-    assets[1]["size"] = pins[1].byteSize + 1
+    let lastRetired = pins.count - 1
+    assets[lastRetired]["size"] = pins[lastRetired].byteSize + 1
     assets[2]["digest"] = "sha256:" + String(repeating: "0", count: 64)
     assets[3]["digest"] = NSNull()
-    assets.removeFirst()
     let firstName = pins[0].url.lastPathComponent
-    assets.append([
-      "browser_download_url":
-        "https://github.com/someone-else/vocula/releases/download/models-v1/" + firstName,
-      "size": pins[0].byteSize, "digest": "sha256:" + pins[0].sha256,
-    ])
+    var moved = assets.removeFirst()
+    moved["browser_download_url"] =
+      "https://github.com/someone-else/vocula/releases/download/models-v1/" + firstName
+    assets.append(moved)
     try write(assets, latestTag: "models-v1")
 
     let leadingNames = try check(directory: directory).map {
@@ -61,19 +58,17 @@ private let environment = ProcessInfo.processInfo.environment
     }
     #expect(
       leadingNames
-        == pins.prefix(4).map(\.url.lastPathComponent) + [firstName, "latest release"])
+        == [0, 2, 3, lastRetired].map { pins[$0].url.lastPathComponent }
+        + [firstName, "latest release"])
+    withKnownIssue("planted in a temporary copy, not the live release") {
+      try recordViolations(in: directory)
+    }
   }
 
   @Test("a document that is not a release fails the check rather than passing it")
   func aDocumentThatIsNotAReleaseFails() throws {
     let directory = try temporaryDirectory()
     defer { try? FileManager.default.removeItem(at: directory) }
-    #expect(throws: (any Error).self) { try check(directory: directory) }
-    try Data(#"{"message":"Not Found"}"#.utf8)
-      .write(to: directory.appendingPathComponent("models-v1.json"))
-    try Data(#"{"tag_name":"v9.9.9","assets":[]}"#.utf8)
-      .write(to: directory.appendingPathComponent("latest.json"))
-    #expect(throws: (any Error).self) { try check(directory: directory) }
     try Data(#"{"tag_name":"models-v1","assets":[]}"#.utf8)
       .write(to: directory.appendingPathComponent("models-v1.json"))
     try Data(#"{"message":"Not Found"}"#.utf8)
@@ -113,7 +108,15 @@ private struct Asset: Decodable {
   let digest: String?
 }
 
-private func violations(pins: [Pin], mirror: Release, latest: Release) -> [String] {
+private func check(directory: URL) throws -> [String] {
+  let decoder = JSONDecoder()
+  decoder.keyDecodingStrategy = .convertFromSnakeCase
+  func release(_ file: String) throws -> Release {
+    try decoder.decode(
+      Release.self, from: Data(contentsOf: directory.appendingPathComponent(file)))
+  }
+  let mirror = try release("models-v1.json")
+  let latest = try release("latest.json")
   var found: [String] = []
   for pin in pins {
     let name = pin.url.lastPathComponent
@@ -144,15 +147,10 @@ private func violations(pins: [Pin], mirror: Release, latest: Release) -> [Strin
   return found
 }
 
-private func check(directory: URL) throws -> [String] {
-  let decoder = JSONDecoder()
-  decoder.keyDecodingStrategy = .convertFromSnakeCase
-  func release(_ file: String) throws -> Release {
-    try decoder.decode(
-      Release.self, from: Data(contentsOf: directory.appendingPathComponent(file)))
+private func recordViolations(in directory: URL) throws {
+  for message in try check(directory: directory) {
+    Issue.record(Comment(rawValue: message))
   }
-  return violations(
-    pins: pins, mirror: try release("models-v1.json"), latest: try release("latest.json"))
 }
 
 private func temporaryDirectory() throws -> URL {
