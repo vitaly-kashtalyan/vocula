@@ -9901,6 +9901,66 @@
         }
       }
     },
+    "menu.accessibilityRevokedWhileRunning" : {
+      "comment" : "Menu bar message shown when Accessibility was switched off while Vocula was running; the argument is a macOS System Settings pane path. Vocula is the app's name and is never translated. \"Quit\" is the app menu's own verb.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bedienungshilfen wurden ausgeschaltet, während Vocula lief. Schalten Sie sie unter %@ wieder ein. Tut die Aufnahmetaste dann immer noch nichts, beenden Sie Vocula und öffnen Sie es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Accessibility was turned off while Vocula was running. Turn it back on in %@. If the record key still does nothing, quit and reopen Vocula."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La Accesibilidad se desactivó mientras Vocula estaba abierta. Vuelve a activarla en %@. Si la tecla de grabación sigue sin hacer nada, sal de Vocula y vuelve a abrirla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’Accessibilité a été désactivée pendant que Vocula était ouverte. Réactivez-la dans %@. Si la touche d’enregistrement ne fait toujours rien, quittez Vocula et rouvrez-la."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'accessibilità è stata disattivata mentre Vocula era aperta. Riattivala in %@. Se il tasto di registrazione continua a non fare nulla, esci da Vocula e riaprila."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostępność została wyłączona, gdy Vocula była uruchomiona. Włącz ją ponownie w %@. Jeśli klawisz nagrywania nadal nic nie robi, zakończ Vocula i otwórz ją ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A Acessibilidade foi desativada enquanto o Vocula estava aberto. Ative-a de novo em %@. Se a tecla de gravação ainda não fizer nada, encerre o Vocula e abra-o de novo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Универсальный доступ выключили, пока Vocula работала. Включите его снова: %@. Если клавиша записи всё равно ничего не делает, завершите Vocula и откройте её заново."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Доступність вимкнули, поки Vocula працювала. Увімкніть її знову: %@. Якщо клавіша запису й далі нічого не робить, завершіть Vocula і відкрийте її знову."
+          }
+        }
+      }
+    },
     "menu.inputMonitoringRevoked" : {
       "comment" : "Menu bar message; the argument is a macOS System Settings pane path.",
       "extractionState" : "extracted_with_value",

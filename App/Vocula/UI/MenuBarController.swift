@@ -118,6 +118,16 @@ final class MenuBarController: ObservableObject {
       comment: "Menu bar message; the argument is a macOS System Settings pane path.")
   }
 
+  static var accessibilityRevokedWhileRunning: String {
+    String(
+      localized: "menu.accessibilityRevokedWhileRunning",
+      defaultValue:
+        "Accessibility was turned off while Vocula was running. Turn it back on in \(OnboardingModel.accessibilityPath). If the record key still does nothing, quit and reopen Vocula.",
+      comment:
+        "Menu bar message shown when Accessibility was switched off while Vocula was running; the argument is a macOS System Settings pane path. Vocula is the app's name and is never translated. \"Quit\" is the app menu's own verb."
+    )
+  }
+
   static var modelsNotDownloaded: String {
     String(
       localized: "menu.modelsNotDownloaded",
