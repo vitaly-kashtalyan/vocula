@@ -131,7 +131,7 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   private let resampler = MeetingResampler()
   private let lock = NSLock()
   private var stopped = false
-  private var buffer: TrackBuffer?
+  var buffer: TrackBuffer?
   private var input: Input?
   private var monitor: AudioDeviceMonitor?
   private var poll: Task<Void, Never>?
@@ -147,6 +147,14 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   deinit { close() }
 
   func start() async throws {
+    try await withCheckedThrowingContinuation { continuation in
+      DispatchQueue.global(qos: .userInitiated).async {
+        continuation.resume(with: Result { try self.openChosenDevice() })
+      }
+    }
+  }
+
+  private func openChosenDevice() throws {
     try refuseIfStopped()
     guard !VoculaAppDelegate.isSecondCopy else { throw MeetingFailure.secondCopy }
     guard let device = chooseDevice() else { throw MeetingFailure.notOpened }
@@ -186,8 +194,11 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   func finished() async {}
 
   func drain() -> TrackDrain {
-    guard let buffer = lock.withLock({ buffer }) else { return TrackDrain() }
-    return resampler.drain(buffer)
+    let (held, isLast) = lock.withLock { (buffer, stopped) }
+    guard let held else { return TrackDrain() }
+    let drained = resampler.drain(held)
+    if isLast { lock.withLock { buffer = nil } }
+    return drained
   }
 
   var callbacks: Int { lock.withLock { buffer }?.callbacks ?? 0 }

@@ -87,7 +87,7 @@ public actor MeetingRecorder {
   private var loop: Task<Void, Never>?
   private var finishing: Task<Void, Never>?
   private var flushing: Task<SilenceStop.Verdict, Never>?
-  private var headerWrite: Task<Void, Never>?
+  private var headerWrite: Task<String?, Never>?
   private var lastFlush: UInt64 = 0
   private var lastSystemSound: UInt64?
   private var sequences: [MeetingTrack: UInt32] = [:]
@@ -378,11 +378,7 @@ public actor MeetingRecorder {
     let systemFailure = await save(systemDrains, as: .system)
     if systemDrains.contains(where: { $0.peak > 0 }) { lastSystemSound = deps.now() }
     let backlog = (micDrains + systemDrains).contains { $0.droppedNanos > 0 }
-    let failure =
-      micFailure ?? systemFailure ?? (backlog ? Self.fields(step: "backlog", code: 0) : nil)
-    if liveness.saved(failed: failure != nil), let failure {
-      deps.log?.record("meeting.writeFailed", failure)
-    }
+    settle(micFailure ?? systemFailure ?? (backlog ? Self.fields(step: "backlog", code: 0) : nil))
     return silence.levels(
       micPeak: micDrains.map(\.peak).max() ?? 0, systemPeak: systemDrains.map(\.peak).max() ?? 0,
       at: deps.now())
@@ -410,14 +406,23 @@ public actor MeetingRecorder {
   private func save(_ header: MeetingHeader) async {
     guard let cipher else { return }
     let previous = headerWrite
-    let write = Task { [deps] in
-      await previous?.value
-      do { try await deps.store.update(header, cipher: cipher) } catch {
-        deps.log?.record("meeting.writeFailed", Self.failure(error, otherwise: "write"))
+    let write = Task { [deps] () -> String? in
+      _ = await previous?.value
+      do {
+        try await deps.store.update(header, cipher: cipher)
+        return nil
+      } catch {
+        return Self.failure(error, otherwise: "write")
       }
     }
     headerWrite = write
-    await write.value
+    settle(await write.value)
+  }
+
+  private func settle(_ failure: String?) {
+    if liveness.saved(failed: failure != nil), let failure {
+      deps.log?.record("meeting.writeFailed", failure)
+    }
   }
 
   private func keep(_ closed: [DictationSpan]) async {

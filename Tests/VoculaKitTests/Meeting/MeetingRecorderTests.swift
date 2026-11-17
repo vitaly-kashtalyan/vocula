@@ -103,6 +103,13 @@ private func voices(_ count: Int) -> [TrackDrain] {
   Array(repeating: voice(at: anchor), count: count)
 }
 
+private func dictate(_ session: Int, into h: MeetingHarness) async {
+  let at = anchor + UInt64(session) * s
+  await h.recorder.dictation(.start(session: session), generation: 1, at: at)
+  await h.recorder.dictation(
+    .stop(session: session, reason: .releasedHold), generation: 1, at: at + s / 2)
+}
+
 @Suite(.timeLimit(.minutes(1))) struct MeetingRecorderFlushTests {
   @Test func aChunkPerTrackEveryThreeSeconds() async {
     let h = MeetingHarness(
@@ -148,6 +155,22 @@ private func voices(_ count: Int) -> [TrackDrain] {
     #expect(h.kinds().filter { $0 == "meeting.writeFailed" }.count == 1)
     #expect(h.detail(of: "meeting.writeFailed") == "step=seal code=0")
     #expect(h.audioFiles() == ["mic-000003.sealed", "system-000003.sealed"])
+  }
+
+  @Test func aHeaderWriteFailureIsLoggedOncePerEpisodeAndWarned() async {
+    let marking = MarkingCipher()
+    let h = MeetingHarness(cipher: CipherSource(marking))
+    await h.recorder.start()
+    marking.failNext(3)
+    for session in 1...3 { await dictate(session, into: h) }
+    await h.tick(.seconds(1))
+    #expect(h.kinds().filter { $0 == "meeting.writeFailed" }.count == 1)
+    #expect(h.detail(of: "meeting.writeFailed") == "step=seal code=0")
+    #expect(h.statuses.last?.warnings.contains(.cannotSave) == true)
+    await dictate(4, into: h)
+    await h.tick(.seconds(1))
+    #expect(h.statuses.last?.warnings.contains(.cannotSave) == false)
+    #expect(await h.header()?.dictations.count == 4)
   }
 
   @Test func aBacklogDropIsAWriteFailure() async {
