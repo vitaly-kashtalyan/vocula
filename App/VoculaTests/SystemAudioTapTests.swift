@@ -5,6 +5,17 @@ import VoculaKit
 
 @testable import Vocula
 
+private func pcm(rate: Double, channels: UInt32 = 1, float: Bool = true, bits: UInt32 = 32)
+  -> AudioStreamBasicDescription
+{
+  let flags = float ? kAudioFormatFlagIsFloat : kAudioFormatFlagIsSignedInteger
+  return AudioStreamBasicDescription(
+    mSampleRate: rate, mFormatID: kAudioFormatLinearPCM,
+    mFormatFlags: flags | kAudioFormatFlagIsPacked, mBytesPerPacket: bits / 8 * channels,
+    mFramesPerPacket: 1, mBytesPerFrame: bits / 8 * channels, mChannelsPerFrame: channels,
+    mBitsPerChannel: bits, mReserved: 0)
+}
+
 @Suite struct SystemAudioTapTests {
   @Test func aSecondCopyCreatesNoTap() async {
     let calls = MeetingCallCounter()
@@ -40,7 +51,7 @@ import VoculaKit
     #expect(composition[kAudioAggregateDeviceIsPrivateKey] as? Bool == true)
     #expect(composition[kAudioAggregateDeviceIsStackedKey] as? Bool == false)
     #expect(composition[kAudioAggregateDeviceMainSubDeviceKey] as? String == "spk")
-    #expect(composition[kAudioAggregateDeviceTapAutoStartKey] as? Bool == true)
+    #expect(composition[kAudioAggregateDeviceTapAutoStartKey] == nil)
     #expect(
       composition[kAudioAggregateDeviceSubDeviceListKey] as? [[String: String]] == [
         [kAudioSubDeviceUIDKey: "spk"]
@@ -55,6 +66,31 @@ import VoculaKit
     #expect(
       SystemAudioTap.composition(
         clockUID: "", tapUUID: UUID(), aggregateUID: MeetingAggregate.uid(UUID())) == nil)
+  }
+
+  @Test func theRateIsTheSingleInputStreamsVirtualFormat() {
+    var asked: [AudioStreamID] = []
+    let rate = SystemAudioTap.captureRate(
+      inputStreams: [42],
+      format: { stream in
+        asked.append(stream)
+        return pcm(rate: 24_000)
+      })
+    #expect(rate == 24_000)
+    #expect(asked == [42])
+  }
+
+  @Test func anythingButOneMonoFloatStreamGivesNoRate() {
+    let mono = pcm(rate: 48_000)
+    #expect(SystemAudioTap.captureRate(inputStreams: [], format: { _ in mono }) == nil)
+    #expect(SystemAudioTap.captureRate(inputStreams: [1, 2], format: { _ in mono }) == nil)
+    #expect(SystemAudioTap.captureRate(inputStreams: [1], format: { _ in nil }) == nil)
+    #expect(
+      SystemAudioTap.captureRate(
+        inputStreams: [1], format: { _ in pcm(rate: 48_000, channels: 2) }) == nil)
+    #expect(
+      SystemAudioTap.captureRate(
+        inputStreams: [1], format: { _ in pcm(rate: 48_000, float: false, bits: 16) }) == nil)
   }
 
   @Test func aTapThatNeverStartedDrainsNothing() {

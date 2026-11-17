@@ -10,20 +10,21 @@ actor SystemAudioTap: MeetingTrackSource {
   static let queue = DispatchSerialQueue(label: "vocula.meeting.tap")
 
   static let liveOutputs: Outputs = {
-    let candidates = devices().compactMap { device -> MeetingOutputCandidate? in
+    let system = AudioObjectID(kAudioObjectSystemObject)
+    let devices = objects(system, kAudioHardwarePropertyDevices)
+    let candidates = devices.compactMap { device -> MeetingOutputCandidate? in
       guard let uid = uid(of: device) else { return nil }
       var transport = UInt32(0)
       _ = read(device, kAudioDevicePropertyTransportType, &transport)
       return MeetingOutputCandidate(
         uid: uid, isBuiltIn: transport == kAudioDeviceTransportTypeBuiltIn,
-        outputStreams: streams(of: device, kAudioObjectPropertyScopeOutput),
-        inputStreams: streams(of: device, kAudioObjectPropertyScopeInput))
+        outputStreams: objects(device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput)
+          .count,
+        inputStreams: objects(device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput)
+          .count)
     }
     var output = AudioObjectID(kAudioObjectUnknown)
-    let found =
-      read(
-        AudioObjectID(kAudioObjectSystemObject), kAudioHardwarePropertyDefaultOutputDevice, &output)
-      == noErr
+    let found = read(system, kAudioHardwarePropertyDefaultOutputDevice, &output) == noErr
     return (candidates, found ? uid(of: output) : nil)
   }
 
@@ -36,7 +37,7 @@ actor SystemAudioTap: MeetingTrackSource {
   private let buffer = Mutex<TrackBuffer?>(nil)
   private var tap = AudioObjectID(kAudioObjectUnknown)
   private var aggregate = AudioObjectID(kAudioObjectUnknown)
-  private var formatListener: AudioObjectPropertyListenerBlock?
+  private var rateWatch: AudioObjectPropertyListenerBlock?
   private var ioProc: AudioDeviceIOProcID?
 
   init(outputs: @escaping Outputs = SystemAudioTap.liveOutputs) {
@@ -81,12 +82,25 @@ actor SystemAudioTap: MeetingTrackSource {
       kAudioAggregateDeviceMainSubDeviceKey: clockUID,
       kAudioAggregateDeviceIsPrivateKey: true,
       kAudioAggregateDeviceIsStackedKey: false,
-      kAudioAggregateDeviceTapAutoStartKey: true,
       kAudioAggregateDeviceSubDeviceListKey: [[kAudioSubDeviceUIDKey: clockUID]],
       kAudioAggregateDeviceTapListKey: [
         [kAudioSubTapDriftCompensationKey: true, kAudioSubTapUIDKey: tapUUID.uuidString]
       ],
     ]
+  }
+
+  static func captureRate(
+    inputStreams: [AudioStreamID], format: (AudioStreamID) -> AudioStreamBasicDescription?
+  ) -> Double? {
+    guard inputStreams.count == 1, let format = format(inputStreams[0]),
+      format.mFormatID == kAudioFormatLinearPCM, format.mFormatFlags & kAudioFormatFlagIsFloat != 0,
+      format.mBitsPerChannel == 32, format.mChannelsPerFrame == 1
+    else { return nil }
+    return format.mSampleRate
+  }
+
+  private var rateSources: [(object: AudioObjectID, selector: AudioObjectPropertySelector)] {
+    [(tap, kAudioTapPropertyFormat), (aggregate, kAudioDevicePropertyNominalSampleRate)]
   }
 
   private func refuseIfAbandoned() throws {
@@ -118,21 +132,22 @@ actor SystemAudioTap: MeetingTrackSource {
       "aggregate", AudioHardwareCreateAggregateDevice(composition as CFDictionary, &aggregate),
       made: aggregate)
 
-    var format = AudioStreamBasicDescription()
-    try Self.check("format", Self.read(tap, kAudioTapPropertyFormat, &format))
-    guard Self.isMonoFloat(format), let buffer = TrackBuffer(rate: format.mSampleRate) else {
+    guard let rate = Self.liveRate(of: aggregate), let buffer = TrackBuffer(rate: rate) else {
       throw MeetingFailure.failed(step: "format", code: 0)
     }
     self.buffer.withLock { $0 = buffer }
-    let listener = Self.followRate(of: tap, into: buffer)
-    var formatAddress = Self.address(kAudioTapPropertyFormat)
-    try Self.check(
-      "format", AudioObjectAddPropertyListenerBlock(tap, &formatAddress, Self.queue, listener))
-    formatListener = listener
+    let watch = Self.followRate(of: aggregate, into: buffer)
+    rateWatch = watch
+    for source in rateSources {
+      var address = Self.address(source.selector)
+      try Self.check(
+        "format", AudioObjectAddPropertyListenerBlock(source.object, &address, Self.queue, watch))
+    }
 
     try Self.check(
       "ioproc",
       AudioDeviceCreateIOProcIDWithBlock(&ioProc, aggregate, ioQueue, Self.capture(into: buffer)))
+    try refuseIfAbandoned()
     try Self.check("start", AudioDeviceStart(aggregate, ioProc))
   }
 
@@ -142,10 +157,12 @@ actor SystemAudioTap: MeetingTrackSource {
       AudioDeviceDestroyIOProcID(aggregate, ioProc)
       self.ioProc = nil
     }
-    if let formatListener {
-      var address = Self.address(kAudioTapPropertyFormat)
-      AudioObjectRemovePropertyListenerBlock(tap, &address, Self.queue, formatListener)
-      self.formatListener = nil
+    if let rateWatch {
+      for source in rateSources {
+        var address = Self.address(source.selector)
+        AudioObjectRemovePropertyListenerBlock(source.object, &address, Self.queue, rateWatch)
+      }
+      self.rateWatch = nil
     }
     if aggregate != kAudioObjectUnknown {
       AudioHardwareDestroyAggregateDevice(aggregate)
@@ -176,19 +193,22 @@ actor SystemAudioTap: MeetingTrackSource {
     }
   }
 
-  private static func followRate(of tap: AudioObjectID, into buffer: TrackBuffer)
+  private static func followRate(of aggregate: AudioObjectID, into buffer: TrackBuffer)
     -> AudioObjectPropertyListenerBlock
   {
     { _, _ in
-      var format = AudioStreamBasicDescription()
-      guard read(tap, kAudioTapPropertyFormat, &format) == noErr else { return }
-      buffer.setRate(format.mSampleRate)
+      guard let rate = liveRate(of: aggregate) else { return }
+      buffer.setRate(rate)
     }
   }
 
-  private static func isMonoFloat(_ format: AudioStreamBasicDescription) -> Bool {
-    format.mFormatID == kAudioFormatLinearPCM && format.mFormatFlags & kAudioFormatFlagIsFloat != 0
-      && format.mBitsPerChannel == 32 && format.mChannelsPerFrame == 1
+  private static func liveRate(of aggregate: AudioObjectID) -> Double? {
+    captureRate(
+      inputStreams: objects(aggregate, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput),
+      format: { stream in
+        var format = AudioStreamBasicDescription()
+        return read(stream, kAudioStreamPropertyVirtualFormat, &format) == noErr ? format : nil
+      })
   }
 
   private static func check(_ step: String, _ status: OSStatus) throws {
@@ -226,26 +246,19 @@ actor SystemAudioTap: MeetingTrackSource {
     return value.takeRetainedValue() as String
   }
 
-  private static func streams(of device: AudioObjectID, _ scope: AudioObjectPropertyScope) -> Int {
-    var address = address(kAudioDevicePropertyStreams, scope)
+  private static func objects(
+    _ owner: AudioObjectID, _ selector: AudioObjectPropertySelector,
+    _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal
+  ) -> [AudioObjectID] {
+    var address = address(selector, scope)
     var size = UInt32(0)
-    guard AudioObjectGetPropertyDataSize(device, &address, 0, nil, &size) == noErr else {
-      return 0
-    }
-    return Int(size) / MemoryLayout<AudioStreamID>.size
-  }
-
-  private static func devices() -> [AudioObjectID] {
-    let system = AudioObjectID(kAudioObjectSystemObject)
-    var address = address(kAudioHardwarePropertyDevices)
-    var size = UInt32(0)
-    guard AudioObjectGetPropertyDataSize(system, &address, 0, nil, &size) == noErr else {
+    guard AudioObjectGetPropertyDataSize(owner, &address, 0, nil, &size) == noErr else {
       return []
     }
     var ids = [AudioObjectID](
       repeating: AudioObjectID(kAudioObjectUnknown),
       count: Int(size) / MemoryLayout<AudioObjectID>.size)
-    guard AudioObjectGetPropertyData(system, &address, 0, nil, &size, &ids) == noErr else {
+    guard AudioObjectGetPropertyData(owner, &address, 0, nil, &size, &ids) == noErr else {
       return []
     }
     return Array(ids.prefix(Int(size) / MemoryLayout<AudioObjectID>.size))
