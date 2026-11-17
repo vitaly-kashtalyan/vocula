@@ -36,16 +36,13 @@ public enum MeetingClockDevice {
   public static func choose(
     among: [MeetingOutputCandidate], defaultOutputUID: String?
   ) -> MeetingOutputCandidate? {
-    among.first { $0.isBuiltIn && $0.outputStreams > 0 }
-      ?? among.first { $0.uid == defaultOutputUID && $0.outputStreams > 0 }
+    let silent = among.filter { $0.outputStreams > 0 && $0.inputStreams == 0 }
+    return silent.first { $0.isBuiltIn } ?? silent.first { $0.uid == defaultOutputUID }
   }
 }
 
 public enum MeetingTapStream {
-  public static func index(bufferCount: Int, lastBufferChannels: UInt32, outputInputStreams: Int)
-    -> Int?
-  {
-    guard bufferCount == outputInputStreams + 1, lastBufferChannels == 1 else { return nil }
-    return outputInputStreams
+  public static func index(bufferCount: Int, lastBufferChannels: UInt32) -> Int? {
+    bufferCount == 1 && lastBufferChannels == 1 ? 0 : nil
   }
 }

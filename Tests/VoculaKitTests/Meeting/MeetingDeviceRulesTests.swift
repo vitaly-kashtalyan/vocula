@@ -28,9 +28,13 @@ import Testing
 }
 
 @Suite struct MeetingClockDeviceTests {
-  let usb = MeetingOutputCandidate(uid: "usb", isBuiltIn: false, outputStreams: 1, inputStreams: 1)
+  let usb = MeetingOutputCandidate(uid: "usb", isBuiltIn: false, outputStreams: 1, inputStreams: 0)
+  let headset = MeetingOutputCandidate(
+    uid: "headset", isBuiltIn: false, outputStreams: 1, inputStreams: 1)
   let speakers = MeetingOutputCandidate(
     uid: "spk", isBuiltIn: true, outputStreams: 1, inputStreams: 0)
+  let builtInWithInput = MeetingOutputCandidate(
+    uid: "bi", isBuiltIn: true, outputStreams: 1, inputStreams: 1)
   let mic = MeetingOutputCandidate(uid: "mic", isBuiltIn: true, outputStreams: 0, inputStreams: 1)
 
   @Test func theBuiltInSpeakersClockTheAggregate() {
@@ -45,6 +49,16 @@ import Testing
     #expect(MeetingClockDevice.choose(among: [mic, usb], defaultOutputUID: "usb") == usb)
   }
 
+  @Test func aBuiltInOutputWithInputsIsNotChosen() {
+    #expect(MeetingClockDevice.choose(among: [builtInWithInput], defaultOutputUID: "bi") == nil)
+    #expect(
+      MeetingClockDevice.choose(among: [builtInWithInput, usb], defaultOutputUID: "usb") == usb)
+  }
+
+  @Test func aDefaultOutputWithInputsIsNotChosen() {
+    #expect(MeetingClockDevice.choose(among: [headset], defaultOutputUID: "headset") == nil)
+  }
+
   @Test func noOutputMeansNoClock() {
     #expect(MeetingClockDevice.choose(among: [], defaultOutputUID: nil) == nil)
     #expect(MeetingClockDevice.choose(among: [mic], defaultOutputUID: "mic") == nil)
@@ -53,25 +67,13 @@ import Testing
 }
 
 @Suite struct MeetingTapStreamTests {
-  @Test func speakersCarryOnlyTheTap() {
-    #expect(
-      MeetingTapStream.index(bufferCount: 1, lastBufferChannels: 1, outputInputStreams: 0) == 0)
+  @Test func oneMonoBufferIsTheTap() {
+    #expect(MeetingTapStream.index(bufferCount: 1, lastBufferChannels: 1) == 0)
   }
 
-  @Test func aHeadsetsMicrophoneIsSkipped() {
-    #expect(
-      MeetingTapStream.index(bufferCount: 2, lastBufferChannels: 1, outputInputStreams: 1) == 1)
-  }
-
-  @Test func aStereoLastStreamIsNotTheTap() {
-    #expect(
-      MeetingTapStream.index(bufferCount: 2, lastBufferChannels: 2, outputInputStreams: 1) == nil)
-  }
-
-  @Test func anUnexpectedCountRecordsNothing() {
-    #expect(
-      MeetingTapStream.index(bufferCount: 3, lastBufferChannels: 1, outputInputStreams: 1) == nil)
-    #expect(
-      MeetingTapStream.index(bufferCount: 0, lastBufferChannels: 0, outputInputStreams: 0) == nil)
+  @Test func anyOtherLayoutRecordsNothing() {
+    #expect(MeetingTapStream.index(bufferCount: 1, lastBufferChannels: 2) == nil)
+    #expect(MeetingTapStream.index(bufferCount: 2, lastBufferChannels: 1) == nil)
+    #expect(MeetingTapStream.index(bufferCount: 0, lastBufferChannels: 0) == nil)
   }
 }
