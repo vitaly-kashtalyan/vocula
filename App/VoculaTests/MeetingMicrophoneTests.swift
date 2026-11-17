@@ -62,6 +62,12 @@ private func fill(_ list: UnsafeMutablePointer<AudioBufferList>, channel: Int, _
     #expect(status == noErr)
     let runs = capture.buffer.drain { samples, _ in Array(samples) }.runs
     #expect(runs.map(\.samples) == [ramp.map(MeetingRun.sample)])
+    #expect(runs.map(\.start) == [1_000_000_000])
+  }
+
+  @Test func aCaptureNeedsAChannelAndARateTheBufferTakes() {
+    #expect(MeetingMicrophone.Capture(channels: 0, maximumFrames: 512, rate: 16_000) == nil)
+    #expect(MeetingMicrophone.Capture(channels: 1, maximumFrames: 512, rate: 1_000) == nil)
   }
 
   @Test func anOversizedBufferIsRefused() throws {

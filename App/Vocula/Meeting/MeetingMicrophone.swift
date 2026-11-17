@@ -147,14 +147,13 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   deinit { close() }
 
   func start() async throws {
-    guard !lock.withLock({ stopped }) else {
-      throw MeetingFailure.failed(step: "stopped", code: 0)
-    }
+    try refuseIfStopped()
     guard !VoculaAppDelegate.isSecondCopy else { throw MeetingFailure.secondCopy }
     guard let device = chooseDevice() else { throw MeetingFailure.notOpened }
     guard let format = AUHALInputUnit.hardwareFormat(of: device) else {
       throw MeetingFailure.failed(step: "format", code: 0)
     }
+    try refuseIfStopped()
     let input = try Self.open(device, format: format)
     try lock.withLock {
       guard !stopped else {
@@ -192,6 +191,11 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   }
 
   var callbacks: Int { lock.withLock { buffer }?.callbacks ?? 0 }
+
+  private func refuseIfStopped() throws {
+    guard lock.withLock({ stopped }) else { return }
+    throw MeetingFailure.failed(step: "stopped", code: 0)
+  }
 
   private func end() {
     guard ended.fire() else { return }
