@@ -38,12 +38,14 @@ struct VoculaApp: App {
         MenuBarContentView(
           menu: appDelegate.menu, downloader: appDelegate.downloader,
           navigation: settingsNavigation,
+          meetings: appDelegate.coordinator.meetings,
           onOpen: { [weak coordinator = appDelegate.coordinator] in
             coordinator?.recheckAccessibility()
           })
       } label: {
         MenuBarLabelView(menu: appDelegate.menu)
       }
+      MeetingStatusScene(meetings: appDelegate.coordinator.meetings)
       Window(Text(verbatim: "Vocula"), id: Self.mainWindowID) {
         SettingsWindowView(
           navigation: settingsNavigation,
@@ -127,6 +129,7 @@ private struct MenuBarContentView: View {
   }
   let downloader: ModelDownloader
   @ObservedObject var navigation: SettingsNavigationModel
+  let meetings: Meetings
   let onOpen: () -> Void
   @Environment(\.openWindow) private var openWindow
 
@@ -169,6 +172,10 @@ private struct MenuBarContentView: View {
         }
         Divider()
       }
+      Button(meetings.status.isRecording ? MenuCopy.stopMeeting : MenuCopy.recordMeeting) {
+        meetings.toggle()
+      }
+      Divider()
       if let last = menu.lastTranscript {
         Button(MenuCopy.copyLastTranscript) {
           NSPasteboard.general.clearContents()
