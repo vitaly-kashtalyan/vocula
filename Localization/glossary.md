@@ -42,7 +42,7 @@ These are read off a real Mac in the target language, never invented.
 | `System Settings → Sound → Input` | `refusal.silentInput.volumeDown` |
 | `Press 🌐 key to → Do Nothing` | The globe row's title, verbatim from the Keyboard pane |
 | `Finder` | Reveal in Finder, the diagnostics menu item, and the translocated placement footer |
-| `Quit` | The app menu's verb — the menu item, Quit and Reopen, and the placement warning's footers |
+| `Quit` | The app menu's verb — the menu item, Quit and Reopen, the placement warning's footers, and the message after Accessibility is turned off |
 | `Applications` | The Finder's folder, in the placement warning's footers (the `/Applications` PATH above stays untranslated) |
 | `disk image` | The Finder's term for a .dmg, in the placement warning |
 | `Dock` | The appearance note about the indicator strip |

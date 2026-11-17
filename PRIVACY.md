@@ -197,6 +197,7 @@ Settings and permissions are remembered elsewhere, and deleting the app does not
 clear them: `defaults delete app.vocula.mac` removes your languages, key
 bindings, microphone order and appearance, and `tccutil reset Microphone
 app.vocula.mac` and `tccutil reset Accessibility app.vocula.mac` withdraw the two
-permissions. If you built the app yourself, `./scripts/uninstall-local.sh` does
+permissions — quit Vocula first: a reset under a running copy can stall the
+Mac's keyboard. If you built the app yourself, `./scripts/uninstall-local.sh` does
 all of this and reports what it found. A login-item registration is the one thing
 no script can reach — remove it in System Settings → General → Login Items.
