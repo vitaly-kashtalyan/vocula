@@ -4,7 +4,6 @@ public enum MeetingStoreError: Error, Equatable, Sendable { case failed(step: St
 
 public actor MeetingStore {
   private static let sampleRate = 16_000
-  private static let longestTimeline = 24 * 3600 * sampleRate
 
   private let directory: URL
 
@@ -46,12 +45,9 @@ public actor MeetingStore {
 
   public func timeline(of meeting: UUID, track: MeetingTrack, cipher: any HistoryCipher) -> [Int16]
   {
-    guard let header = header(of: meeting, cipher: cipher) else { return [] }
-    var limit = Self.longestTimeline
-    if let end = header.end {
-      let seconds = max(0, end.timeIntervalSince(header.startedAt)).rounded(.up) + 1
-      limit = min(limit, Int(min(seconds, 86_400)) * Self.sampleRate)
-    }
+    guard let header = header(of: meeting, cipher: cipher), let end = header.end else { return [] }
+    let seconds = max(0, end.timeIntervalSince(header.startedAt)).rounded(.up) + 1
+    let limit = Int(min(seconds, 86_400)) * Self.sampleRate
     let chunks = Self.chunkURLs(of: track, in: audioDirectory(meeting)).compactMap {
       Self.readChunk($0, cipher: cipher)
     }
