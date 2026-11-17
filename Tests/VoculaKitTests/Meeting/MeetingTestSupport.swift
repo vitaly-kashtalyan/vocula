@@ -196,7 +196,9 @@ private final class ResultBox<T: Sendable>: @unchecked Sendable {
 final class Latch: @unchecked Sendable {
   private let lock = NSLock()
   private var opened = false
-  private var waiting: [CheckedContinuation<Void, Never>] = []
+  private var nextWaiter: UInt64 = 0
+  private var cancelled: Set<UInt64> = []
+  private var waiting: [UInt64: CheckedContinuation<Void, Never>] = [:]
 
   init() {}
 
@@ -205,20 +207,286 @@ final class Latch: @unchecked Sendable {
   func open() {
     let resumed: [CheckedContinuation<Void, Never>] = lock.withLock {
       opened = true
-      defer { waiting = [] }
-      return waiting
+      defer { waiting = [:] }
+      return Array(waiting.values)
     }
     resumed.forEach { $0.resume() }
   }
 
   func wait() async {
-    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-      let already = lock.withLock {
-        if opened { return true }
-        waiting.append(continuation)
-        return false
-      }
-      if already { continuation.resume() }
+    let id = lock.withLock {
+      defer { nextWaiter += 1 }
+      return nextWaiter
     }
+    await withTaskCancellationHandler {
+      await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        let already = lock.withLock {
+          if opened || cancelled.remove(id) != nil { return true }
+          waiting[id] = continuation
+          return false
+        }
+        if already { continuation.resume() }
+      }
+    } onCancel: {
+      let parked: CheckedContinuation<Void, Never>? = lock.withLock {
+        guard let continuation = waiting.removeValue(forKey: id) else {
+          cancelled.insert(id)
+          return nil
+        }
+        return continuation
+      }
+      parked?.resume()
+    }
+  }
+}
+
+func voice(at host: UInt64) -> TrackDrain {
+  TrackDrain(
+    runs: [MeetingRun(start: host, samples: Array(repeating: 400, count: 160))], freshRuns: 1)
+}
+
+final class FakeTrackSource: MeetingTrackSource, @unchecked Sendable {
+  enum StartMode {
+    case succeed
+    case fail(MeetingFailure)
+    case gated
+  }
+
+  enum FinishMode { case immediate, gated, never }
+
+  let startCalled = Latch()
+  let finishCalled = Latch()
+  private let startGate = Latch()
+  private let finishGate = Latch()
+  private let startMode: StartMode
+  private let finishMode: FinishMode
+  private let lock = NSLock()
+  private var drains: [TrackDrain]
+  private var ended: (@Sendable () async -> Void)?
+  private var calls = 0
+  private var starts = 0
+  private var stops = 0
+  private var returned = false
+
+  init(start: StartMode = .succeed, finish: FinishMode = .immediate, drains: [TrackDrain] = []) {
+    startMode = start
+    finishMode = finish
+    self.drains = drains
+  }
+
+  var onEnded: (@Sendable () async -> Void)? {
+    get { lock.withLock { ended } }
+    set { lock.withLock { ended = newValue } }
+  }
+
+  var callbacks: Int {
+    get { lock.withLock { calls } }
+    set { lock.withLock { calls = newValue } }
+  }
+
+  var startCount: Int { lock.withLock { starts } }
+  var stopCount: Int { lock.withLock { stops } }
+  var finishedReturned: Bool { lock.withLock { returned } }
+
+  func openStart() { startGate.open() }
+  func openFinish() { finishGate.open() }
+
+  func start() async throws {
+    lock.withLock { starts += 1 }
+    startCalled.open()
+    switch startMode {
+    case .succeed: return
+    case .fail(let failure): throw failure
+    case .gated: await startGate.wait()
+    }
+  }
+
+  func stop() { lock.withLock { stops += 1 } }
+
+  func finished() async {
+    finishCalled.open()
+    switch finishMode {
+    case .immediate: break
+    case .gated: await finishGate.wait()
+    case .never:
+      await Latch().wait()
+      return
+    }
+    lock.withLock { returned = true }
+  }
+
+  func drain() -> TrackDrain {
+    lock.withLock { drains.isEmpty ? TrackDrain() : drains.removeFirst() }
+  }
+}
+
+final class CipherSource: @unchecked Sendable {
+  let cipher: any HistoryCipher
+  let called = Latch()
+  private let gate: DispatchSemaphore?
+  private let error: (any Error)?
+  private let lock = NSLock()
+  private var count = 0
+
+  init(
+    _ cipher: any HistoryCipher = MarkingCipher(), gated: Bool = false, error: (any Error)? = nil
+  ) {
+    self.cipher = cipher
+    gate = gated ? DispatchSemaphore(value: 0) : nil
+    self.error = error
+  }
+
+  var calls: Int { lock.withLock { count } }
+
+  func open() { gate?.signal() }
+
+  func call() throws -> any HistoryCipher {
+    lock.withLock { count += 1 }
+    called.open()
+    gate?.wait()
+    if let error { throw error }
+    return cipher
+  }
+}
+
+final class PowerHoldSpy: @unchecked Sendable {
+  private let lock = NSLock()
+  private let failing: Int32?
+  private var held = 0
+  private var released = 0
+  private var willSleep: (@Sendable () async -> Void)?
+
+  init(failing code: Int32? = nil) { failing = code }
+
+  var holds: Int { lock.withLock { held } }
+  var releases: Int { lock.withLock { released } }
+  var onWillSleep: (@Sendable () async -> Void)? { lock.withLock { willSleep } }
+
+  func hold(_ onWillSleep: @escaping @Sendable () async -> Void) -> MeetingPowerHold {
+    lock.withLock {
+      held += 1
+      willSleep = onWillSleep
+    }
+    if let failing { return .failed(code: failing) }
+    return .held(release: { [self] in lock.withLock { released += 1 } })
+  }
+}
+
+final class MeetingHarness: @unchecked Sendable {
+  private final class Record: @unchecked Sendable {
+    let lock = NSLock()
+    var statuses: [MeetingStatus] = []
+    var waiting: [FakeTrackSource]
+    var made = 0
+    var watches = 0
+    weak var watch: AnyObject?
+
+    init(_ mics: [FakeTrackSource]) { waiting = mics }
+
+    func microphone(_ onEnded: @escaping @Sendable () async -> Void) -> FakeTrackSource {
+      let mic = lock.withLock {
+        made += 1
+        return waiting.isEmpty ? FakeTrackSource() : waiting.removeFirst()
+      }
+      mic.onEnded = onEnded
+      return mic
+    }
+
+    func watched() -> AnyObject {
+      let token = NSObject()
+      lock.withLock {
+        watches += 1
+        watch = token
+      }
+      return token
+    }
+  }
+
+  let clock: TestClock
+  let wallClock: Date
+  let root: URL
+  let store: MeetingStore
+  let log: DiagnosticLog
+  let power: PowerHoldSpy
+  let ended: Latch
+  let recorder: MeetingRecorder
+  private let cipher: CipherSource
+  private let record: Record
+
+  init(
+    cipher: CipherSource = .init(), mics: [FakeTrackSource] = [.init()],
+    system: FakeTrackSource = .init(), power: PowerHoldSpy = .init(), recover: Bool = false,
+    root: URL = meetingTemporaryDirectory()
+  ) {
+    let clock = TestClock()
+    let store = MeetingStore(directory: root)
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    let record = Record(mics)
+    let ended = Latch()
+    let wallClock = Date(timeIntervalSinceReferenceDate: 800_000_000)
+    self.clock = clock
+    self.wallClock = wallClock
+    self.ended = ended
+    self.root = root
+    self.store = store
+    self.log = log
+    self.power = power
+    self.cipher = cipher
+    self.record = record
+    recorder = MeetingRecorder(
+      .init(
+        store: store,
+        cipher: { try cipher.call() },
+        makeMicrophone: { record.microphone($0) },
+        makeSystemAudio: { system },
+        holdPower: { power.hold($0) },
+        watchDeviceList: { _ in record.watched() },
+        now: { clock.now() },
+        sleep: { try await clock.sleep(for: $0) },
+        wallClock: { wallClock },
+        publish: { status in record.lock.withLock { record.statuses.append(status) } },
+        ended: { ended.open() },
+        log: log,
+        recover: recover))
+  }
+
+  var statuses: [MeetingStatus] { record.lock.withLock { record.statuses } }
+  var micsMade: Int { record.lock.withLock { record.made } }
+  var deviceWatches: Int { record.lock.withLock { record.watches } }
+  var deviceWatch: AnyObject? { record.lock.withLock { record.watch } }
+
+  var meetingDirectories: [URL] {
+    let names = (try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? []
+    return names.filter { UUID(uuidString: $0) != nil }.map { root.appendingPathComponent($0) }
+  }
+
+  func audioFiles() -> [String] {
+    guard let meeting = meetingDirectories.first else { return [] }
+    let audio = meeting.appendingPathComponent("audio").path
+    return ((try? FileManager.default.contentsOfDirectory(atPath: audio)) ?? []).sorted()
+  }
+
+  func kinds() -> [String] { log.recent(100).reversed().map(\.kind) }
+
+  func detail(of kind: String) -> String? { log.recent(100).first { $0.kind == kind }?.detail }
+
+  func header() async -> MeetingHeader? {
+    let meetings = meetingDirectories
+    guard meetings.count == 1, let id = UUID(uuidString: meetings[0].lastPathComponent) else {
+      return nil
+    }
+    return await store.header(of: id, cipher: cipher.cipher)
+  }
+
+  func tick(_ duration: Duration) async {
+    await clock.untilSleeping()
+    clock.advance(by: duration)
+    await clock.untilSleeping()
+  }
+
+  func settleSystemStart() async {
+    let recorder = recorder
+    _ = await value(of: Task { await recorder.systemStartSettled() })
   }
 }
