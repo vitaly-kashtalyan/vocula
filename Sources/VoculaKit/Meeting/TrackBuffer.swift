@@ -177,7 +177,8 @@ public final class TrackBuffer: @unchecked Sendable {
     } else {
       if half.count == Self.recordSlots { half.dropFrames(half.records[half.slot(0)].frames) }
       half.records[half.slot(half.count)] = Record(
-        start: hostNanos, frames: n, rate: rate, continues: joins && half.count == 0)
+        start: joins ? predictedNext : hostNanos, frames: n, rate: rate,
+        continues: joins && half.count == 0)
       half.count += 1
     }
     broken = false
@@ -220,7 +221,13 @@ public final class TrackBuffer: @unchecked Sendable {
         filled = record.frames
       }
       position += record.frames
-      let carried = record.continues ? lastEnd : nil
+      let carried = lastEnd.flatMap { end -> UInt64? in
+        let apart =
+          end >= record.start
+          ? HostTime.elapsed(from: record.start, to: end)
+          : HostTime.elapsed(from: end, to: record.start)
+        return record.continues && apart <= Self.joinTolerance ? end : nil
+      }
       let start = carried ?? record.start
       lastEnd = HostTime.adding(start, Self.nanos(record.frames, record.rate))
       guard

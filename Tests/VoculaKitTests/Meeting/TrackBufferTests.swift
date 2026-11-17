@@ -54,7 +54,7 @@ private func buffer(_ rate: Double = 16_000) -> TrackBuffer { TrackBuffer(rate: 
     let b = buffer()
     write(b, frames: 160, at: 0)
     _ = b.drain(resample: identity)
-    write(b, frames: 160, at: 10 * ms)
+    write(b, frames: 160, at: 15 * ms)
     let second = b.drain(resample: identity)
     #expect(second.runs[0].start == 10 * ms)
     #expect(second.freshRuns == 0)
@@ -90,10 +90,12 @@ private func buffer(_ rate: Double = 16_000) -> TrackBuffer { TrackBuffer(rate: 
 
   @Test func theBacklogKeepsTheNewestThirtySeconds() {
     let b = buffer(8_000)
-    for k in 0..<40 { write(b, frames: 8_000, at: UInt64(k) * s) }
+    for k in 0..<40 { write(b, frames: 8_000, value: Float(k) / 100, at: UInt64(k) * s) }
     let d = b.drain(resample: identity)
     #expect(d.runs.count == 1)
     #expect(d.runs[0].samples.count == 240_000)
+    #expect(d.runs[0].samples.first == MeetingRun.sample(0.10))
+    #expect(d.runs[0].samples.last == MeetingRun.sample(0.39))
     #expect(d.runs[0].start == 10 * s)
     #expect(d.droppedNanos == 10 * s)
   }
@@ -181,5 +183,40 @@ private func buffer(_ rate: Double = 16_000) -> TrackBuffer { TrackBuffer(rate: 
     #expect(d.runs[0].samples.count == 240_000)
     #expect(d.runs[0].start == 25 * s)
     #expect(d.droppedNanos == 25 * s)
+  }
+
+  @Test func recordsKeepTheirOwnFrames() {
+    let b = buffer()
+    write(b, frames: 160, value: 0.25, at: 0)
+    write(b, frames: 160, value: 0.5, at: 100 * ms)
+    let d = b.drain(resample: identity)
+    #expect(d.runs[0].samples.allSatisfy { $0 == MeetingRun.sample(0.25) })
+    #expect(d.runs[1].samples.allSatisfy { $0 == MeetingRun.sample(0.5) })
+  }
+
+  @Test func runsDoNotDriftFromHostTimeAcrossDrains() {
+    let b = buffer()
+    var starts: [UInt64] = []
+    var fresh: [Int] = []
+    for k in 0..<4 {
+      write(b, frames: 160, at: UInt64(k) * 25 * ms)
+      let d = b.drain(resample: identity)
+      starts += d.runs.map(\.start)
+      fresh.append(d.freshRuns)
+    }
+    #expect(starts == [0, 10 * ms, 50 * ms, 60 * ms])
+    #expect(fresh == [1, 0, 1, 0])
+  }
+
+  @Test func aDrainConvertsOutsideTheLock() {
+    let b = buffer()
+    write(b, frames: 160, at: 0)
+    _ = b.drain { samples, _ in
+      write(b, frames: 160, at: 10 * ms)
+      return Array(samples)
+    }
+    let d = b.drain(resample: identity)
+    #expect(d.runs.count == 1)
+    #expect(d.contendedNanos == 0)
   }
 }
