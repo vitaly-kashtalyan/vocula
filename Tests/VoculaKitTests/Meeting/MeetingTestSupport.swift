@@ -61,11 +61,16 @@ final class TestClock: @unchecked Sendable {
   private var nextID: UInt64 = 0
   private var sleepers: [Sleeper] = []
   private var cancelledEarly: Set<UInt64> = []
-  private var waiters: [(count: Int, continuation: CheckedContinuation<Void, Never>)] = []
+  private var nextWaiter: UInt64 = 0
+  private var cancelledWaiters: Set<UInt64> = []
+  private var waiters: [(id: UInt64, count: Int, continuation: CheckedContinuation<Void, Never>)] =
+    []
 
   init(start: UInt64 = 1_000_000_000) { current = start }
 
   func now() -> UInt64 { lock.withLock { current } }
+
+  var parked: Int { lock.withLock { sleepers.count } }
 
   func sleep(for duration: Duration) async throws {
     let id = lock.withLock {
@@ -112,22 +117,79 @@ final class TestClock: @unchecked Sendable {
   }
 
   func untilSleeping(_ count: Int = 1) async {
-    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-      let satisfied = lock.withLock {
-        if sleepers.count >= count { return true }
-        waiters.append((count, continuation))
-        return false
+    let id = lock.withLock {
+      defer { nextWaiter += 1 }
+      return nextWaiter
+    }
+    await withTaskCancellationHandler {
+      await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        let satisfied = lock.withLock {
+          if sleepers.count >= count || cancelledWaiters.remove(id) != nil { return true }
+          waiters.append((id, count, continuation))
+          return false
+        }
+        if satisfied { continuation.resume() }
       }
-      if satisfied { continuation.resume() }
+    } onCancel: {
+      let parkedWaiter: CheckedContinuation<Void, Never>? = lock.withLock {
+        guard let index = waiters.firstIndex(where: { $0.id == id }) else {
+          cancelledWaiters.insert(id)
+          return nil
+        }
+        return waiters.remove(at: index).continuation
+      }
+      parkedWaiter?.resume()
     }
   }
 
   private static func nanos(_ duration: Duration) -> UInt64 {
+    guard duration > .zero else { return 0 }
     let parts = duration.components
-    guard parts.seconds > 0 else { return 0 }
-    return HostTime.adding(
-      UInt64(parts.seconds).multipliedReportingOverflow(by: 1_000_000_000).partialValue,
-      UInt64(parts.attoseconds / 1_000_000_000))
+    let (whole, overflow) = UInt64(parts.seconds).multipliedReportingOverflow(by: 1_000_000_000)
+    guard !overflow else { return .max }
+    return HostTime.adding(whole, UInt64(parts.attoseconds / 1_000_000_000))
+  }
+}
+
+func value<T: Sendable>(of task: Task<T, Never>) async -> T? {
+  let box = ResultBox<T>()
+  return await withTaskCancellationHandler {
+    await withCheckedContinuation { (continuation: CheckedContinuation<T?, Never>) in
+      box.park(continuation)
+      Task { box.finish(await task.value) }
+    }
+  } onCancel: {
+    box.finish(nil)
+  }
+}
+
+private final class ResultBox<T: Sendable>: @unchecked Sendable {
+  private let lock = NSLock()
+  private var continuation: CheckedContinuation<T?, Never>?
+  private var early: T??
+  private var done = false
+
+  func park(_ continuation: CheckedContinuation<T?, Never>) {
+    let ready: T?? = lock.withLock {
+      if let early { return early }
+      self.continuation = continuation
+      return nil
+    }
+    if let ready { continuation.resume(returning: ready) }
+  }
+
+  func finish(_ value: T?) {
+    let taken: CheckedContinuation<T?, Never>? = lock.withLock {
+      if done { return nil }
+      done = true
+      guard let continuation else {
+        early = .some(value)
+        return nil
+      }
+      self.continuation = nil
+      return continuation
+    }
+    taken?.resume(returning: value)
   }
 }
 

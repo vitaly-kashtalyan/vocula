@@ -64,8 +64,8 @@ public enum MeetingBound {
     await withCheckedContinuation { continuation in
       let once = Once(continuation)
       let timer = Task {
-        guard (try? await sleep(bound)) != nil else { return }
-        once.resume(returning: false)
+        try? await sleep(bound)
+        if !Task.isCancelled { once.resume(returning: false) }
       }
       Task {
         await work.value

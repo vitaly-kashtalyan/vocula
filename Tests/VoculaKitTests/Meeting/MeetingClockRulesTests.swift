@@ -84,8 +84,9 @@ private let minute: UInt64 = 60_000_000_000
     }
     await clock.untilSleeping()
     latch.open()
-    #expect(await result.value == true)
+    #expect(await value(of: result) == true)
     #expect(clock.now() == start)
+    #expect(clock.parked == 0)
   }
 
   @Test func aHungWorkIsAbandonedAtTheBound() async {
@@ -97,11 +98,11 @@ private let minute: UInt64 = 60_000_000_000
     }
     await clock.untilSleeping()
     clock.advance(by: .seconds(2))
-    await clock.untilSleeping()
+    #expect(clock.parked == 1)
     clock.advance(by: .seconds(1))
-    #expect(await result.value == false)
+    #expect(await value(of: result) == false)
     #expect(work.isCancelled == false)
     latch.open()
-    await work.value
+    #expect(await value(of: work) != nil)
   }
 }
