@@ -250,7 +250,8 @@ import Testing
   @Test func anUnopenableChunkIsAGapInTheTimeline() async throws {
     let root = meetingTemporaryDirectory()
     let cipher = MarkingCipher()
-    let h = header()
+    var h = header()
+    h.end = started.addingTimeInterval(1)
     try plant(
       header: h,
       chunks: [
