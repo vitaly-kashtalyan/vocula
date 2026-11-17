@@ -9,8 +9,8 @@ removed=0
 gone() { printf '  removed  %s\n' "$*"; removed=$((removed + 1)); }
 absent() { printf '  absent   %s\n' "$*"; }
 
-echo "This deletes $APP, every dictation in its history, its encryption key,"
-echo "its settings, and the downloaded models."
+echo "This deletes $APP, every dictation in its history, every recorded meeting,"
+echo "both encryption keys, its settings, and the downloaded models."
 printf 'Type "yes" to continue: '
 read -r answer
 [ "$answer" = "yes" ] || { echo "uninstall: nothing was done"; exit 1; }
@@ -51,6 +51,11 @@ for domain in app.vocula.mac app.vocula.mac.uitest app.vocula.Vocula app.vocula.
   else absent "defaults domain $domain"; fi
 done
 killall cfprefsd >/dev/null 2>&1 || true
+
+if security find-generic-password -s app.vocula.mac -a meetings >/dev/null 2>&1; then
+  security delete-generic-password -s app.vocula.mac -a meetings >/dev/null
+  gone "meetings key for app.vocula.mac"
+else absent "meetings key for app.vocula.mac"; fi
 
 for service in app.vocula.mac app.vocula.Vocula; do
   if security find-generic-password -s "$service" >/dev/null 2>&1; then

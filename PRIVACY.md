@@ -13,7 +13,8 @@ The microphone is opened when you press the record key and closed when you
 release it. There is no wake word, no always-on capture, and no buffer running
 in the background.
 
-**One other thing opens it, and only while you are looking at it.** Settings →
+**Two other things open it: a meeting you record, described in the next section,
+and Settings → Microphone, only while you are looking at it.** Settings →
 Microphone draws a live level meter beside the microphone in use, so you can see
 that it hears you before you rely on it. That needs the input open, and macOS
 shows its orange recording dot for as long as it is. It closes the moment you
@@ -23,8 +24,9 @@ that costs something to open — a Bluetooth headset, or an iPhone offered over
 Continuity Capture — is never opened this way unless you press Test, since
 opening a headset takes it out of stereo.
 
-**The audio is never saved.** It is recognised in memory and discarded. There is
-no setting to keep it, and no file it could be recovered from.
+**Dictation audio is never saved.** It is recognised in memory and discarded.
+There is no setting to keep it, and no file it could be recovered from. A
+meeting's audio is saved; the next section says how.
 
 Recognition runs entirely on this Mac, using a model downloaded from this
 project's GitHub releases.
@@ -38,6 +40,30 @@ request.
 When its result loses a number, a negation or a question, or changes the
 language, the text as recognised is pasted instead. History keeps the text as
 recognised beside the cleaned-up one.
+
+## While you record a meeting
+
+*Record Meeting (Beta)*, in Vocula's menu, records two tracks until you choose
+*Stop Meeting*: your microphone, and the sound other apps play — the other side
+of a call. It also stops by itself after 15 minutes in which neither track heard
+anything, when the Mac goes to sleep, and when you quit Vocula. While it records,
+a second icon in the menu bar says so.
+
+**The microphone stays open for the whole meeting**, and macOS shows its orange
+dot for as long as it is. It is the microphone dictation would use at that
+moment, taken from your order on Settings → Microphone, which the meeting reads
+and never changes. A Bluetooth headset or an iPhone offered over Continuity
+Capture is never opened for a meeting — holding one would take a headset out of
+stereo for the whole call — so when dictation's microphone is one of those, the
+meeting records other apps alone and says so.
+
+**The sound other apps play is captured through macOS's System Audio Recording
+permission**, which macOS asks for the first time you record a meeting. That is
+everything this Mac plays, from every app, except Vocula's own sounds.
+
+Nothing is transcribed yet, and no model runs while a meeting records. The audio
+is kept on this Mac, encrypted, until a later version of Vocula transcribes it;
+*Recorded meetings*, below, says where, under which key, and how to delete it.
 
 ## Putting the text in place
 
@@ -103,6 +129,23 @@ longer, so a copy of this document you remember is out of date.) You can switch
 history off entirely, delete a single day, or delete everything at any moment —
 all in Settings → History.
 
+**Recorded meetings**, in `~/Library/Application Support/app.vocula.mac/Meetings/`
+— a folder per meeting, named by a random identifier, holding the recording in
+pieces three seconds long. Nothing reaches that folder unencrypted: each piece is
+sealed with AES-GCM in memory before it is written. The key is a second one in
+your login Keychain — service `app.vocula.mac`, account `meetings`, separate from
+the history's, account `history` — and what is said above about the history key
+(what protects it, and that it is not bound to this Mac) is true of this one. It
+is read once, when a meeting starts; if it cannot be read, the meeting does not
+start. The folders' dates still show when a meeting was recorded and roughly how
+long it ran.
+
+A meeting stays there until a later version of Vocula transcribes it. **This
+version cannot delete one**: there is no button for it yet, and nothing deletes
+it on a timer. Deleting the `Meetings` folder deletes every meeting in it. The
+History switch does not apply to meetings, and neither does deleting history — a
+day or everything — nor the one-year retention.
+
 **A diagnostic log**, `diagnostics.json`, is **not** encrypted, and this is
 worth being precise about. It never contains a transcript: what may be written
 is restricted to a fixed list of event names and short values, and anything
@@ -114,8 +157,10 @@ worked writes no outcome line; what it can write is a measurement of how unsure
 the language detector was, as bare percentages that name no language, and, with
 clean-up on, how long a slow pass took or why its result was not used. Lines
 about a model name the recognition engine, which says whether one of your
-languages is outside the 25 that Parakeet hears. It holds the last 2,000 events. "Reveal the Diagnostic Log in Finder" in the menu
-takes you to it.
+languages is outside the 25 that Parakeet hears. A meeting writes a line when it
+starts and one when it stops, with how many seconds each track recorded and held
+sound, and a line for each problem it ran into. It holds the last 2,000 events.
+"Reveal the Diagnostic Log in Finder" in the menu takes you to it.
 
 ## What leaves this Mac
 
@@ -162,8 +207,9 @@ telemetry, no analytics, no crash reporting and no licence server.
 
 There is one way you can send something yourself: **Report a problem…** opens
 *your* mail client with the diagnostic log attached. That log holds app and macOS
-versions, the Mac model, per-dictation timings and outcomes, and the identifier
-of an audio device when one is lost or switched away from mid-dictation — never
+versions, the Mac model, per-dictation timings and outcomes, when a meeting
+started and stopped and how much of it held sound, and the identifier of an
+audio device when one is lost or switched away from mid-dictation — never
 transcript text. Nothing goes anywhere until you press Send, and you can read
 and edit the attachment first.
 
@@ -188,16 +234,18 @@ off; the measures here protect one that is running.
 
 Delete the app, then delete
 `~/Library/Application Support/app.vocula.mac/` — that folder holds the
-history, the diagnostic log and the downloaded models — and
-`~/Library/Caches/app.vocula.mac/`, where an update is unpacked before it is
-installed. The Keychain key can be
-removed in Keychain Access; without the history files it opens nothing.
+history, the recorded meetings, the diagnostic log and the downloaded models —
+and `~/Library/Caches/app.vocula.mac/`, where an update is unpacked before it is
+installed. The Keychain holds two keys under `app.vocula.mac`, accounts
+`history` and `meetings`; both can be removed in Keychain Access, and without
+the files they open nothing.
 
 Settings and permissions are remembered elsewhere, and deleting the app does not
 clear them: `defaults delete app.vocula.mac` removes your languages, key
 bindings, microphone order and appearance, and `tccutil reset Microphone
-app.vocula.mac` and `tccutil reset Accessibility app.vocula.mac` withdraw the two
-permissions — quit Vocula first: a reset under a running copy can stall the
-Mac's keyboard. If you built the app yourself, `./scripts/uninstall-local.sh` does
-all of this and reports what it found. A login-item registration is the one thing
-no script can reach — remove it in System Settings → General → Login Items.
+app.vocula.mac`, `tccutil reset Accessibility app.vocula.mac` and `tccutil reset
+AudioCapture app.vocula.mac` withdraw the three permissions — quit Vocula
+first: a reset under a running copy can stall the Mac's keyboard. If you built
+the app yourself, `./scripts/uninstall-local.sh` does all of this and reports
+what it found. A login-item registration is the one thing no script can reach —
+remove it in System Settings → General → Login Items.
