@@ -7,13 +7,14 @@ public enum MeetingTimeline {
       HostTime.adding(elapsed, MeetingRun.nanosPerSample / 2) / MeetingRun.nanosPerSample)
   }
 
-  public static func samples(_ chunks: [MeetingChunk], anchor: UInt64) -> [Int16] {
+  public static func samples(_ chunks: [MeetingChunk], anchor: UInt64, limit: Int) -> [Int16] {
     var out: [Int16] = []
     for chunk in chunks.sorted(by: { $0.sequence < $1.sequence }) {
       for run in chunk.runs {
         let at = offset(of: run.start, anchor: anchor)
+        guard at < limit else { continue }
         if at > out.count { out.append(contentsOf: repeatElement(0, count: at - out.count)) }
-        out.append(contentsOf: run.samples.dropFirst(out.count - at))
+        out.append(contentsOf: run.samples.dropFirst(out.count - at).prefix(limit - out.count))
       }
     }
     return out
