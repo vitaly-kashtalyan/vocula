@@ -1,0 +1,423 @@
+import Foundation
+import Testing
+
+@testable import Vocula
+@testable import VoculaKit
+
+private final class Latch: @unchecked Sendable {
+  private let lock = NSLock()
+  private var opened = false
+  private var nextWaiter = 0
+  private var cancelled: Set<Int> = []
+  private var waiting: [Int: CheckedContinuation<Void, Never>] = [:]
+
+  var isOpen: Bool { lock.withLock { opened } }
+
+  func open() {
+    let resumed = lock.withLock {
+      opened = true
+      defer { waiting = [:] }
+      return Array(waiting.values)
+    }
+    resumed.forEach { $0.resume() }
+  }
+
+  func wait() async {
+    let id = lock.withLock {
+      defer { nextWaiter += 1 }
+      return nextWaiter
+    }
+    await withTaskCancellationHandler {
+      await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+        let already = lock.withLock {
+          if opened || cancelled.remove(id) != nil { return true }
+          waiting[id] = continuation
+          return false
+        }
+        if already { continuation.resume() }
+      }
+    } onCancel: {
+      let parked: CheckedContinuation<Void, Never>? = lock.withLock {
+        guard let continuation = waiting.removeValue(forKey: id) else {
+          cancelled.insert(id)
+          return nil
+        }
+        return continuation
+      }
+      parked?.resume()
+    }
+  }
+}
+
+private final class Gate: @unchecked Sendable {
+  private let lock = NSLock()
+  private var opened = false
+  private var waiting: [CheckedContinuation<Void, Never>] = []
+
+  func open() {
+    let resumed = lock.withLock {
+      opened = true
+      defer { waiting = [] }
+      return waiting
+    }
+    resumed.forEach { $0.resume() }
+  }
+
+  func wait() async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+      let already = lock.withLock {
+        if opened { return true }
+        waiting.append(continuation)
+        return false
+      }
+      if already { continuation.resume() }
+    }
+  }
+}
+
+private final class ManualSleeper: @unchecked Sendable {
+  private let lock = NSLock()
+  private var count = 0
+  private var parked: [Int: CheckedContinuation<Void, any Error>] = [:]
+  private var cancelledEarly: Set<Int> = []
+  private var waiters: [(count: Int, latch: Latch)] = []
+
+  var calls: Int { lock.withLock { count } }
+
+  func sleep(for _: Duration) async throws {
+    let id = lock.withLock {
+      count += 1
+      return count
+    }
+    try await withTaskCancellationHandler {
+      try await withCheckedThrowingContinuation {
+        (continuation: CheckedContinuation<Void, any Error>) in
+        let (cancelled, ready): (Bool, [Latch]) = lock.withLock {
+          if cancelledEarly.remove(id) != nil { return (true, []) }
+          parked[id] = continuation
+          let ready = waiters.filter { $0.count <= parked.count }.map(\.latch)
+          waiters.removeAll { $0.count <= parked.count }
+          return (false, ready)
+        }
+        if cancelled { continuation.resume(throwing: CancellationError()) }
+        ready.forEach { $0.open() }
+      }
+    } onCancel: {
+      let continuation: CheckedContinuation<Void, any Error>? = lock.withLock {
+        guard let continuation = parked.removeValue(forKey: id) else {
+          cancelledEarly.insert(id)
+          return nil
+        }
+        return continuation
+      }
+      continuation?.resume(throwing: CancellationError())
+    }
+  }
+
+  func fire() {
+    let woken = lock.withLock {
+      defer { parked = [:] }
+      return Array(parked.values)
+    }
+    woken.forEach { $0.resume() }
+  }
+
+  func untilSleeping(_ count: Int = 1) async {
+    let latch = Latch()
+    let ready = lock.withLock {
+      if parked.count >= count { return true }
+      waiters.append((count, latch))
+      return false
+    }
+    if !ready { await latch.wait() }
+  }
+}
+
+private final class StubTrack: MeetingTrackSource, @unchecked Sendable {
+  enum Finish { case immediate, gated, never }
+
+  let finishCalled = Latch()
+  private let finish: Finish
+  private let gate = Gate()
+  private let lock = NSLock()
+  private var stops = 0
+  private var returned = false
+
+  init(finish: Finish = .immediate) { self.finish = finish }
+
+  var stopCount: Int { lock.withLock { stops } }
+  var finishedReturned: Bool { lock.withLock { returned } }
+  var callbacks: Int { 0 }
+
+  func openFinish() { gate.open() }
+
+  func start() async throws {}
+
+  func stop() { lock.withLock { stops += 1 } }
+
+  func finished() async {
+    finishCalled.open()
+    switch finish {
+    case .immediate: break
+    case .gated: await gate.wait()
+    case .never: await Gate().wait()
+    }
+    lock.withLock { returned = true }
+  }
+
+  func drain() -> TrackDrain { TrackDrain() }
+}
+
+private final class KeySource: @unchecked Sendable {
+  let called = Latch()
+  private let gate: DispatchSemaphore?
+  private let failure: MeetingFailure?
+
+  init(gated: Bool = false, failure: MeetingFailure? = nil) {
+    gate = gated ? DispatchSemaphore(value: 0) : nil
+    self.failure = failure
+  }
+
+  func open() { gate?.signal() }
+
+  func cipher() throws -> any HistoryCipher {
+    called.open()
+    gate?.wait()
+    if let failure { throw failure }
+    return PassthroughCipher()
+  }
+}
+
+private final class PowerSpy: @unchecked Sendable {
+  private let lock = NSLock()
+  private var released = 0
+
+  var releases: Int { lock.withLock { released } }
+
+  func hold() -> MeetingPowerHold {
+    .held(release: { [self] in lock.withLock { released += 1 } })
+  }
+}
+
+@discardableResult
+private func finishes(_ task: Task<Void, Never>?) async -> Bool {
+  guard let task else { return true }
+  let done = Latch()
+  Task {
+    await task.value
+    done.open()
+  }
+  await done.wait()
+  return done.isOpen
+}
+
+@MainActor
+private final class Rig {
+  let key: KeySource
+  let mic = StubTrack()
+  let system: StubTrack
+  let power = PowerSpy()
+  let quit = ManualSleeper()
+  let ticks = ManualSleeper()
+  let fanout = StreamFanout<DictationSignal>(bufferingPolicy: .unbounded)
+  let root: URL
+  let store: MeetingStore
+  let log: DiagnosticLog
+  private(set) var recoverFlags: [Bool] = []
+
+  lazy var meetings = Meetings(
+    diagnosticLog: { [log] in log },
+    status: MeetingStatusModel(announce: { _ in }),
+    makeDependencies: { [weak self] log, recover in
+      self?.dependencies(log: log, recover: recover)
+    },
+    sleep: { [quit] in try await quit.sleep(for: $0) })
+
+  init(key: KeySource = KeySource(), systemFinish: StubTrack.Finish = .immediate) {
+    let temporary = FileManager.default.temporaryDirectory
+      .appendingPathComponent("vocula-meetings-\(UUID().uuidString)", isDirectory: true)
+    self.key = key
+    system = StubTrack(finish: systemFinish)
+    root = temporary.appendingPathComponent("Meetings", isDirectory: true)
+    store = MeetingStore(directory: root)
+    log = DiagnosticLog(fileURL: temporary.appendingPathComponent("diagnostics.json"))
+    try? FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
+  }
+
+  var meetingIDs: [UUID] {
+    ((try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? [])
+      .compactMap(UUID.init(uuidString:))
+  }
+
+  func header() async -> MeetingHeader? {
+    let ids = meetingIDs
+    guard ids.count == 1 else { return nil }
+    return await store.header(of: ids[0], cipher: PassthroughCipher())
+  }
+
+  func record() async throws {
+    await finishes(meetings.toggle())
+    try #require(meetings.status.isRecording)
+  }
+
+  private func dependencies(log: DiagnosticLog?, recover: Bool) -> MeetingRecorder.Dependencies {
+    recoverFlags.append(recover)
+    let (key, mic, system, power, ticks) = (key, mic, system, power, ticks)
+    return MeetingRecorder.Dependencies(
+      store: store, cipher: { try key.cipher() }, makeMicrophone: { _ in mic },
+      makeSystemAudio: { system }, holdPower: { _ in power.hold() },
+      watchDeviceList: { _ in nil }, now: { 1_000 }, sleep: { try await ticks.sleep(for: $0) },
+      wallClock: { Date(timeIntervalSinceReferenceDate: 800_000_000) }, publish: { _ in },
+      ended: {}, log: log, recover: recover)
+  }
+}
+
+@MainActor
+@Suite("A meeting exists from Record to its end and not a moment longer", .timeLimit(.minutes(1)))
+struct MeetingsTests {
+  @Test func nothingExistsUntilRecord() {
+    let rig = Rig()
+    rig.meetings.pipelineStarted(rig.fanout)
+    rig.fanout.emit(.start(session: 1))
+    rig.fanout.emit(.stop(session: 1, reason: .releasedHold))
+    #expect(rig.recoverFlags.isEmpty)
+    #expect(rig.fanout.subscriberCount == 0)
+    #expect(!rig.meetings.holdsAMeeting)
+  }
+
+  @Test func everythingIsReleasedWhenTheMeetingEnds() async throws {
+    let rig = Rig()
+    rig.meetings.pipelineStarted(rig.fanout)
+    try await rig.record()
+    #expect(rig.fanout.subscriberCount == 1)
+    #expect(rig.meetings.holdsAMeeting)
+    await finishes(rig.meetings.toggle())
+    #expect(!rig.meetings.holdsAMeeting)
+    #expect(rig.fanout.subscriberCount == 0)
+    #expect(rig.mic.stopCount == 1)
+    #expect(rig.system.stopCount == 1)
+    #expect(rig.mic.finishedReturned)
+    #expect(rig.system.finishedReturned)
+    #expect(rig.power.releases == 1)
+  }
+
+  @Test func aUserStopHidesTheItemAtOnce() async throws {
+    let rig = Rig()
+    try await rig.record()
+    #expect(rig.meetings.status.statusItemShown)
+    let stop = rig.meetings.toggle()
+    #expect(!rig.meetings.status.statusItemShown)
+    await finishes(stop)
+  }
+
+  @Test func aPressDuringAPendingStartIsIgnored() async throws {
+    let rig = Rig(key: KeySource(gated: true))
+    let start = try #require(rig.meetings.toggle())
+    await rig.key.called.wait()
+    #expect(rig.meetings.toggle() == nil)
+    rig.key.open()
+    await finishes(start)
+    #expect(rig.meetingIDs.count == 1)
+    #expect(rig.recoverFlags.count == 1)
+    await finishes(rig.meetings.toggle())
+  }
+
+  @Test func aPipelineTearDownDoesNotTouchTheMeeting() async throws {
+    let rig = Rig()
+    rig.meetings.pipelineStarted(rig.fanout)
+    try await rig.record()
+    rig.fanout.finishAll()
+    #expect(rig.fanout.subscriberCount == 0)
+    #expect(rig.meetings.status.isRecording)
+    #expect(rig.mic.stopCount == 0)
+    #expect(rig.system.stopCount == 0)
+    rig.meetings.pipelineStarted(rig.fanout)
+    #expect(rig.fanout.subscriberCount == 1)
+    rig.fanout.emit(.start(session: 2))
+    rig.fanout.finishAll()
+    await finishes(rig.meetings.toggle())
+    #expect(await rig.header()?.endedBy == .stopped)
+  }
+
+  @Test func theRecoveryFlagReachesTheDependencies() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    try await rig.record()
+    #expect(rig.recoverFlags == [true, false])
+    await finishes(rig.meetings.toggle())
+  }
+
+  @Test func aMeetingThatFailedToStartLeavesItsNotice() async {
+    let rig = Rig(key: KeySource(failure: .failed(step: "key", code: -25308)))
+    await finishes(rig.meetings.toggle())
+    #expect(rig.meetings.status.notice == .cannotStart)
+    #expect(rig.meetings.status.statusItemShown)
+    await finishes(rig.meetings.stopping)
+    #expect(!rig.meetings.holdsAMeeting)
+    #expect(rig.meetings.status.statusItemShown)
+  }
+
+  @Test func aStatusTrailingTheFinalOneIsDropped() async throws {
+    let rig = Rig()
+    try await rig.record()
+    let trailing = MeetingStatus(isRecording: true, startedAt: rig.meetings.status.startedAt)
+    rig.meetings.apply(MeetingStatus(notice: .autoStopped), of: 1)
+    rig.meetings.apply(trailing, of: 1)
+    #expect(!rig.meetings.status.isRecording)
+    #expect(rig.meetings.status.notice == .autoStopped)
+    await finishes(rig.meetings.toggle())
+  }
+
+  @Test func aSecondCopyCreatesNoStore() {
+    #expect(Meetings.makeStore() == nil)
+    #expect(Meetings.live(log: nil, recover: true) == nil)
+  }
+
+  @Test func quitWithNoMeetingReturnsAtOnce() async throws {
+    let rig = Rig()
+    #expect(await finishes(Task { await rig.meetings.stopForTermination() }))
+    #expect(rig.quit.calls == 0)
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    await finishes(rig.meetings.stopping)
+    #expect(await finishes(Task { await rig.meetings.stopForTermination() }))
+  }
+
+  @Test func quitAwaitsAQuickTeardown() async throws {
+    let rig = Rig(systemFinish: .gated)
+    try await rig.record()
+    let quit = Task { await rig.meetings.stopForTermination() }
+    await rig.system.finishCalled.wait()
+    await rig.quit.untilSleeping()
+    rig.system.openFinish()
+    #expect(await finishes(quit))
+    #expect(await rig.header()?.endedBy == .quit)
+  }
+
+  @Test func quitAbandonsAHungTeardownAtTheBound() async throws {
+    let rig = Rig(systemFinish: .never)
+    try await rig.record()
+    let quit = Task { await rig.meetings.stopForTermination() }
+    await rig.system.finishCalled.wait()
+    await rig.quit.untilSleeping()
+    rig.quit.fire()
+    #expect(await finishes(quit))
+    let header = await rig.header()
+    #expect(header?.state == .recorded)
+    #expect(header?.endedBy == .quit)
+  }
+
+  @Test func quitAwaitsAUserStartedStop() async throws {
+    let rig = Rig(systemFinish: .gated)
+    try await rig.record()
+    let stop = rig.meetings.toggle()
+    let quit = Task { await rig.meetings.stopForTermination() }
+    await rig.system.finishCalled.wait()
+    await rig.quit.untilSleeping()
+    rig.system.openFinish()
+    #expect(await finishes(quit))
+    #expect(await rig.header()?.endedBy == .stopped)
+    #expect(await finishes(stop))
+  }
+}
