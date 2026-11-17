@@ -3482,61 +3482,61 @@
       }
     },
     "onboarding.microphone.explanation.granted" : {
-      "comment" : "A PRIVACY statement: the microphone is not open outside a dictation. Must keep saying so.",
+      "comment" : "A PRIVACY statement: the microphone is open only during a dictation or a meeting recording the user started. Must keep saying so.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nur eingeschaltet, während Sie diktieren. Außerhalb eines Diktats hört die App überhaupt nichts."
+            "value" : "Nur eingeschaltet, während Sie diktieren oder ein Meeting aufnehmen. Die übrige Zeit hört die App überhaupt nichts."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Switched on only while you dictate. Outside a dictation the app hears nothing at all."
+            "value" : "Switched on only while you dictate or record a meeting. The rest of the time the app hears nothing at all."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Se activa solo mientras dictas. Fuera de un dictado la app no oye nada."
+            "value" : "Se activa solo mientras dictas o grabas una reunión. El resto del tiempo la app no oye nada."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Activé uniquement pendant que vous dictez. Hors dictée, l’app n’entend rien du tout."
+            "value" : "Activé uniquement pendant que vous dictez ou enregistrez une réunion. Le reste du temps, l’app n’entend rien du tout."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Attivo solo mentre detti. Fuori da una dettatura l’app non sente nulla."
+            "value" : "Attivo solo mentre detti o registri una riunione. Il resto del tempo l’app non sente nulla."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Włączony tylko wtedy, gdy dyktujesz. Poza dyktowaniem program nie słyszy nic."
+            "value" : "Włączony tylko wtedy, gdy dyktujesz lub nagrywasz spotkanie. Przez resztę czasu program nie słyszy nic."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ligado somente enquanto você dita. Fora de um ditado o app não ouve absolutamente nada."
+            "value" : "Ligado somente enquanto você dita ou grava uma reunião. No resto do tempo o app não ouve absolutamente nada."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Включается только на время диктовки. Вне диктовки программа не слышит ничего."
+            "value" : "Включается только на время диктовки или записи встречи. В остальное время программа не слышит ничего."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Вмикається лише поки ви диктуєте. Поза диктуванням програма не чує нічого."
+            "value" : "Вмикається лише поки ви диктуєте або записуєте зустріч. Решту часу програма не чує нічого."
           }
         }
       }
@@ -3728,55 +3728,55 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nur eingeschaltet, während Sie diktieren. macOS zeigt diesen Dialog einmal pro Installation: Wenn Sie ihn wegklicken, kann die App nicht erneut fragen."
+            "value" : "Nur eingeschaltet, während Sie diktieren oder ein Meeting aufnehmen. macOS zeigt diesen Dialog einmal pro Installation: Wenn Sie ihn wegklicken, kann die App nicht erneut fragen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Switched on only while you dictate. macOS shows this dialog once per install: if you dismiss it, the app cannot ask again."
+            "value" : "Switched on only while you dictate or record a meeting. macOS shows this dialog once per install: if you dismiss it, the app cannot ask again."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Se activa solo mientras dictas. macOS muestra este diálogo una vez por instalación: si lo descartas, la app no podrá volver a pedirlo."
+            "value" : "Se activa solo mientras dictas o grabas una reunión. macOS muestra este diálogo una vez por instalación: si lo descartas, la app no podrá volver a pedirlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Activé uniquement pendant que vous dictez. macOS affiche cette demande une fois par installation : si vous la fermez, l’app ne pourra plus demander."
+            "value" : "Activé uniquement pendant que vous dictez ou enregistrez une réunion. macOS affiche cette demande une fois par installation : si vous la fermez, l’app ne pourra plus demander."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Attivo solo mentre detti. macOS mostra questa finestra una volta per installazione: se la chiudi, l’app non potrà più chiedere."
+            "value" : "Attivo solo mentre detti o registri una riunione. macOS mostra questa finestra una volta per installazione: se la chiudi, l’app non potrà più chiedere."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Włączony tylko wtedy, gdy dyktujesz. macOS pokazuje to okno raz na instalację: jeśli je zamkniesz, program nie będzie mógł zapytać ponownie."
+            "value" : "Włączony tylko wtedy, gdy dyktujesz lub nagrywasz spotkanie. macOS pokazuje to okno raz na instalację: jeśli je zamkniesz, program nie będzie mógł zapytać ponownie."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Ligado somente enquanto você dita. O macOS mostra esta caixa de diálogo uma vez por instalação: se você fechá-la, o app não poderá perguntar de novo."
+            "value" : "Ligado somente enquanto você dita ou grava uma reunião. O macOS mostra esta caixa de diálogo uma vez por instalação: se você fechá-la, o app não poderá perguntar de novo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Включается только на время диктовки. macOS показывает этот диалог один раз за установку: если закрыть его, программа больше не сможет спросить."
+            "value" : "Включается только на время диктовки или записи встречи. macOS показывает этот диалог один раз за установку: если закрыть его, программа больше не сможет спросить."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Вмикається лише поки ви диктуєте. macOS показує цей діалог один раз за встановлення: якщо закрити його, програма більше не зможе запитати."
+            "value" : "Вмикається лише поки ви диктуєте або записуєте зустріч. macOS показує цей діалог один раз за встановлення: якщо закрити його, програма більше не зможе запитати."
           }
         }
       }

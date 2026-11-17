@@ -9901,6 +9901,786 @@
         }
       }
     },
+    "meeting.status.autoStopSoon" : {
+      "comment" : "Menu line in the last minute before the silence stop; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seit 14 Minuten ist nichts zu hören. Die Aufnahme endet in einer Minute, wenn kein Ton kommt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nothing has been heard for 14 minutes. The recording stops in a minute unless there is sound."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se oye nada desde hace 14 minutos. La grabación se detendrá en un minuto si no hay sonido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien n’a été entendu depuis 14 minutes. L’enregistrement s’arrêtera dans une minute s’il n’y a pas de son."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non si sente nulla da 14 minuti. La registrazione si fermerà tra un minuto se non c’è audio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Od 14 minut nic nie słychać. Nagrywanie zatrzyma się za minutę, jeśli nie pojawi się dźwięk."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nada foi ouvido nos últimos 14 minutos. A gravação para em um minuto se não houver som."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Уже 14 минут ничего не слышно. Если звука не будет, через минуту запись остановится."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Уже 14 хвилин нічого не чути. Якщо звуку не буде, за хвилину запис зупиниться."
+          }
+        }
+      }
+    },
+    "meeting.status.autoStopped" : {
+      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Aufnahme des Meetings endete nach 15 Minuten ohne Ton von selbst. Das Aufgenommene bleibt erhalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The meeting stopped by itself after 15 minutes without sound. What was recorded is kept."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La grabación de la reunión se detuvo sola tras 15 minutos sin sonido. Lo grabado se conserva."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’enregistrement de la réunion s’est arrêté de lui-même après 15 minutes sans son. Ce qui a été enregistré est conservé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La registrazione della riunione si è fermata da sola dopo 15 minuti senza audio. Quanto registrato viene conservato."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagrywanie spotkania zatrzymało się samo po 15 minutach bez dźwięku. To, co nagrano, zostaje zachowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A gravação da reunião parou sozinha após 15 minutos sem som. O que foi gravado é mantido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запись встречи остановилась сама после 15 минут без звука. Записанное сохранено."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запис зустрічі зупинився сам після 15 хвилин без звуку. Записане збережено."
+          }
+        }
+      }
+    },
+    "meeting.status.cannotSave" : {
+      "comment" : "Menu line while chunks fail to be written; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ein Teil der Aufnahme konnte nicht gespeichert werden. Vocula versucht es weiter; prüfen Sie, ob noch Speicherplatz frei ist."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Part of the recording could not be saved. Vocula keeps trying; check that the disk has free space."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo guardar parte de la grabación. Vocula sigue intentándolo; comprueba que el disco tenga espacio libre."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une partie de l’enregistrement n’a pas pu être sauvegardée. Vocula continue d’essayer ; vérifiez qu’il reste de l’espace libre sur le disque."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non è stato possibile salvare parte della registrazione. Vocula continua a provare; controlla che il disco abbia spazio libero."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się zapisać części nagrania. Vocula wciąż próbuje; sprawdź, czy na dysku jest wolne miejsce."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parte da gravação não pôde ser salva. O Vocula continua tentando; verifique se há espaço livre no disco."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Часть записи не удалось сохранить. Vocula продолжает попытки; проверьте, есть ли свободное место на диске."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Частину запису не вдалося зберегти. Vocula продовжує спроби; перевірте, чи є вільне місце на диску."
+          }
+        }
+      }
+    },
+    "meeting.status.cannotStart" : {
+      "comment" : "Menu line after Record failed, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. \"login keychain\" is Apple's name. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Meeting-Aufnahme hat nicht begonnen: Vocula konnte seinen Schlüssel im login keychain nicht erreichen oder nicht auf den Datenträger schreiben."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The meeting did not start: Vocula could not reach its key in the login keychain or could not write to disk."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La grabación de la reunión no empezó: Vocula no pudo acceder a su clave en el login keychain o no pudo escribir en el disco."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’enregistrement de la réunion n’a pas démarré : Vocula n’a pas pu accéder à sa clé dans le login keychain ou n’a pas pu écrire sur le disque."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La registrazione della riunione non è partita: Vocula non ha potuto accedere alla sua chiave nel login keychain o non ha potuto scrivere sul disco."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagrywanie spotkania nie rozpoczęło się: Vocula nie mogła uzyskać dostępu do swojego klucza w login keychain albo nie mogła zapisać danych na dysku."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A gravação da reunião não começou: o Vocula não conseguiu acessar a própria chave no login keychain ou não conseguiu gravar no disco."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запись встречи не началась: Vocula не смогла получить свой ключ из «login keychain» или записать данные на диск."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запис зустрічі не почався: Vocula не змогла отримати свій ключ із «login keychain» або записати дані на диск."
+          }
+        }
+      }
+    },
+    "meeting.status.endedBySleep" : {
+      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Aufnahme des Meetings endete, als der Mac in den Ruhezustand wechselte. Das Aufgenommene bleibt erhalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The meeting stopped when the Mac went to sleep. What was recorded is kept."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La grabación de la reunión se detuvo cuando el Mac entró en reposo. Lo grabado se conserva."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’enregistrement de la réunion s’est arrêté quand le Mac s’est mis en veille. Ce qui a été enregistré est conservé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La registrazione della riunione si è fermata quando il Mac è andato in stop. Quanto registrato viene conservato."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagrywanie spotkania zatrzymało się, gdy Mac przeszedł w stan uśpienia. To, co nagrano, zostaje zachowane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A gravação da reunião parou quando o Mac entrou em repouso. O que foi gravado é mantido."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запись встречи остановилась, когда Mac перешёл в режим сна. Записанное сохранено."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Запис зустрічі зупинився, коли Mac перейшов у режим сну. Записане збережено."
+          }
+        }
+      }
+    },
+    "meeting.status.label" : {
+      "comment" : "VoiceOver label of the meeting's menu bar item while a meeting records; spoken, never drawn. \"Vocula\" is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nimmt ein Meeting auf"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula is recording a meeting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula está grabando una reunión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula enregistre une réunion"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula sta registrando una riunione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nagrywa spotkanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula está gravando uma reunião"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записывает встречу"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записує зустріч"
+          }
+        }
+      }
+    },
+    "meeting.status.labelNotice" : {
+      "comment" : "VoiceOver label of the meeting's menu bar item after a meeting ended or failed to start, while the item still says why; spoken, never drawn. \"Vocula\" is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nimmt kein Meeting auf"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula is not recording a meeting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula no está grabando ninguna reunión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula n’enregistre aucune réunion"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula non sta registrando nessuna riunione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nie nagrywa spotkania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula não está gravando nenhuma reunião"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula не записывает встречу"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula не записує зустріч"
+          }
+        }
+      }
+    },
+    "meeting.status.microphoneNotOpened" : {
+      "comment" : "Menu line for the whole meeting: why the microphone is not recorded and what still is; also spoken by VoiceOver. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ihr Mikrofon wird nicht aufgenommen: Ein Meeting öffnet kein Bluetooth- oder iPhone-Mikrofon, und kein anderes ist ausgewählt. Andere Apps werden aufgenommen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Your microphone is not recorded: a meeting does not open a Bluetooth or iPhone microphone, and none other is chosen. Other apps are recorded."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu micrófono no se graba: una reunión no abre un micrófono Bluetooth ni de iPhone, y no hay otro elegido. Las otras apps sí se graban."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Votre micro n’est pas enregistré : une réunion n’ouvre pas de micro Bluetooth ou d’iPhone, et aucun autre n’est choisi. Les autres apps sont enregistrées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il tuo microfono non viene registrato: una riunione non apre un microfono Bluetooth o di iPhone, e non ne è scelto un altro. Le altre app vengono registrate."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twój mikrofon nie jest nagrywany: spotkanie nie otwiera mikrofonu Bluetooth ani iPhone’a, a żaden inny nie jest wybrany. Inne programy są nagrywane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seu microfone não está sendo gravado: uma reunião não abre um microfone Bluetooth ou de iPhone, e nenhum outro foi escolhido. Os outros apps estão sendo gravados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ваш микрофон не записывается: запись встречи не включает микрофоны Bluetooth и iPhone, а другой не выбран. Звук других программ записывается."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ваш мікрофон не записується: запис зустрічі не вмикає мікрофони Bluetooth та iPhone, а інший не вибрано. Звук інших програм записується."
+          }
+        }
+      }
+    },
+    "meeting.status.microphoneStopped" : {
+      "comment" : "Menu line while the microphone is lost or failed to open; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Das Mikrofon ist ausgefallen. Vocula versucht weiter, es wieder zu öffnen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The microphone stopped. Vocula keeps trying to reopen it."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El micrófono se detuvo. Vocula sigue intentando volver a abrirlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le micro s’est arrêté. Vocula continue d’essayer de le rouvrir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Il microfono si è fermato. Vocula continua a provare a riaprirlo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mikrofon przestał działać. Vocula wciąż próbuje go ponownie otworzyć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O microfone parou. O Vocula continua tentando reabri-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Микрофон перестал работать. Vocula продолжает попытки открыть его снова."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Мікрофон перестав працювати. Vocula продовжує спроби відкрити його знову."
+          }
+        }
+      }
+    },
+    "meeting.status.noSystemAudio" : {
+      "comment" : "Menu line while the system-audio track delivers nothing; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula hört keine andere App."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula hears no other app."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula no oye ninguna otra app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula n’entend aucune autre app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula non sente nessun’altra app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nie słyszy żadnego innego programu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula não ouve nenhum outro app."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula не слышит звук других программ."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula не чує звуку інших програм."
+          }
+        }
+      }
+    },
+    "meeting.status.noSystemAudioYet" : {
+      "comment" : "Menu line after a minute without any sound from other apps; worded to be true whether or not permission was denied. Both pane names are Apple's own, as that Mac shows them. Also spoken by VoiceOver. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula hat noch keine andere App gehört. Ist in Ihrem Anruf Ton zu hören, prüfen Sie System Audio Recording unter Privacy & Security."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula hasn't heard any other app yet. If your call has sound, check System Audio Recording in Privacy & Security."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula aún no ha oído ninguna otra app. Si tu llamada tiene sonido, revisa System Audio Recording en Privacy & Security."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula n’a encore entendu aucune autre app. Si votre appel a du son, vérifiez System Audio Recording dans Privacy & Security."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula non ha ancora sentito nessun’altra app. Se la tua chiamata ha audio, controlla System Audio Recording in Privacy & Security."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nie usłyszała jeszcze żadnego innego programu. Jeśli w rozmowie słychać dźwięk, sprawdź System Audio Recording w Privacy & Security."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula ainda não ouviu nenhum outro app. Se a sua chamada tem som, verifique System Audio Recording em Privacy & Security."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula пока не слышала звука других программ. Если в звонке есть звук, проверьте «System Audio Recording» в «Privacy & Security»."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula поки не чула звуку інших програм. Якщо у дзвінку є звук, перевірте «System Audio Recording» у «Privacy & Security»."
+          }
+        }
+      }
+    },
+    "meeting.status.since" : {
+      "comment" : "Menu line while a meeting records, fixed at its start; the argument is a time of day, already formatted. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme seit %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recording since %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabando desde las %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrement depuis %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "In registrazione dalle %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagrywanie od %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gravando desde %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Идёт запись с %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Триває запис з %@"
+          }
+        }
+      }
+    },
+    "meeting.status.waitingForPermission" : {
+      "comment" : "Menu line while macOS's own System Audio Recording dialog is unanswered; also spoken by VoiceOver when it appears. Does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Warten auf die Erlaubnis, andere Apps aufzunehmen. Beantworten Sie den macOS-Dialog; Ihr Mikrofon wird währenddessen aufgenommen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Waiting for permission to record other apps. Answer the macOS dialog; your microphone is recorded meanwhile."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esperando permiso para grabar otras apps. Responde al diálogo de macOS; mientras tanto, se graba tu micrófono."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En attente de l’autorisation d’enregistrer les autres apps. Répondez à la demande de macOS ; votre micro est enregistré en attendant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "In attesa del permesso di registrare le altre app. Rispondi alla finestra di macOS; nel frattempo viene registrato il tuo microfono."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oczekiwanie na zgodę na nagrywanie innych programów. Odpowiedz w oknie macOS; w międzyczasie nagrywany jest twój mikrofon."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aguardando permissão para gravar outros apps. Responda à caixa de diálogo do macOS; enquanto isso, seu microfone é gravado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ожидание разрешения на запись других программ. Ответьте на запрос macOS; тем временем записывается ваш микрофон."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Очікування дозволу на запис інших програм. Дайте відповідь на запит macOS; тим часом записується ваш мікрофон."
+          }
+        }
+      }
+    },
     "menu.accessibilityRevokedWhileRunning" : {
       "comment" : "Menu bar message shown when Accessibility was switched off while Vocula was running; the argument is a macOS System Settings pane path. Vocula is the app's name and is never translated. \"Quit\" is the app menu's own verb.",
       "extractionState" : "extracted_with_value",
@@ -10257,6 +11037,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Визначати мову автоматично"
+          }
+        }
+      }
+    },
+    "menu.item.dismissMeetingNotice" : {
+      "comment" : "Item in the meeting's menu bar menu after the meeting ended; hides that menu bar item. Menu line: does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ausblenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dismiss"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ocultar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Masquer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nascondi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ocultar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Скрыть"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сховати"
           }
         }
       }
@@ -10801,6 +11641,66 @@
         }
       }
     },
+    "menu.item.recordMeeting" : {
+      "comment" : "Item in Vocula's menu bar menu; starts recording a meeting: the microphone and the sound other apps play. \"(Beta)\" marks unfinished work. Menu line: does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meeting aufnehmen (Beta)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Record Meeting (Beta)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabar reunión (beta)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrer une réunion (bêta)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Registra una riunione (beta)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagraj spotkanie (beta)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gravar reunião (beta)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Записать встречу (бета)"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Записати зустріч (бета)"
+          }
+        }
+      }
+    },
     "menu.item.reportProblem" : {
       "comment" : "Menu bar item composing a problem-report email.",
       "extractionState" : "extracted_with_value",
@@ -10977,6 +11877,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Параметри…"
+          }
+        }
+      }
+    },
+    "menu.item.stopMeeting" : {
+      "comment" : "Item in Vocula's menu bar menu and in the meeting's own menu bar menu; ends the meeting recording. Menu line: does not wrap.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meeting-Aufnahme beenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stop Meeting"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detener la grabación de la reunión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arrêter l’enregistrement de la réunion"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ferma la registrazione della riunione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymaj nagrywanie spotkania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parar a gravação da reunião"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Остановить запись встречи"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Зупинити запис зустрічі"
           }
         }
       }

@@ -139,16 +139,16 @@ public enum OnboardingModel {
       return String(
         localized: "onboarding.microphone.explanation.granted",
         defaultValue:
-          "Switched on only while you dictate. Outside a dictation the app hears nothing at all.",
+          "Switched on only while you dictate or record a meeting. The rest of the time the app hears nothing at all.",
         bundle: .module,
         comment:
-          "A PRIVACY statement: the microphone is not open outside a dictation. Must keep saying so."
+          "A PRIVACY statement: the microphone is open only during a dictation or a meeting recording the user started. Must keep saying so."
       )
     case "onboarding.microphone.explanation.willAsk":
       return String(
         localized: "onboarding.microphone.explanation.willAsk",
         defaultValue:
-          "Switched on only while you dictate. macOS shows this dialog once per install: if you dismiss it, the app cannot ask again.",
+          "Switched on only while you dictate or record a meeting. macOS shows this dialog once per install: if you dismiss it, the app cannot ask again.",
         bundle: .module,
         comment:
           "States the one-shot rule BEFORE the request is made. That macOS asks once per install is a platform fact."

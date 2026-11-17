@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "NSAudioCaptureUsageDescription" : {
+      "comment" : "macOS's own permission prompt for System Audio Recording — the first thing a user reads about it, before any meeting line of ours. It must say when recording happens and nothing more; a longer sentence is truncated by the system dialog.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nimmt den Ton anderer Apps nur auf, während Sie ein Meeting aufnehmen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vocula records other apps' sound only while you record a meeting."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula graba el sonido de otras apps solo mientras grabas una reunión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula n’enregistre le son des autres apps que pendant que vous enregistrez une réunion."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula registra l’audio delle altre app solo mentre registri una riunione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula nagrywa dźwięk innych programów tylko wtedy, gdy nagrywasz spotkanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula grava o som de outros apps somente enquanto você grava uma reunião."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записывает звук других программ только во время записи встречи."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula записує звук інших програм лише під час запису зустрічі."
+          }
+        }
+      }
+    },
     "NSMicrophoneUsageDescription" : {
       "comment" : "The FIRST English a user ever sees — macOS's own microphone permission dialog, before any window of ours. It must say when recording happens and nothing more; a longer sentence is truncated by the system dialog.",
       "extractionState" : "manual",
@@ -8,55 +68,55 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula nimmt nur Audio auf, während Sie diktieren."
+            "value" : "Vocula nimmt nur Audio auf, während Sie diktieren oder ein Meeting aufnehmen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vocula records audio only while you are dictating."
+            "value" : "Vocula records audio only while you dictate or record a meeting."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula graba audio solo mientras dictas."
+            "value" : "Vocula graba audio solo mientras dictas o grabas una reunión."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula n’enregistre du son que pendant que vous dictez."
+            "value" : "Vocula n’enregistre du son que pendant que vous dictez ou enregistrez une réunion."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula registra audio solo mentre detti."
+            "value" : "Vocula registra audio solo mentre detti o registri una riunione."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula nagrywa dźwięk tylko wtedy, gdy dyktujesz."
+            "value" : "Vocula nagrywa dźwięk tylko wtedy, gdy dyktujesz lub nagrywasz spotkanie."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "O Vocula grava áudio somente enquanto você dita."
+            "value" : "O Vocula grava áudio somente enquanto você dita ou grava uma reunião."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula записывает звук только во время диктовки."
+            "value" : "Vocula записывает звук только во время диктовки или записи встречи."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Vocula записує звук лише під час диктування."
+            "value" : "Vocula записує звук лише під час диктування або запису зустрічі."
           }
         }
       }
