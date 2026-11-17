@@ -262,6 +262,7 @@ public actor MeetingRecorder {
   }
 
   private func openMicrophone() async -> MicrophoneTrackState? {
+    guard phase == .recording else { return nil }
     let index = microphones.count
     let microphone = deps.makeMicrophone { [weak self] in await self?.microphoneEnded(index) }
     microphones.append(microphone)
@@ -314,7 +315,7 @@ public actor MeetingRecorder {
     return due
   }
 
-  private func reopenMicrophone(due: UInt64, byTimer: Bool) async {
+  func reopenMicrophone(due: UInt64, byTimer: Bool) async {
     guard let state = await openMicrophone() else { return }
     if case .running = state {
       deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")

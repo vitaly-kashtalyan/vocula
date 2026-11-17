@@ -429,12 +429,25 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
     await h.tick(.seconds(5))
     #expect(h.audioFiles() == ["mic-000000.sealed"])
     #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == true)
-    await h.recorder.deviceListChanged()
+    #expect(await value(of: Task { await h.recorder.deviceListChanged() }) != nil)
     #expect(h.micsMade == 2)
     slow.openStart()
     await h.settleReopen()
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
     #expect(h.micsMade == 2)
+  }
+
+  @Test func aReopenThatRunsAfterTheEndMakesNoMicrophone() async {
+    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.recorder.stop(.stopped)
+    let late = Task { await h.recorder.reopenMicrophone(due: anchor + 5 * s, byTimer: true) }
+    #expect(await value(of: late) != nil)
+    #expect(h.micsMade == 1)
+    #expect(mics[1].startCount == 0)
+    #expect(mics[0].stopCount >= 1)
   }
 
   @Test func theDeviceListIsWatchedOnlyDuringALoss() async {
