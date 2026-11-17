@@ -202,7 +202,7 @@ private func voices(_ count: Int) -> [TrackDrain] {
   @Test func stopDoesNotWaitForABlockedTap() async {
     let system = FakeTrackSource(start: .gated, finish: .never)
     let h = MeetingHarness(system: system)
-    await h.recorder.start()
+    #expect(await value(of: Task { await h.recorder.start() }) != nil)
     Task { await h.recorder.stop(.stopped) }
     await h.ended.wait()
     #expect(await h.header()?.state == .recorded)
@@ -304,7 +304,10 @@ private func voices(_ count: Int) -> [TrackDrain] {
     let h = MeetingHarness(cipher: cipher)
     let starting = Task { await h.recorder.start() }
     await cipher.called.wait()
-    await h.recorder.dictation(.start(session: 1), generation: 1, at: anchor)
+    #expect(
+      await value(
+        of: Task { await h.recorder.dictation(.start(session: 1), generation: 1, at: anchor) })
+        != nil)
     cipher.open()
     #expect(await value(of: starting) != nil)
     await h.recorder.dictation(.start(session: 2), generation: 1, at: anchor + s)
