@@ -386,10 +386,55 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
     await h.recorder.start()
     await mics[0].onEnded?()
     await h.tick(.seconds(4))
+    await h.settleReopen()
     #expect(h.micsMade == 1)
     await h.tick(.seconds(1))
+    await h.settleReopen()
     #expect(h.micsMade == 2)
     #expect(mics[1].startCount == 1)
+  }
+
+  @Test func aFailedAttemptDoublesTheTimerAndADeviceChangeLeavesIt() async {
+    let mics = [FakeTrackSource()] + failingMicrophones(5)
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.tick(.seconds(5))
+    await h.settleReopen()
+    #expect(h.micsMade == 2)
+    await h.tick(.seconds(9))
+    await h.settleReopen()
+    #expect(h.micsMade == 2)
+    await h.tick(.seconds(1))
+    await h.settleReopen()
+    #expect(h.micsMade == 3)
+    await h.recorder.deviceListChanged()
+    #expect(h.micsMade == 4)
+    await h.tick(.seconds(19))
+    await h.settleReopen()
+    #expect(h.micsMade == 4)
+    await h.tick(.seconds(1))
+    await h.settleReopen()
+    #expect(h.micsMade == 5)
+  }
+
+  @Test func aSlowReopenHoldsUpNeitherTheFlushNorTheSample() async {
+    let slow = FakeTrackSource(start: .gated)
+    let mics = [FakeTrackSource(drains: [TrackDrain(), voice(at: anchor)]), slow]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.tick(.seconds(5))
+    await slow.startCalled.wait()
+    await h.tick(.seconds(5))
+    #expect(h.audioFiles() == ["mic-000000.sealed"])
+    #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == true)
+    await h.recorder.deviceListChanged()
+    #expect(h.micsMade == 2)
+    slow.openStart()
+    await h.settleReopen()
+    #expect(h.detail(of: "meeting.micReopened") == "count=1")
+    #expect(h.micsMade == 2)
   }
 
   @Test func theDeviceListIsWatchedOnlyDuringALoss() async {
@@ -437,6 +482,7 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
     await h.tick(.seconds(1))
     #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == true)
     await h.tick(.seconds(1))
+    await h.settleReopen()
     let lines = h.log.recent(100).filter {
       $0.kind == "meeting.warning" && $0.detail == "reason=microphoneStopped"
     }
@@ -449,6 +495,7 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
     let h = MeetingHarness(mics: [FakeTrackSource(start: .fail(.notOpened))])
     await h.recorder.start()
     await h.tick(.seconds(120))
+    await h.settleReopen()
     #expect(h.statuses.last?.warnings.contains(.microphoneNotOpened) == true)
     #expect(h.micsMade == 1)
     await h.recorder.deviceListChanged()

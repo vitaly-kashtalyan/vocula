@@ -98,6 +98,7 @@ public actor MeetingRecorder {
   private var shownWarnings: [MeetingWarning] = []
   private var schedule = MicReopenSchedule()
   private var reopenAt: UInt64?
+  private var reopening: Task<Void, Never>?
   private var deviceWatch: AnyObject?
   private var spans = DictationSpans()
   private var generations = 0
@@ -214,11 +215,16 @@ public actor MeetingRecorder {
   }
 
   public func deviceListChanged() async {
-    await reopenMicrophone(byTimer: false)
+    guard let due = takeReopen(dueBy: .max) else { return }
+    await reopenMicrophone(due: due, byTimer: false)
   }
 
   func systemStartSettled() async {
     await systemStart?.value
+  }
+
+  func reopenSettled() async {
+    await reopening?.value
   }
 
   private static func lookUp(_ cipher: @escaping @Sendable () throws -> any HistoryCipher)
@@ -302,9 +308,13 @@ public actor MeetingRecorder {
     }
   }
 
-  private func reopenMicrophone(byTimer: Bool) async {
-    guard phase == .recording, let due = reopenAt else { return }
+  private func takeReopen(dueBy now: UInt64) -> UInt64? {
+    guard phase == .recording, let due = reopenAt, due <= now else { return nil }
     reopenAt = nil
+    return due
+  }
+
+  private func reopenMicrophone(due: UInt64, byTimer: Bool) async {
     guard let state = await openMicrophone() else { return }
     if case .running = state {
       deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")
@@ -328,8 +338,10 @@ public actor MeetingRecorder {
   }
 
   private func sample() async {
-    if let due = reopenAt, deps.now() >= due { await reopenMicrophone(byTimer: true) }
     guard phase == .recording else { return }
+    if let due = takeReopen(dueBy: deps.now()) {
+      reopening = Task { [weak self] in await self?.reopenMicrophone(due: due, byTimer: true) }
+    }
     let report = liveness.sample(
       MeetingSample(
         now: deps.now(), microphone: microphoneState,

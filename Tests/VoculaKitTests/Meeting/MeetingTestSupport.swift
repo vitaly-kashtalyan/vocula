@@ -557,4 +557,9 @@ final class MeetingHarness: @unchecked Sendable {
     let recorder = recorder
     _ = await value(of: Task { await recorder.systemStartSettled() })
   }
+
+  func settleReopen() async {
+    let recorder = recorder
+    _ = await value(of: Task { await recorder.reopenSettled() })
+  }
 }
