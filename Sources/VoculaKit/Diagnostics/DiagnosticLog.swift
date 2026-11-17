@@ -121,6 +121,10 @@ public final class DiagnosticLog: @unchecked Sendable {
     "meeting.tapFailed",
     "meeting.sleepAllowed",
     "meeting.powerFailed",
+    "meeting.warning",
+    "meeting.micLost",
+    "meeting.micReopened",
+    "meeting.systemZeros",
   ]
 
   enum FieldShape {

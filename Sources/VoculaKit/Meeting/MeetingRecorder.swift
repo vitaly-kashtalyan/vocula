@@ -86,13 +86,19 @@ public actor MeetingRecorder {
   private var systemStart: Task<Void, Never>?
   private var loop: Task<Void, Never>?
   private var finishing: Task<Void, Never>?
-  private var flushing: Task<Void, Never>?
+  private var flushing: Task<SilenceStop.Verdict, Never>?
   private var headerWrite: Task<Void, Never>?
   private var lastFlush: UInt64 = 0
   private var lastSystemSound: UInt64?
   private var sequences: [MeetingTrack: UInt32] = [:]
   private var tally = MeetingTally(anchor: 0)
   private var liveness = MeetingLiveness()
+  private var silence = SilenceStop(startedAt: 0)
+  private var silenceVerdict = SilenceStop.Verdict.recording
+  private var shownWarnings: [MeetingWarning] = []
+  private var schedule = MicReopenSchedule()
+  private var reopenAt: UInt64?
+  private var deviceWatch: AnyObject?
   private var spans = DictationSpans()
   private var generations = 0
 
@@ -131,6 +137,7 @@ public actor MeetingRecorder {
     }
     self.header = header
     tally = MeetingTally(anchor: header.anchor)
+    silence = SilenceStop(startedAt: header.anchor)
     lastFlush = header.anchor
 
     switch deps.holdPower({ [weak self] in await self?.systemWillSleep() }) {
@@ -156,6 +163,7 @@ public actor MeetingRecorder {
 
     guard let microphone = await openMicrophone() else { return }
     microphoneState = microphone
+    if microphone == .failedToOpen { microphoneLost() }
     loop = Task { [weak self, sleep = deps.sleep] in
       while !Task.isCancelled {
         do { try await sleep(Self.sampleInterval) } catch { return }
@@ -205,6 +213,10 @@ public actor MeetingRecorder {
     await keep(spans.generationEnded(generation, at: host))
   }
 
+  public func deviceListChanged() async {
+    await reopenMicrophone(byTimer: false)
+  }
+
   func systemStartSettled() async {
     await systemStart?.value
   }
@@ -244,7 +256,8 @@ public actor MeetingRecorder {
   }
 
   private func openMicrophone() async -> MicrophoneTrackState? {
-    let microphone = deps.makeMicrophone {}
+    let index = microphones.count
+    let microphone = deps.makeMicrophone { [weak self] in await self?.microphoneEnded(index) }
     microphones.append(microphone)
     let state: MicrophoneTrackState
     do {
@@ -253,6 +266,7 @@ public actor MeetingRecorder {
     } catch MeetingFailure.notOpened {
       state = .notOpened
     } catch {
+      microphone.stop()
       state = .failedToOpen
     }
     guard phase == .recording else {
@@ -272,25 +286,78 @@ public actor MeetingRecorder {
     }
   }
 
-  private func tick() async {
-    guard phase == .recording,
-      HostTime.elapsed(from: lastFlush, to: deps.now()) >= Self.flushEvery
+  private func microphoneEnded(_ index: Int) {
+    guard phase == .recording, index == microphones.count - 1, case .running = microphoneState
     else { return }
-    await flush()
+    microphones[index].stop()
+    microphoneState = .lost(at: deps.now())
+    microphoneLost()
   }
 
-  private func flush() async {
+  private func microphoneLost() {
+    deps.log?.record("meeting.micLost", "")
+    reopenAt = schedule.lost(at: deps.now())
+    deviceWatch = deps.watchDeviceList { [weak self] in
+      Task { await self?.deviceListChanged() }
+    }
+  }
+
+  private func reopenMicrophone(byTimer: Bool) async {
+    guard phase == .recording, let due = reopenAt else { return }
+    reopenAt = nil
+    guard let state = await openMicrophone() else { return }
+    if case .running = state {
+      deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")
+      microphoneState = state
+      deviceWatch = nil
+    } else if byTimer {
+      reopenAt = schedule.timerAttemptFailed(at: deps.now())
+    } else {
+      schedule.deviceListAttemptFailed()
+      reopenAt = due
+    }
+  }
+
+  private func tick() async {
+    guard phase == .recording else { return }
+    if HostTime.elapsed(from: lastFlush, to: deps.now()) >= Self.flushEvery {
+      silenceVerdict = await flush()
+      if silenceVerdict == .stop { return await finishRecording(.autoStopped) }
+    }
+    await sample()
+  }
+
+  private func sample() async {
+    if let due = reopenAt, deps.now() >= due { await reopenMicrophone(byTimer: true) }
+    guard phase == .recording else { return }
+    let report = liveness.sample(
+      MeetingSample(
+        now: deps.now(), microphone: microphoneState,
+        microphoneCallbacks: microphones.last?.callbacks ?? 0, system: systemState,
+        systemCallbacks: system?.callbacks ?? 0, lastSystemSound: lastSystemSound,
+        autoStopSoon: silenceVerdict == .stopsSoon))
+    for warning in report.raised {
+      deps.log?.record("meeting.warning", "reason=\(warning.rawValue)")
+    }
+    if report.systemZerosBegan { deps.log?.record("meeting.systemZeros", "") }
+    guard report.warnings != shownWarnings else { return }
+    shownWarnings = report.warnings
+    await deps.publish(
+      MeetingStatus(isRecording: true, startedAt: header?.startedAt, warnings: report.warnings))
+  }
+
+  private func flush() async -> SilenceStop.Verdict {
     let previous = flushing
     let flush = Task { [weak self] in
-      await previous?.value
-      guard let self else { return }
-      await self.writeChunks()
+      _ = await previous?.value
+      guard let self else { return SilenceStop.Verdict.recording }
+      return await self.writeChunks()
     }
     flushing = flush
-    await flush.value
+    return await flush.value
   }
 
-  private func writeChunks() async {
+  private func writeChunks() async -> SilenceStop.Verdict {
     lastFlush = deps.now()
     let micDrains = microphones.map { $0.drain() }
     let systemDrains = system.map { [$0.drain()] } ?? []
@@ -303,6 +370,9 @@ public actor MeetingRecorder {
     if liveness.saved(failed: failure != nil), let failure {
       deps.log?.record("meeting.writeFailed", failure)
     }
+    return silence.levels(
+      micPeak: micDrains.map(\.peak).max() ?? 0, systemPeak: systemDrains.map(\.peak).max() ?? 0,
+      at: deps.now())
   }
 
   private func save(_ drains: [TrackDrain], as track: MeetingTrack) async -> String? {
@@ -355,6 +425,7 @@ public actor MeetingRecorder {
     phase = .ended
     loop?.cancel()
     systemStart?.cancel()
+    deviceWatch = nil
     for microphone in microphones { microphone.stop() }
     system?.stop()
     let wrapUp = Task { [weak self] in
@@ -366,7 +437,7 @@ public actor MeetingRecorder {
   }
 
   private func wrapUp(_ end: MeetingEnd) async {
-    await flush()
+    _ = await flush()
     let host = deps.now()
     if var header {
       header.dictations += spans.meetingEnded(at: host).map { clipped($0, to: host) }

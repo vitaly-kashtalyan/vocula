@@ -26,4 +26,22 @@ import Testing
     log.record(kind, "")
     #expect(log.recent(1).first?.kind == kind)
   }
+
+  @Test(arguments: MeetingWarning.allCases) func aWarningLineIsStoredUnderItsKind(
+    warning: MeetingWarning
+  ) {
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    log.record("meeting.warning", "reason=\(warning.rawValue)")
+    #expect(log.recent(1).first?.kind == "meeting.warning")
+    #expect(log.recent(1).first?.detail == "reason=\(warning.rawValue)")
+  }
+
+  @Test(arguments: ["meeting.micLost", "meeting.micReopened", "meeting.systemZeros"])
+  func theLivenessKindsAreAllowed(kind: String) {
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    log.record(kind, "")
+    #expect(log.recent(1).first?.kind == kind)
+  }
 }
