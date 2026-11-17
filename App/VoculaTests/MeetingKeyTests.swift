@@ -14,9 +14,11 @@ private final class RecordingKeychain: @unchecked Sendable {
   private var addedAttributes: [String: Any] = [:]
   private let lookupStatus: OSStatus
   private let lookupData: Data?
+  private let addStatus: OSStatus
 
-  init(lookupStatus: OSStatus, lookupData: Data? = nil) {
+  init(lookupStatus: OSStatus, lookupData: Data? = nil, addStatus: OSStatus = errSecSuccess) {
     self.lookupStatus = lookupStatus
+    self.addStatus = addStatus
     self.lookupData = lookupData
   }
 
@@ -35,7 +37,7 @@ private final class RecordingKeychain: @unchecked Sendable {
           self.recorded.append(.add)
           self.addedAttributes = attributes as? [String: Any] ?? [:]
         }
-        return errSecSuccess
+        return self.addStatus
       })
   }
 }
@@ -68,17 +70,32 @@ struct MeetingKeyTests {
     let cipher = try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
     #expect(recording.calls == [.copy])
     let plaintext = Data("meeting".utf8)
-    #expect(try cipher.open(try cipher.seal(plaintext)) == plaintext)
+    #expect(try MeetingSeal(key: key).open(try cipher.seal(plaintext)) == plaintext)
   }
 
   @Test func aMissingKeyIsMintedWithoutADelete() throws {
     let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
-    _ = try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+    let cipher = try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
     #expect(recording.calls == [.copy, .add])
+    #expect(recording.added[kSecAttrService as String] as? String == "app.vocula.mac")
+    #expect(recording.added[kSecAttrAccount as String] as? String == "meetings")
+    let stored = try #require(recording.added[kSecValueData as String] as? Data)
+    let plaintext = Data("meeting".utf8)
+    #expect(
+      try MeetingSeal(key: SymmetricKey(data: stored)).open(try cipher.seal(plaintext)) == plaintext
+    )
     #expect(
       recording.added[kSecAttrAccessible as String] as? String
         == kSecAttrAccessibleWhenUnlockedThisDeviceOnly as String)
     #expect((recording.added[kSecValueData as String] as? Data)?.count == 32)
+  }
+
+  @Test func aRefusedAddFailsTheKey() {
+    let recording = RecordingKeychain(lookupStatus: errSecItemNotFound, addStatus: -25299)
+    #expect(throws: MeetingFailure.failed(step: "key", code: -25299)) {
+      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+    }
+    #expect(recording.calls == [.copy, .add])
   }
 
   @Test func aLockedKeychainMintsNothing() {

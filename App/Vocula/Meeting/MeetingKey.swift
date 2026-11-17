@@ -15,7 +15,7 @@ struct MeetingSeal: HistoryCipher {
     case sealFailed
   }
 
-  let key: SymmetricKey
+  private let key: SymmetricKey
 
   init(key: SymmetricKey) { self.key = key }
 
@@ -52,7 +52,8 @@ enum MeetingKey {
     let existing = status == errSecSuccess ? item as? Data : nil
     switch MeetingKeyRule.step(afterLookup: status, keyByteCount: existing?.count) {
     case .use:
-      return MeetingSeal(key: SymmetricKey(data: existing ?? Data()))
+      guard let existing else { throw MeetingFailure.failed(step: "key", code: 0) }
+      return MeetingSeal(key: SymmetricKey(data: existing))
     case .mint:
       let fresh = SymmetricKey(size: .bits256)
       var attributes = query()
