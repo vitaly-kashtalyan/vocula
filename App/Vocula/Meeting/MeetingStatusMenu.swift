@@ -9,7 +9,8 @@ struct MeetingStatusScene: Scene {
     MenuBarExtra(
       isInserted: Binding(
         get: { shown },
-        set: { if !$0 { meetings.status.statusItemRemoved() } })
+        // Workaround: SwiftUI echoes every programmatic isInserted change through this setter (three times, with the value just built), so only a false while the item is shown is the user removing it.
+        set: { if !$0 && shown { meetings.status.statusItemRemoved() } })
     ) {
       MeetingStatusMenu(meetings: meetings)
     } label: {
