@@ -37,7 +37,8 @@ actor SystemAudioTap: MeetingTrackSource {
   private let buffer = Mutex<TrackBuffer?>(nil)
   private var tap = AudioObjectID(kAudioObjectUnknown)
   private var aggregate = AudioObjectID(kAudioObjectUnknown)
-  private var rateWatch: AudioObjectPropertyListenerBlock?
+  private var rateWatch: RateWatch?
+  private var watchingRate = false
   private var ioProc: AudioDeviceIOProcID?
 
   init(outputs: @escaping Outputs = SystemAudioTap.liveOutputs) {
@@ -136,12 +137,15 @@ actor SystemAudioTap: MeetingTrackSource {
       throw MeetingFailure.failed(step: "format", code: 0)
     }
     self.buffer.withLock { $0 = buffer }
-    let watch = Self.followRate(of: aggregate, into: buffer)
+    let watch = RateWatch(aggregate: aggregate, buffer: buffer)
     rateWatch = watch
+    watchingRate = true
     for source in rateSources {
       var address = Self.address(source.selector)
       try Self.check(
-        "format", AudioObjectAddPropertyListenerBlock(source.object, &address, Self.queue, watch))
+        "format",
+        AudioObjectAddPropertyListener(
+          source.object, &address, Self.followRate, Unmanaged.passUnretained(watch).toOpaque()))
     }
 
     try Self.check(
@@ -157,12 +161,13 @@ actor SystemAudioTap: MeetingTrackSource {
       AudioDeviceDestroyIOProcID(aggregate, ioProc)
       self.ioProc = nil
     }
-    if let rateWatch {
+    if watchingRate, let rateWatch {
       for source in rateSources {
         var address = Self.address(source.selector)
-        AudioObjectRemovePropertyListenerBlock(source.object, &address, Self.queue, rateWatch)
+        AudioObjectRemovePropertyListener(
+          source.object, &address, Self.followRate, Unmanaged.passUnretained(rateWatch).toOpaque())
       }
-      self.rateWatch = nil
+      watchingRate = false
     }
     if aggregate != kAudioObjectUnknown {
       AudioHardwareDestroyAggregateDevice(aggregate)
@@ -193,13 +198,25 @@ actor SystemAudioTap: MeetingTrackSource {
     }
   }
 
-  private static func followRate(of aggregate: AudioObjectID, into buffer: TrackBuffer)
-    -> AudioObjectPropertyListenerBlock
-  {
-    { _, _ in
-      guard let rate = liveRate(of: aggregate) else { return }
-      buffer.setRate(rate)
+  private final class RateWatch: Sendable {
+    let aggregate: AudioObjectID
+    let buffer: TrackBuffer
+
+    init(aggregate: AudioObjectID, buffer: TrackBuffer) {
+      self.aggregate = aggregate
+      self.buffer = buffer
     }
+  }
+
+  // Workaround: Swift re-bridges a listener block on each call, so its removal never matches;
+  // the HAL may call this C proc on the main thread, so it only hops to the tap queue.
+  private static let followRate: AudioObjectPropertyListenerProc = { _, _, _, context in
+    guard let context else { return noErr }
+    let watch = Unmanaged<RateWatch>.fromOpaque(context).takeUnretainedValue()
+    queue.async {
+      if let rate = liveRate(of: watch.aggregate) { watch.buffer.setRate(rate) }
+    }
+    return noErr
   }
 
   private static func liveRate(of aggregate: AudioObjectID) -> Double? {
