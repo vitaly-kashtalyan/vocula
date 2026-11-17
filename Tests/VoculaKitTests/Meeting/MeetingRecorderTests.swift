@@ -55,7 +55,7 @@ private let s: UInt64 = 1_000_000_000
     let h = MeetingHarness(cipher: cipher)
     let first = Task { await h.recorder.start() }
     await cipher.called.wait()
-    await h.recorder.start()
+    #expect(await value(of: Task { await h.recorder.start() }) != nil)
     cipher.open()
     #expect(await value(of: first) != nil)
     #expect(h.meetingDirectories.count == 1)
@@ -67,7 +67,7 @@ private let s: UInt64 = 1_000_000_000
     let h = MeetingHarness(cipher: cipher)
     let starting = Task { await h.recorder.start() }
     await cipher.called.wait()
-    await h.recorder.stop(.quit)
+    #expect(await value(of: Task { await h.recorder.stop(.quit) }) != nil)
     #expect(h.ended.isOpen == false)
     cipher.open()
     #expect(await value(of: starting) != nil)
@@ -203,13 +203,34 @@ private func voices(_ count: Int) -> [TrackDrain] {
     let system = FakeTrackSource(start: .gated, finish: .never)
     let h = MeetingHarness(system: system)
     await h.recorder.start()
-    let stopping = Task { await h.recorder.stop(.stopped) }
+    Task { await h.recorder.stop(.stopped) }
     await h.ended.wait()
     #expect(await h.header()?.state == .recorded)
     #expect(system.stopCount == 1)
     await system.finishCalled.wait()
     #expect(system.finishedReturned == false)
-    stopping.cancel()
+  }
+
+  @Test func theLastFlushFollowsTheOneInFlight() async {
+    let cipher = GatedSealCipher()
+    let mic = FakeTrackSource(drains: voices(1))
+    let h = MeetingHarness(
+      cipher: CipherSource(cipher), mics: [mic], system: FakeTrackSource(drains: voices(1)))
+    await h.recorder.start()
+    await h.clock.untilSleeping()
+    cipher.holdNextSeal()
+    h.clock.advance(by: .seconds(3))
+    await cipher.sealHeld.wait()
+    let stopping = Task { await h.recorder.stop(.stopped) }
+    await mic.stopCalled.wait()
+    cipher.releaseSeal()
+    await h.ended.wait()
+    #expect(
+      h.detail(of: "meeting.stop")
+        == "reason=stopped micSeconds=0 micSoundSeconds=1 systemSeconds=0 systemSoundSeconds=1"
+        + " runs=2 droppedSeconds=0")
+    #expect(h.audioFilesWhenEnded == ["mic-000000.sealed", "system-000000.sealed"])
+    #expect(await value(of: stopping) != nil)
   }
 
   @Test func theStopAwaitsATeardownThatReturns() async {
@@ -230,7 +251,7 @@ private func voices(_ count: Int) -> [TrackDrain] {
     let h = MeetingHarness(mics: [mic])
     let starting = Task { await h.recorder.start() }
     await mic.startCalled.wait()
-    await h.recorder.stop(.stopped)
+    #expect(await value(of: Task { await h.recorder.stop(.stopped) }) != nil)
     mic.openStart()
     #expect(await value(of: starting) != nil)
     #expect(mic.stopCount == 2)
@@ -259,7 +280,7 @@ private func voices(_ count: Int) -> [TrackDrain] {
     let system = FakeTrackSource(finish: .never)
     let h = MeetingHarness(system: system)
     await h.recorder.start()
-    await h.power.onWillSleep?()
+    #expect(await value(of: Task { await h.power.onWillSleep?() }) != nil)
     #expect(await h.header()?.endedBy == .sleep)
     #expect(h.kinds() == ["meeting.start", "meeting.stop", "meeting.sleepAllowed"])
     #expect(h.statuses.last?.notice == .endedBySleep)

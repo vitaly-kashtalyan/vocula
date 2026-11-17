@@ -86,6 +86,7 @@ public actor MeetingRecorder {
   private var systemStart: Task<Void, Never>?
   private var loop: Task<Void, Never>?
   private var finishing: Task<Void, Never>?
+  private var flushing: Task<Void, Never>?
   private var headerWrite: Task<Void, Never>?
   private var lastFlush: UInt64 = 0
   private var lastSystemSound: UInt64?
@@ -279,6 +280,17 @@ public actor MeetingRecorder {
   }
 
   private func flush() async {
+    let previous = flushing
+    let flush = Task { [weak self] in
+      await previous?.value
+      guard let self else { return }
+      await self.writeChunks()
+    }
+    flushing = flush
+    await flush.value
+  }
+
+  private func writeChunks() async {
     lastFlush = deps.now()
     let micDrains = microphones.map { $0.drain() }
     let systemDrains = system.map { [$0.drain()] } ?? []

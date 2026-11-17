@@ -240,6 +240,60 @@ final class Latch: @unchecked Sendable {
   }
 }
 
+final class Gate: @unchecked Sendable {
+  private let lock = NSLock()
+  private var opened = false
+  private var waiting: [CheckedContinuation<Void, Never>] = []
+
+  init() {}
+
+  func open() {
+    let resumed: [CheckedContinuation<Void, Never>] = lock.withLock {
+      opened = true
+      defer { waiting = [] }
+      return waiting
+    }
+    resumed.forEach { $0.resume() }
+  }
+
+  func wait() async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+      let already = lock.withLock {
+        if opened { return true }
+        waiting.append(continuation)
+        return false
+      }
+      if already { continuation.resume() }
+    }
+  }
+}
+
+final class GatedSealCipher: HistoryCipher, @unchecked Sendable {
+  let sealHeld = Latch()
+  private let marking = MarkingCipher()
+  private let release = DispatchSemaphore(value: 0)
+  private let lock = NSLock()
+  private var armed = false
+
+  func holdNextSeal() { lock.withLock { armed = true } }
+
+  func releaseSeal() { release.signal() }
+
+  func seal(_ plaintext: Data) throws -> Data {
+    let hold = lock.withLock {
+      defer { armed = false }
+      return armed
+    }
+    if hold {
+      sealHeld.open()
+      release.wait()
+    }
+    return try marking.seal(plaintext)
+  }
+
+  func open(_ ciphertext: Data) throws -> Data { try marking.open(ciphertext) }
+}
+
 func voice(at host: UInt64) -> TrackDrain {
   TrackDrain(
     runs: [MeetingRun(start: host, samples: Array(repeating: 400, count: 160))], freshRuns: 1)
@@ -255,9 +309,10 @@ final class FakeTrackSource: MeetingTrackSource, @unchecked Sendable {
   enum FinishMode { case immediate, gated, never }
 
   let startCalled = Latch()
+  let stopCalled = Latch()
   let finishCalled = Latch()
-  private let startGate = Latch()
-  private let finishGate = Latch()
+  private let startGate = Gate()
+  private let finishGate = Gate()
   private let startMode: StartMode
   private let finishMode: FinishMode
   private let lock = NSLock()
@@ -301,7 +356,10 @@ final class FakeTrackSource: MeetingTrackSource, @unchecked Sendable {
     }
   }
 
-  func stop() { lock.withLock { stops += 1 } }
+  func stop() {
+    lock.withLock { stops += 1 }
+    stopCalled.open()
+  }
 
   func finished() async {
     finishCalled.open()
@@ -309,7 +367,7 @@ final class FakeTrackSource: MeetingTrackSource, @unchecked Sendable {
     case .immediate: break
     case .gated: await finishGate.wait()
     case .never:
-      await Latch().wait()
+      await Gate().wait()
       return
     }
     lock.withLock { returned = true }
@@ -379,6 +437,7 @@ final class MeetingHarness: @unchecked Sendable {
     var waiting: [FakeTrackSource]
     var made = 0
     var watches = 0
+    var filesWhenEnded: [String]?
     weak var watch: AnyObject?
 
     init(_ mics: [FakeTrackSource]) { waiting = mics }
@@ -446,7 +505,11 @@ final class MeetingHarness: @unchecked Sendable {
         sleep: { try await clock.sleep(for: $0) },
         wallClock: { wallClock },
         publish: { status in record.lock.withLock { record.statuses.append(status) } },
-        ended: { ended.open() },
+        ended: {
+          let files = Self.audioFiles(under: root)
+          record.lock.withLock { record.filesWhenEnded = files }
+          ended.open()
+        },
         log: log,
         recover: recover))
   }
@@ -455,14 +518,19 @@ final class MeetingHarness: @unchecked Sendable {
   var micsMade: Int { record.lock.withLock { record.made } }
   var deviceWatches: Int { record.lock.withLock { record.watches } }
   var deviceWatch: AnyObject? { record.lock.withLock { record.watch } }
+  var audioFilesWhenEnded: [String]? { record.lock.withLock { record.filesWhenEnded } }
 
-  var meetingDirectories: [URL] {
+  var meetingDirectories: [URL] { Self.meetingDirectories(under: root) }
+
+  func audioFiles() -> [String] { Self.audioFiles(under: root) }
+
+  private static func meetingDirectories(under root: URL) -> [URL] {
     let names = (try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? []
     return names.filter { UUID(uuidString: $0) != nil }.map { root.appendingPathComponent($0) }
   }
 
-  func audioFiles() -> [String] {
-    guard let meeting = meetingDirectories.first else { return [] }
+  private static func audioFiles(under root: URL) -> [String] {
+    guard let meeting = meetingDirectories(under: root).first else { return [] }
     let audio = meeting.appendingPathComponent("audio").path
     return ((try? FileManager.default.contentsOfDirectory(atPath: audio)) ?? []).sorted()
   }
