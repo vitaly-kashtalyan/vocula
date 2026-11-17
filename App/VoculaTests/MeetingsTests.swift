@@ -214,8 +214,6 @@ private func finishes(_ task: Task<Void, Never>?) async -> Bool {
 @MainActor
 private final class Rig {
   let key: KeySource
-  let mic = StubTrack()
-  let system: StubTrack
   let power = PowerSpy()
   let quit = ManualSleeper()
   let ticks = ManualSleeper()
@@ -223,7 +221,14 @@ private final class Rig {
   let root: URL
   let store: MeetingStore
   let log: DiagnosticLog
+  private let temporary: URL
+  private let systemFinishes: [StubTrack.Finish]
   private(set) var recoverFlags: [Bool] = []
+  private(set) var mics: [StubTrack] = []
+  private(set) var systems: [StubTrack] = []
+
+  var mic: StubTrack { mics[0] }
+  var system: StubTrack { systems[0] }
 
   lazy var meetings = Meetings(
     diagnosticLog: { [log] in log },
@@ -233,26 +238,38 @@ private final class Rig {
     },
     sleep: { [quit] in try await quit.sleep(for: $0) })
 
-  init(key: KeySource = KeySource(), systemFinish: StubTrack.Finish = .immediate) {
+  init(key: KeySource = KeySource(), systemFinish: StubTrack.Finish...) {
     let temporary = FileManager.default.temporaryDirectory
       .appendingPathComponent("vocula-meetings-\(UUID().uuidString)", isDirectory: true)
     self.key = key
-    system = StubTrack(finish: systemFinish)
+    self.temporary = temporary
+    systemFinishes = systemFinish
     root = temporary.appendingPathComponent("Meetings", isDirectory: true)
     store = MeetingStore(directory: root)
     log = DiagnosticLog(fileURL: temporary.appendingPathComponent("diagnostics.json"))
     try? FileManager.default.createDirectory(at: temporary, withIntermediateDirectories: true)
   }
 
+  deinit { try? FileManager.default.removeItem(at: temporary) }
+
   var meetingIDs: [UUID] {
     ((try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? [])
       .compactMap(UUID.init(uuidString:))
   }
 
+  func headers() async -> [MeetingHeader] {
+    var headers: [MeetingHeader] = []
+    for id in meetingIDs {
+      if let header = await store.header(of: id, cipher: PassthroughCipher()) {
+        headers.append(header)
+      }
+    }
+    return headers
+  }
+
   func header() async -> MeetingHeader? {
-    let ids = meetingIDs
-    guard ids.count == 1 else { return nil }
-    return await store.header(of: ids[0], cipher: PassthroughCipher())
+    let headers = await headers()
+    return headers.count == 1 ? headers[0] : nil
   }
 
   func record() async throws {
@@ -262,7 +279,12 @@ private final class Rig {
 
   private func dependencies(log: DiagnosticLog?, recover: Bool) -> MeetingRecorder.Dependencies {
     recoverFlags.append(recover)
-    let (key, mic, system, power, ticks) = (key, mic, system, power, ticks)
+    let mic = StubTrack()
+    let system = StubTrack(
+      finish: mics.count < systemFinishes.count ? systemFinishes[mics.count] : .immediate)
+    mics.append(mic)
+    systems.append(system)
+    let (key, power, ticks) = (key, power, ticks)
     return MeetingRecorder.Dependencies(
       store: store, cipher: { try key.cipher() }, makeMicrophone: { _ in mic },
       makeSystemAudio: { system }, holdPower: { _ in power.hold() },
@@ -387,9 +409,14 @@ struct MeetingsTests {
   @Test func quitAwaitsAQuickTeardown() async throws {
     let rig = Rig(systemFinish: .gated)
     try await rig.record()
-    let quit = Task { await rig.meetings.stopForTermination() }
+    let returned = Latch()
+    let quit = Task {
+      await rig.meetings.stopForTermination()
+      returned.open()
+    }
     await rig.system.finishCalled.wait()
     await rig.quit.untilSleeping()
+    #expect(!returned.isOpen)
     rig.system.openFinish()
     #expect(await finishes(quit))
     #expect(await rig.header()?.endedBy == .quit)
@@ -412,12 +439,47 @@ struct MeetingsTests {
     let rig = Rig(systemFinish: .gated)
     try await rig.record()
     let stop = rig.meetings.toggle()
-    let quit = Task { await rig.meetings.stopForTermination() }
+    let returned = Latch()
+    let quit = Task {
+      await rig.meetings.stopForTermination()
+      returned.open()
+    }
     await rig.system.finishCalled.wait()
     await rig.quit.untilSleeping()
+    #expect(!returned.isOpen)
     rig.system.openFinish()
     #expect(await finishes(quit))
     #expect(await rig.header()?.endedBy == .stopped)
     #expect(await finishes(stop))
+  }
+
+  @Test func aHungTeardownDoesNotHoldUpTheNextMeetingsStop() async throws {
+    let rig = Rig(systemFinish: .never)
+    try await rig.record()
+    rig.meetings.toggle()
+    await rig.systems[0].finishCalled.wait()
+    try await rig.record()
+    rig.meetings.toggle()
+    await rig.systems[1].finishCalled.wait()
+    #expect(rig.mics[1].stopCount == 1)
+    let headers = await rig.headers()
+    #expect(headers.map(\.state) == [.recorded, .recorded])
+    #expect(headers.map(\.endedBy) == [.stopped, .stopped])
+  }
+
+  @Test func aHungTeardownDoesNotHoldUpTheNextMeetingsQuit() async throws {
+    let rig = Rig(systemFinish: .never)
+    try await rig.record()
+    rig.meetings.toggle()
+    await rig.systems[0].finishCalled.wait()
+    try await rig.record()
+    let quit = Task { await rig.meetings.stopForTermination() }
+    await rig.systems[1].finishCalled.wait()
+    await rig.quit.untilSleeping()
+    rig.quit.fire()
+    #expect(await finishes(quit))
+    let headers = await rig.headers()
+    #expect(headers.map(\.state) == [.recorded, .recorded])
+    #expect(Set(headers.compactMap(\.endedBy)) == [.stopped, .quit])
   }
 }

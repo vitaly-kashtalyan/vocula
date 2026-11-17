@@ -76,8 +76,8 @@ final class Meetings {
     let previous = stopping
     let recorder = recorder
     let work = Task {
-      await previous?.value
       await recorder?.stop(.quit)
+      await previous?.value
     }
     _ = await MeetingBound.wait(for: work, atMost: MeetingBound.termination, sleep: sleep)
   }
@@ -131,8 +131,8 @@ final class Meetings {
     follower?.cancel()
     stopping = Task {
       await follower?.value
-      await previous?.value
       await recorder?.stop(.stopped)
+      await previous?.value
     }
   }
 }
