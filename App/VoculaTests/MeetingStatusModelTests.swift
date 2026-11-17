@@ -60,6 +60,15 @@ struct MeetingStatusModelTests {
     #expect(model.statusItemShown)
   }
 
+  @Test func aMeetingThatEndedWhileTheItemWasRemovedStaysHidden() async {
+    let (model, _) = make()
+    model.update(MeetingStatus(isRecording: true, startedAt: Date()))
+    let task = model.statusItemRemoved()
+    model.update(MeetingStatus())
+    await task?.value
+    #expect(!model.statusItemShown)
+  }
+
   @Test func removingTheItemDismissesANotice() {
     let (model, _) = make()
     model.update(MeetingStatus(notice: .autoStopped))
