@@ -298,6 +298,19 @@ private func dictate(_ session: Int, into h: MeetingHarness) async {
   }
 }
 
+private func askToSleep(
+  _ recorder: isolated MeetingRecorder, after asked: Latch, in h: MeetingHarness
+)
+  async -> (files: [String], state: MeetingState?)
+{
+  asked.open()
+  await recorder.systemWillSleep()
+  let files = h.audioFiles()
+  return (files, await h.header()?.state)
+}
+
+private func onRecorder(_ recorder: isolated MeetingRecorder) {}
+
 @Suite(.timeLimit(.minutes(1))) struct MeetingRecorderSleepTests {
   @Test func sleepStopsTheMeetingThenLogsTheAllow() async {
     let system = FakeTrackSource(finish: .never)
@@ -309,6 +322,27 @@ private func dictate(_ session: Int, into h: MeetingHarness) async {
     #expect(h.statuses.last?.notice == .endedBySleep)
     #expect(h.power.releases == 1)
     #expect(system.stopCount == 1)
+  }
+
+  @Test func aSleepDuringAStopWaitsUntilTheStopIsWritten() async {
+    let cipher = GatedSealCipher()
+    let h = MeetingHarness(
+      cipher: CipherSource(cipher), mics: [FakeTrackSource(drains: voices(1))])
+    await h.recorder.start()
+    cipher.holdNextSeal()
+    let stopping = Task { await h.recorder.stop(.stopped) }
+    await cipher.sealHeld.wait()
+    let asked = Latch()
+    let sleeping = Task { await askToSleep(h.recorder, after: asked, in: h) }
+    await asked.wait()
+    await onRecorder(h.recorder)
+    cipher.releaseSeal()
+    let atReturn = await value(of: sleeping)
+    #expect(atReturn?.files == ["mic-000000.sealed"])
+    #expect(atReturn?.state == .recorded)
+    #expect(h.kinds() == ["meeting.start", "meeting.stop", "meeting.sleepAllowed"])
+    #expect(await h.header()?.endedBy == .stopped)
+    #expect(await value(of: stopping) != nil)
   }
 }
 
@@ -547,6 +581,27 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
     #expect(h.statuses.last?.warnings.contains(.waitingForPermission) == false)
     await h.tick(.seconds(1))
     #expect(h.statuses.last?.warnings.contains(.waitingForPermission) == true)
+    system.openStart()
+  }
+
+  @Test func aSlowFirstMicrophoneOpenHoldsUpNeitherTheFlushNorTheTapWarning() async {
+    let mic = FakeTrackSource(
+      start: .gated, drains: [TrackDrain(), TrackDrain(), voice(at: anchor)])
+    let system = FakeTrackSource(start: .gated, drains: voices(1))
+    let h = MeetingHarness(mics: [mic], system: system)
+    let starting = Task { await h.recorder.start() }
+    await mic.startCalled.wait()
+    await h.tick(.seconds(3))
+    #expect(h.audioFiles() == ["system-000000.sealed"])
+    await h.tick(.seconds(12))
+    #expect(h.statuses.last?.warnings == [.waitingForPermission])
+    mic.openStart()
+    #expect(await value(of: starting) != nil)
+    await h.tick(.seconds(3))
+    #expect(h.audioFiles() == ["mic-000000.sealed", "system-000000.sealed"])
+    #expect(h.statuses.last?.warnings == [.waitingForPermission])
+    #expect(h.micsMade == 1)
+    #expect(mic.stopCount == 0)
     system.openStart()
   }
 

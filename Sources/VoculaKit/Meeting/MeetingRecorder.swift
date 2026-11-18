@@ -81,7 +81,7 @@ public actor MeetingRecorder {
   private var release: (@Sendable () -> Void)?
   private var microphones: [any MeetingTrackSource] = []
   private var system: (any MeetingTrackSource)?
-  private var microphoneState = MicrophoneTrackState.notOpened
+  private var microphoneState = MicrophoneTrackState.opening
   private var systemState = SystemTrackState.failed
   private var systemStart: Task<Void, Never>?
   private var loop: Task<Void, Never>?
@@ -162,9 +162,6 @@ public actor MeetingRecorder {
       }
     }
 
-    guard let microphone = await openMicrophone() else { return }
-    microphoneState = microphone
-    if microphone == .failedToOpen { microphoneLost() }
     loop = Task { [weak self, sleep = deps.sleep] in
       while !Task.isCancelled {
         do { try await sleep(Self.sampleInterval) } catch { return }
@@ -172,6 +169,9 @@ public actor MeetingRecorder {
         await self.tick()
       }
     }
+    guard let microphone = await openMicrophone() else { return }
+    microphoneState = microphone
+    if microphone == .failedToOpen { microphoneLost() }
   }
 
   public func stop(_ end: MeetingEnd) async {
@@ -190,8 +190,11 @@ public actor MeetingRecorder {
   }
 
   public func systemWillSleep() async {
-    guard phase == .recording else { return }
-    await finishRecording(.sleep)
+    switch phase {
+    case .fresh, .starting: return
+    case .recording: await finishRecording(.sleep)
+    case .ended: await finishing?.value
+    }
     deps.log?.record("meeting.sleepAllowed", "")
   }
 

@@ -6,7 +6,7 @@ public enum MeetingWarning: String, CaseIterable, Hashable, Sendable {
 }
 
 public enum MicrophoneTrackState: Equatable, Sendable {
-  case notOpened, failedToOpen
+  case opening, notOpened, failedToOpen
   case running(since: UInt64)
   case lost(at: UInt64)
 }
@@ -86,6 +86,7 @@ public struct MeetingLiveness: Sendable {
     var zerosBegan = false
 
     switch sample.microphone {
+    case .opening: break
     case .notOpened: found.insert(.microphoneNotOpened)
     case .failedToOpen: found.insert(.microphoneStopped)
     case .lost(let at):
