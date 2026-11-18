@@ -44,6 +44,7 @@ public struct MeetingLivenessReport: Equatable, Sendable {
   public let warnings: [MeetingWarning]
   public let raised: [MeetingWarning]
   public let systemZerosBegan: Bool
+  public let microphoneStalledSince: UInt64?
 }
 
 public struct MeetingLiveness: Sendable {
@@ -84,6 +85,7 @@ public struct MeetingLiveness: Sendable {
     let now = sample.now
     var found: Set<MeetingWarning> = []
     var zerosBegan = false
+    var stalledSince: UInt64?
 
     switch sample.microphone {
     case .opening: break
@@ -94,6 +96,7 @@ public struct MeetingLiveness: Sendable {
     case .running(let since):
       if microphonePulse.stalled(since: since, count: sample.microphoneCallbacks, now: now) {
         found.insert(.microphoneStopped)
+        stalledSince = microphonePulse.changed
       }
     }
 
@@ -125,7 +128,9 @@ public struct MeetingLiveness: Sendable {
     let warnings = MeetingWarning.allCases.filter(found.contains)
     let raised = warnings.filter { !previous.contains($0) }
     previous = warnings
-    return MeetingLivenessReport(warnings: warnings, raised: raised, systemZerosBegan: zerosBegan)
+    return MeetingLivenessReport(
+      warnings: warnings, raised: raised, systemZerosBegan: zerosBegan,
+      microphoneStalledSince: stalledSince)
   }
 
   public mutating func saved(failed: Bool) -> Bool {

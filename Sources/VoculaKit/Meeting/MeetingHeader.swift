@@ -55,7 +55,13 @@ public struct DictationSpan: Codable, Equatable, Sendable {
 
   public init(start: UInt64, end: UInt64) {
     self.start = start
-    self.end = end
+    self.end = max(start, end)
+  }
+
+  public init(from decoder: any Decoder) {
+    let fields = try? decoder.container(keyedBy: CodingKeys.self)
+    let start = (try? fields?.decode(UInt64.self, forKey: .start)) ?? 0
+    self.init(start: start, end: (try? fields?.decode(UInt64.self, forKey: .end)) ?? start)
   }
 }
 
@@ -63,9 +69,9 @@ public struct MeetingHeader: Codable, Equatable, Sendable {
   public let id: UUID
   public let startedAt: Date
   public let anchor: UInt64
-  public var end: Date?
-  public var state: MeetingState
-  public var endedBy: MeetingEnd?
+  public private(set) var end: Date?
+  public private(set) var state: MeetingState
+  public private(set) var endedBy: MeetingEnd?
   public var dictations: [DictationSpan]
 
   public init(id: UUID, startedAt: Date, anchor: UInt64) {
@@ -76,6 +82,12 @@ public struct MeetingHeader: Codable, Equatable, Sendable {
     self.state = .recording
     self.endedBy = nil
     self.dictations = []
+  }
+
+  public mutating func finish(atHost host: UInt64, by end: MeetingEnd) {
+    self.end = date(atHost: host)
+    state = .recorded
+    endedBy = end
   }
 
   public func date(atHost host: UInt64) -> Date {

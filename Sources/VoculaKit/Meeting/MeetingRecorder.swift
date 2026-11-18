@@ -82,6 +82,7 @@ public actor MeetingRecorder {
   private var microphones: [any MeetingTrackSource] = []
   private var system: (any MeetingTrackSource)?
   private var microphoneState = MicrophoneTrackState.opening
+  private var endedWhileOpening: Int?
   private var systemState = SystemTrackState.failed
   private var systemStart: Task<Void, Never>?
   private var loop: Task<Void, Never>?
@@ -129,9 +130,7 @@ public actor MeetingRecorder {
     }
     self.cipher = cipher
     if let end = pendingEnd {
-      header.state = .recorded
-      header.end = header.date(atHost: deps.now())
-      header.endedBy = end
+      header.finish(atHost: deps.now(), by: end)
       self.header = header
       await save(header)
       return await conclude()
@@ -272,13 +271,13 @@ public actor MeetingRecorder {
     let state: MicrophoneTrackState
     do {
       try await microphone.start()
-      state = .running(since: deps.now())
+      state = endedWhileOpening == index ? .failedToOpen : .running(since: deps.now())
     } catch MeetingFailure.notOpened {
       state = .notOpened
     } catch {
-      microphone.stop()
       state = .failedToOpen
     }
+    if state == .failedToOpen { microphone.stop() }
     guard phase == .recording else {
       microphone.stop()
       return nil
@@ -297,10 +296,17 @@ public actor MeetingRecorder {
   }
 
   private func microphoneEnded(_ index: Int) {
-    guard phase == .recording, index == microphones.count - 1, case .running = microphoneState
-    else { return }
-    microphones[index].stop()
-    microphoneState = .lost(at: deps.now())
+    guard phase == .recording, index == microphones.count - 1 else { return }
+    guard case .running = microphoneState else {
+      endedWhileOpening = index
+      return
+    }
+    loseMicrophone(at: deps.now())
+  }
+
+  private func loseMicrophone(at host: UInt64) {
+    microphones.last?.stop()
+    microphoneState = .lost(at: host)
     microphoneLost()
   }
 
@@ -352,6 +358,7 @@ public actor MeetingRecorder {
         microphoneCallbacks: microphones.last?.callbacks ?? 0, system: systemState,
         systemCallbacks: system?.callbacks ?? 0, lastSystemSound: lastSystemSound,
         autoStopSoon: silenceVerdict == .stopsSoon))
+    if let since = report.microphoneStalledSince { loseMicrophone(at: since) }
     for warning in report.raised {
       deps.log?.record("meeting.warning", "reason=\(warning.rawValue)")
     }
@@ -462,9 +469,7 @@ public actor MeetingRecorder {
     let host = deps.now()
     if var header {
       header.dictations += spans.meetingEnded(at: host).map { clipped($0, to: host) }
-      header.state = .recorded
-      header.end = header.date(atHost: host)
-      header.endedBy = end
+      header.finish(atHost: host, by: end)
       self.header = header
       await save(header)
     }

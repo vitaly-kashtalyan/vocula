@@ -55,6 +55,7 @@ public struct MeetingChunk: Equatable, Sendable {
     }
     sequence = try integer(UInt32.self)
     let count = try integer(UInt32.self)
+    guard count > 0 else { throw DecodeError.malformed }
     var runs: [MeetingRun] = []
     for _ in 0..<count {
       let start = try integer(UInt64.self)
@@ -74,7 +75,10 @@ public struct MeetingChunk: Equatable, Sendable {
     func put<T: FixedWidthInteger>(_ value: T) {
       withUnsafeBytes(of: value.littleEndian) { out.append(contentsOf: $0) }
     }
-    put(track == .mic ? UInt8(0) : UInt8(1))
+    switch track {
+    case .mic: put(UInt8(0))
+    case .system: put(UInt8(1))
+    }
     put(sequence)
     put(UInt32(runs.count))
     for run in runs {

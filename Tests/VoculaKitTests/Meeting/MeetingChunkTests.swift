@@ -50,6 +50,11 @@ struct MeetingChunkTests {
     }
   }
 
+  @Test func aChunkWithoutRunsThrows() {
+    let empty = MeetingChunk(track: .mic, sequence: 3, runs: []).encoded()
+    #expect(throws: MeetingChunk.DecodeError.self) { try MeetingChunk(decoding: empty) }
+  }
+
   @Test func samplesAreClampedToSixteenBits() {
     #expect(MeetingRun.sample(2) == 32767)
     #expect(MeetingRun.sample(-2) == -32767)

@@ -87,6 +87,25 @@ private let s: UInt64 = 1_000_000_000
     #expect(h.detail(of: "meeting.recovered") == (recover ? "count=1" : nil))
   }
 
+  @Test(arguments: [MeetingEnd.sleep, .quit])
+  func anEndDuringTheFirstPublishStartsNoTrack(end: MeetingEnd) async {
+    let system = FakeTrackSource()
+    let h = MeetingHarness(system: system, holdFirstPublish: true)
+    let starting = Task { await h.recorder.start() }
+    await h.publishHeld.wait()
+    let ending = Task {
+      if end == .sleep { await h.power.onWillSleep?() } else { await h.recorder.stop(end) }
+    }
+    #expect(await value(of: ending) != nil)
+    h.releasePublish()
+    #expect(await value(of: starting) != nil)
+    await h.settleSystemStart()
+    #expect(system.startCount == 0)
+    #expect(h.micsMade == 0)
+    #expect(h.clock.parked == 0)
+    #expect(await h.header()?.endedBy == end)
+  }
+
   @Test func aPowerFailureIsLoggedAndTheMeetingRecords() async {
     let h = MeetingHarness(power: PowerHoldSpy(failing: -536_870_211))
     await h.recorder.start()
@@ -410,6 +429,17 @@ private func onRecorder(_ recorder: isolated MeetingRecorder) {}
     #expect(await h.header()?.dictations == [DictationSpan(start: anchor + s, end: h.clock.now())])
   }
 
+  @Test func aStaleGenerationEndLeavesTheNewStreamsSpanOpen() async {
+    let h = MeetingHarness()
+    await h.recorder.start()
+    await h.recorder.dictation(.start(session: 1), generation: 2, at: anchor + s)
+    await h.recorder.generationEnded(1, at: anchor + 2 * s)
+    #expect(await h.header()?.dictations == [])
+    await h.recorder.dictation(
+      .stop(session: 1, reason: .releasedHold), generation: 2, at: anchor + 3 * s)
+    #expect(await h.header()?.dictations == [DictationSpan(start: anchor + s, end: anchor + 3 * s)])
+  }
+
   @Test func aSpanIsClippedToTheMeeting() async {
     let h = MeetingHarness()
     await h.recorder.start()
@@ -424,7 +454,139 @@ private func failingMicrophones(_ count: Int) -> [FakeTrackSource] {
   (0..<count).map { _ in FakeTrackSource(start: .fail(.failed(step: "start", code: -1))) }
 }
 
+private func firstOf(
+  _ a: @escaping @Sendable () async -> Void, _ b: @escaping @Sendable () async -> Void
+)
+  async
+{
+  await withTaskGroup(of: Void.self) { group in
+    group.addTask { await a() }
+    group.addTask { await b() }
+    await group.next()
+    group.cancelAll()
+  }
+}
+
+private func pastFifteenMinutes(_ h: MeetingHarness) async {
+  await h.tick(.seconds(600))
+  h.clock.advance(by: .seconds(300))
+  await firstOf({ await h.clock.untilSleeping() }, { await h.ended.wait() })
+}
+
 @Suite(.timeLimit(.minutes(1))) struct MeetingRecorderLivenessTests {
+  @Test func aMicrophoneThatFailsAtRecordIsRetried() async {
+    let h = MeetingHarness(mics: failingMicrophones(1) + [FakeTrackSource()])
+    await h.recorder.start()
+    await h.tick(.seconds(5))
+    await h.settleReopen()
+    #expect(h.micsMade == 2)
+    #expect(h.detail(of: "meeting.micReopened") == "count=1")
+  }
+
+  @Test func aMicrophoneThatEndsWhileOpeningIsLostAndReopened() async {
+    let first = FakeTrackSource(start: .gated)
+    let h = MeetingHarness(mics: [first, FakeTrackSource()])
+    let starting = Task { await h.recorder.start() }
+    await first.startCalled.wait()
+    await first.onEnded?()
+    first.openStart()
+    #expect(await value(of: starting) != nil)
+    #expect(h.kinds().filter { $0 == "meeting.micLost" }.count == 1)
+    #expect(first.stopCount == 1)
+    await h.tick(.seconds(5))
+    await h.settleReopen()
+    #expect(h.micsMade == 2)
+    #expect(h.detail(of: "meeting.micReopened") == "count=1")
+  }
+
+  @Test func aReopenedMicrophoneThatEndsWhileOpeningIsRetried() async {
+    let slow = FakeTrackSource(start: .gated)
+    let mics = [FakeTrackSource(), slow, FakeTrackSource()]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.tick(.seconds(5))
+    await slow.startCalled.wait()
+    await slow.onEnded?()
+    slow.openStart()
+    await h.settleReopen()
+    #expect(h.detail(of: "meeting.micReopened") == nil)
+    #expect(slow.stopCount == 1)
+    await h.tick(.seconds(10))
+    await h.settleReopen()
+    #expect(h.micsMade == 3)
+    #expect(h.detail(of: "meeting.micReopened") == "count=2")
+  }
+
+  @Test func aMicrophoneThatNeverDeliversIsLostAndReopened() async {
+    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await h.tick(.seconds(9))
+    #expect(!h.kinds().contains("meeting.micLost"))
+    await h.tick(.seconds(1))
+    #expect(h.kinds().filter { $0 == "meeting.micLost" }.count == 1)
+    #expect(mics[0].stopCount == 1)
+    #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == true)
+    await h.tick(.seconds(1))
+    #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == true)
+    #expect(h.log.recent(100).filter { $0.detail == "reason=microphoneStopped" }.count == 1)
+    await h.tick(.seconds(4))
+    await h.settleReopen()
+    #expect(h.micsMade == 2)
+    #expect(h.detail(of: "meeting.micReopened") == "count=1")
+  }
+
+  @Test func aDeviceListChangeReachesTheRecorder() async {
+    let mics = [FakeTrackSource(), FakeTrackSource(start: .gated)]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    h.fireDeviceListChange()
+    await mics[1].startCalled.wait()
+    #expect(h.micsMade == 2)
+    mics[1].openStart()
+  }
+
+  @Test func aStaleEndFromAReplacedMicrophoneChangesNothing() async {
+    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.recorder.deviceListChanged()
+    await mics[0].onEnded?()
+    #expect(h.kinds().filter { $0 == "meeting.micLost" }.count == 1)
+    #expect(mics[1].stopCount == 0)
+  }
+
+  @Test func speechOnTheMicrophoneKeepsTheMeeting() async {
+    let h = MeetingHarness(mics: [FakeTrackSource(drains: [voice(at: anchor)])])
+    await h.recorder.start()
+    await pastFifteenMinutes(h)
+    #expect(h.ended.isOpen == false)
+    #expect(!h.statuses.contains { $0.warnings.contains(.autoStopSoon) })
+  }
+
+  @Test func anyOtherAppSoundKeepsTheMeeting() async {
+    let quiet = TrackDrain(runs: [MeetingRun(start: anchor, samples: [1])], freshRuns: 1)
+    let h = MeetingHarness(system: FakeTrackSource(drains: [quiet]))
+    await h.recorder.start()
+    await pastFifteenMinutes(h)
+    #expect(h.ended.isOpen == false)
+    #expect(!h.statuses.contains { $0.warnings.contains(.autoStopSoon) })
+  }
+
+  @Test func speechOnAReopenedMicrophoneKeepsTheMeeting() async {
+    let mics = [FakeTrackSource(), FakeTrackSource(drains: [voice(at: anchor)])]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await h.recorder.deviceListChanged()
+    await pastFifteenMinutes(h)
+    #expect(h.ended.isOpen == false)
+    #expect(!h.statuses.contains { $0.warnings.contains(.autoStopSoon) })
+  }
+
   @Test func aLostMicrophoneIsReopenedOnADeviceChange() async {
     let mics = [FakeTrackSource(), FakeTrackSource()]
     let h = MeetingHarness(mics: mics)

@@ -223,11 +223,92 @@ import Testing
     #expect(after == before)
   }
 
+  @Test func chunksThatDoNotOpenLeaveTheMeetingUntouched() async throws {
+    let root = meetingTemporaryDirectory()
+    let old = header()
+    try plant(
+      header: old,
+      chunks: [
+        "audio/mic-000000.sealed": Data("garbage".utf8),
+        "audio/system-000000.sealed": Data("garbage".utf8),
+        "audio/mic-000001.sealed.partial": Data("x".utf8),
+      ], in: root)
+    let before = snapshot(root)
+    let store = MeetingStore(directory: root)
+    let count = try await store.begin(header(), cipher: MarkingCipher(), recovering: true)
+    #expect(count == 0)
+    #expect(snapshot(root).filter { $0.key.contains(old.id.uuidString) } == before)
+  }
+
+  @Test func anAudioDirectoryThatDoesNotListLeavesTheMeetingUntouched() async throws {
+    let root = meetingTemporaryDirectory()
+    let old = header()
+    try plant(header: old, chunks: ["header.sealed.partial": Data("x".utf8)], in: root)
+    let audio = root.appendingPathComponent(old.id.uuidString).appendingPathComponent("audio")
+    try FileManager.default.removeItem(at: audio)
+    try Data("not a directory".utf8).write(to: audio)
+    let before = snapshot(root)
+    let store = MeetingStore(directory: root)
+    let count = try await store.begin(header(), cipher: MarkingCipher(), recovering: true)
+    #expect(count == 0)
+    #expect(snapshot(root).filter { $0.key.contains(old.id.uuidString) } == before)
+  }
+
+  @Test func aHeaderInAnotherMeetingsFolderIsNotThatMeeting() async throws {
+    let root = meetingTemporaryDirectory()
+    let cipher = MarkingCipher()
+    let old = header()
+    try plant(header: old, chunks: ["header.sealed.partial": Data("x".utf8)], in: root)
+    let copyID = UUID()
+    let copy = root.appendingPathComponent(copyID.uuidString)
+    try FileManager.default.copyItem(
+      at: root.appendingPathComponent(old.id.uuidString), to: copy)
+    let before = snapshot(copy)
+    let store = MeetingStore(directory: root)
+    let count = try await store.begin(header(), cipher: cipher, recovering: true)
+    #expect(count == 1)
+    #expect(snapshot(copy) == before)
+    #expect(await store.header(of: copyID, cipher: cipher) == nil)
+    #expect(await store.header(of: old.id, cipher: cipher)?.state == .recorded)
+  }
+
+  @Test func aChunkFiledUnderTheOtherTrackIsIgnored() async throws {
+    let root = meetingTemporaryDirectory()
+    let cipher = MarkingCipher()
+    let old = header()
+    try plant(
+      header: old,
+      chunks: [
+        "audio/mic-000000.sealed": sealed(chunk(.mic, 0, at: s, count: 2)),
+        "audio/mic-000001.sealed": sealed(chunk(.system, 1, at: s + 4 * 62_500, count: 2)),
+      ], in: root)
+    let store = MeetingStore(directory: root)
+    _ = try await store.begin(header(), cipher: cipher, recovering: true)
+    #expect(
+      await store.header(of: old.id, cipher: cipher)?.end == started.addingTimeInterval(0.000125))
+    #expect(await store.timeline(of: old.id, track: .mic, cipher: cipher) == [7, 7])
+  }
+
+  @Test func aChunkWithoutRunsFallsBackToTheOneBefore() async throws {
+    let root = meetingTemporaryDirectory()
+    let cipher = MarkingCipher()
+    let old = header()
+    try plant(
+      header: old,
+      chunks: [
+        "audio/mic-000000.sealed": sealed(chunk(.mic, 0, at: s, count: 16_000)),
+        "audio/mic-000001.sealed": sealed(MeetingChunk(track: .mic, sequence: 1, runs: [])),
+      ], in: root)
+    let store = MeetingStore(directory: root)
+    _ = try await store.begin(header(), cipher: cipher, recovering: true)
+    #expect(await store.header(of: old.id, cipher: cipher)?.end == started.addingTimeInterval(1))
+  }
+
   @Test func aRecordedMeetingIsLeftUntouched() async throws {
     let root = meetingTemporaryDirectory()
     let cipher = MarkingCipher()
     var old = header()
-    old.state = .recorded
+    old.finish(atHost: old.anchor, by: .stopped)
     try plant(header: old, chunks: [:], in: root)
     let before = snapshot(root)
     let store = MeetingStore(directory: root)
@@ -251,7 +332,7 @@ import Testing
     let root = meetingTemporaryDirectory()
     let cipher = MarkingCipher()
     var h = header()
-    h.end = started.addingTimeInterval(1)
+    h.finish(atHost: 2 * s, by: .stopped)
     try plant(
       header: h,
       chunks: [

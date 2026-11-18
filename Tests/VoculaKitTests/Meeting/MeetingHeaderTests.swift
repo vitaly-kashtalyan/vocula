@@ -36,12 +36,32 @@ struct MeetingHeaderTests {
 
   @Test func theHeaderSurvivesJSON() throws {
     var h = MeetingHeader(id: UUID(), startedAt: Date(timeIntervalSince1970: 1_000), anchor: 9)
-    h.endedBy = .sleep
-    h.state = .recorded
-    h.end = Date(timeIntervalSince1970: 2_000)
+    h.finish(atHost: 1_000_000_000_009, by: .sleep)
     h.dictations = [DictationSpan(start: 1, end: 2), DictationSpan(start: 3, end: 4)]
     let back = try JSONDecoder().decode(MeetingHeader.self, from: JSONEncoder().encode(h))
     #expect(back == h)
+  }
+
+  @Test func finishingSetsTheEndTheStateAndTheReasonTogether() {
+    var h = MeetingHeader(
+      id: UUID(), startedAt: Date(timeIntervalSince1970: 1_000), anchor: 5_000_000_000)
+    h.finish(atHost: 7_500_000_000, by: .sleep)
+    #expect(h.end == Date(timeIntervalSince1970: 1_002.5))
+    #expect(h.state == .recorded)
+    #expect(h.endedBy == .sleep)
+  }
+
+  @Test func aSpanNeverEndsBeforeItStarts() {
+    #expect(DictationSpan(start: 5, end: 3) == DictationSpan(start: 5, end: 5))
+    #expect(DictationSpan(start: 5, end: 3).end == 5)
+  }
+
+  @Test func aDecodedSpanIsOrderedAndNeverThrows() throws {
+    let decoder = JSONDecoder()
+    let backwards = try decoder.decode(DictationSpan.self, from: Data(#"{"start":5,"end":3}"#.utf8))
+    #expect(backwards.end == 5)
+    let partial = try? decoder.decode(DictationSpan.self, from: Data(#"{"start":5}"#.utf8))
+    #expect(partial == DictationSpan(start: 5, end: 5))
   }
 
   @Test func theAggregateIsInvisibleToDictation() {

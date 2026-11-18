@@ -33,6 +33,11 @@ private let minute: UInt64 = 60_000_000_000
     #expect(stop.levels(micPeak: 0, systemPeak: 0, at: 15 * minute) == .recording)
   }
 
+  @Test func theWarningAndTheStopMatchTheCopy() {
+    #expect(SilenceStop.warnAfter == 14 * minute)
+    #expect(SilenceStop.stopAfter == 15 * minute)
+  }
+
   @Test func anEarlierClockKeepsRecording() {
     var stop = SilenceStop(startedAt: 10 * minute)
     #expect(stop.levels(micPeak: 0, systemPeak: 0, at: 1 * minute) == .recording)

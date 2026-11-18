@@ -439,6 +439,7 @@ final class MeetingHarness: @unchecked Sendable {
     var watches = 0
     var filesWhenEnded: [String]?
     weak var watch: AnyObject?
+    var onDeviceListChange: (@Sendable () -> Void)?
 
     init(_ mics: [FakeTrackSource]) { waiting = mics }
 
@@ -451,11 +452,12 @@ final class MeetingHarness: @unchecked Sendable {
       return mic
     }
 
-    func watched() -> AnyObject {
+    func watched(_ onChange: @escaping @Sendable () -> Void) -> AnyObject {
       let token = NSObject()
       lock.withLock {
         watches += 1
         watch = token
+        onDeviceListChange = onChange
       }
       return token
     }
@@ -468,14 +470,16 @@ final class MeetingHarness: @unchecked Sendable {
   let log: DiagnosticLog
   let power: PowerHoldSpy
   let ended: Latch
+  let publishHeld: Latch
   let recorder: MeetingRecorder
+  private let publishGate: Gate
   private let cipher: CipherSource
   private let record: Record
 
   init(
     cipher: CipherSource = .init(), mics: [FakeTrackSource] = [.init()],
     system: FakeTrackSource = .init(), power: PowerHoldSpy = .init(), recover: Bool = false,
-    root: URL = meetingTemporaryDirectory()
+    holdFirstPublish: Bool = false, root: URL = meetingTemporaryDirectory()
   ) {
     let clock = TestClock()
     let store = MeetingStore(directory: root)
@@ -484,6 +488,10 @@ final class MeetingHarness: @unchecked Sendable {
     let record = Record(mics)
     let ended = Latch()
     let wallClock = Date(timeIntervalSinceReferenceDate: 800_000_000)
+    let publishHeld = Latch()
+    let publishGate = Gate()
+    self.publishHeld = publishHeld
+    self.publishGate = publishGate
     self.clock = clock
     self.wallClock = wallClock
     self.ended = ended
@@ -500,11 +508,19 @@ final class MeetingHarness: @unchecked Sendable {
         makeMicrophone: { record.microphone($0) },
         makeSystemAudio: { system },
         holdPower: { power.hold($0) },
-        watchDeviceList: { _ in record.watched() },
+        watchDeviceList: { record.watched($0) },
         now: { clock.now() },
         sleep: { try await clock.sleep(for: $0) },
         wallClock: { wallClock },
-        publish: { status in record.lock.withLock { record.statuses.append(status) } },
+        publish: { status in
+          let first = record.lock.withLock {
+            record.statuses.append(status)
+            return record.statuses.count == 1
+          }
+          guard first, holdFirstPublish else { return }
+          publishHeld.open()
+          await publishGate.wait()
+        },
         ended: {
           let files = Self.audioFiles(under: root)
           record.lock.withLock { record.filesWhenEnded = files }
@@ -523,6 +539,10 @@ final class MeetingHarness: @unchecked Sendable {
   var meetingDirectories: [URL] { Self.meetingDirectories(under: root) }
 
   func audioFiles() -> [String] { Self.audioFiles(under: root) }
+
+  func releasePublish() { publishGate.open() }
+
+  func fireDeviceListChange() { record.lock.withLock { record.onDeviceListChange }?() }
 
   private static func meetingDirectories(under root: URL) -> [URL] {
     let names = (try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? []

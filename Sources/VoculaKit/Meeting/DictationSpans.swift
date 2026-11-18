@@ -39,8 +39,7 @@ public struct DictationSpans: Sendable {
     let closing = open.filter(matches)
     open.removeAll(where: matches)
     return closing.map {
-      DictationSpan(
-        start: $0.start, end: max($0.start, min(at, HostTime.adding($0.start, Self.cap))))
+      DictationSpan(start: $0.start, end: min(at, HostTime.adding($0.start, Self.cap)))
     }
   }
 }

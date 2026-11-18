@@ -40,7 +40,11 @@ public actor MeetingStore {
   }
 
   public func header(of meeting: UUID, cipher: any HistoryCipher) -> MeetingHeader? {
-    Self.readHeader(headerURL(meeting), cipher: cipher)
+    guard let sealed = try? Data(contentsOf: headerURL(meeting)),
+      let plain = try? cipher.open(sealed),
+      let header = try? JSONDecoder().decode(MeetingHeader.self, from: plain), header.id == meeting
+    else { return nil }
+    return header
   }
 
   public func timeline(of meeting: UUID, track: MeetingTrack, cipher: any HistoryCipher) -> [Int16]
@@ -48,30 +52,27 @@ public actor MeetingStore {
     guard let header = header(of: meeting, cipher: cipher), let end = header.end else { return [] }
     let seconds = max(0, end.timeIntervalSince(header.startedAt)).rounded(.up) + 1
     let limit = Int(min(seconds, 86_400)) * Self.sampleRate
-    let chunks = Self.chunkURLs(of: track, in: audioDirectory(meeting)).compactMap {
-      Self.readChunk($0, cipher: cipher)
-    }
+    let urls = (try? Self.chunkURLs(of: track, in: audioDirectory(meeting))) ?? []
+    let chunks = urls.compactMap { Self.readChunk($0, of: track, cipher: cipher) }
     return MeetingTimeline.samples(chunks, anchor: header.anchor, limit: limit)
   }
 
   private func recoverInterrupted(cipher: any HistoryCipher) -> Int {
-    let manager = FileManager.default
-    let children = (try? manager.contentsOfDirectory(atPath: directory.path)) ?? []
+    let children = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
     var recovered = 0
     for child in children {
-      guard let id = UUID(uuidString: child),
-        var header = Self.readHeader(headerURL(id), cipher: cipher),
-        header.state == .recording
+      guard let id = UUID(uuidString: child), var header = header(of: id, cipher: cipher),
+        header.state == .recording,
+        let files = try? MeetingTrack.allCases.map({
+          ($0, try Self.chunkURLs(of: $0, in: audioDirectory(id)))
+        })
       else { continue }
-      var latest: UInt64?
-      for track in MeetingTrack.allCases {
-        let chunk = Self.chunkURLs(of: track, in: audioDirectory(id)).reversed().lazy
-          .compactMap { Self.readChunk($0, cipher: cipher) }.first
-        if let end = chunk?.runs.map(\.end).max() { latest = max(latest ?? end, end) }
-      }
-      header.end = latest.map { header.date(atHost: $0) } ?? header.startedAt
-      header.state = .recorded
-      header.endedBy = .interrupted
+      let latest = files.compactMap { track, urls in
+        urls.reversed().lazy.compactMap { Self.readChunk($0, of: track, cipher: cipher) }.first?
+          .runs.map(\.end).max()
+      }.max()
+      guard latest != nil || files.allSatisfy({ $0.1.isEmpty }) else { continue }
+      header.finish(atHost: latest ?? header.anchor, by: .interrupted)
       Self.removePartials(in: meetingDirectory(id))
       Self.removePartials(in: audioDirectory(id))
       if (try? update(header, cipher: cipher)) != nil { recovered += 1 }
@@ -87,24 +88,19 @@ public actor MeetingStore {
     }
   }
 
-  private static func chunkURLs(of track: MeetingTrack, in audio: URL) -> [URL] {
-    let names = (try? FileManager.default.contentsOfDirectory(atPath: audio.path)) ?? []
-    return names.filter { $0.hasPrefix("\(track.rawValue)-") && $0.hasSuffix(".sealed") }.sorted()
+  private static func chunkURLs(of track: MeetingTrack, in audio: URL) throws -> [URL] {
+    try FileManager.default.contentsOfDirectory(atPath: audio.path)
+      .filter { $0.hasPrefix("\(track.rawValue)-") && $0.hasSuffix(".sealed") }.sorted()
       .map { audio.appendingPathComponent($0) }
   }
 
-  private static func readChunk(_ url: URL, cipher: any HistoryCipher) -> MeetingChunk? {
-    guard let sealed = try? Data(contentsOf: url), let plain = try? cipher.open(sealed) else {
-      return nil
-    }
-    return try? MeetingChunk(decoding: plain)
-  }
-
-  private static func readHeader(_ url: URL, cipher: any HistoryCipher) -> MeetingHeader? {
-    guard let sealed = try? Data(contentsOf: url), let plain = try? cipher.open(sealed) else {
-      return nil
-    }
-    return try? JSONDecoder().decode(MeetingHeader.self, from: plain)
+  private static func readChunk(_ url: URL, of track: MeetingTrack, cipher: any HistoryCipher)
+    -> MeetingChunk?
+  {
+    guard let sealed = try? Data(contentsOf: url), let plain = try? cipher.open(sealed),
+      let chunk = try? MeetingChunk(decoding: plain), chunk.track == track
+    else { return nil }
+    return chunk
   }
 
   private func meetingDirectory(_ id: UUID) -> URL {
@@ -157,6 +153,7 @@ public actor MeetingStore {
         }
       }
     }
+    if failure == 0, fcntl(descriptor, F_FULLFSYNC) != 0, fsync(descriptor) != 0 { failure = errno }
     if close(descriptor) != 0 && failure == 0 { failure = errno }
     guard failure == 0 else {
       unlink(partial.path)
