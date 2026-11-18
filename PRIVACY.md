@@ -24,9 +24,12 @@ that costs something to open — a Bluetooth headset, or an iPhone offered over
 Continuity Capture — is never opened this way unless you press Test, since
 opening a headset takes it out of stereo.
 
-**Dictation audio is never saved.** It is recognised in memory and discarded.
-There is no setting to keep it, and no file it could be recovered from. A
-meeting's audio is saved; the next section says how.
+**Dictation never saves audio.** It is recognised in memory and discarded;
+there is no setting to keep it, and dictation writes no file it could be
+recovered from. A meeting does save audio, and that includes what you dictate
+while one records: the meeting holds the same microphone and keeps every sample
+it hears, so your dictated words are in that meeting's recording, and the
+meeting notes when each dictation began and ended. The next section says how.
 
 Recognition runs entirely on this Mac, using a model downloaded from this
 project's GitHub releases.
@@ -47,7 +50,17 @@ recognised beside the cleaned-up one.
 *Stop Meeting*: your microphone, and the sound other apps play — the other side
 of a call. It also stops by itself after 15 minutes in which neither track heard
 anything, when the Mac goes to sleep, and when you quit Vocula. While it records,
-a second icon in the menu bar says so.
+a second icon in the menu bar says so; after a meeting that stopped by itself,
+stopped at sleep, or could not start, that icon stays to say so until you
+dismiss it.
+
+**While a meeting records, the Mac does not go to sleep by itself.** Vocula
+holds an assertion against idle sleep for as long as the meeting lasts —
+`pmset -g assertions` lists it as `vocula.meeting` — so the screen can still
+sleep, but the Mac does not. Closing the lid or choosing Sleep still sleeps it,
+and that ends the meeting. Any sound any app plays, however faint, counts as
+something heard, so a meeting you forgot beside music or a video never reaches
+its 15 silent minutes, and keeps the Mac awake until you stop it.
 
 **The microphone stays open for the whole meeting**, and macOS shows its orange
 dot for as long as it is. It is the microphone dictation would use at that
@@ -61,7 +74,7 @@ meeting records other apps alone and says so.
 permission**, which macOS asks for the first time you record a meeting. That is
 everything this Mac plays, from every app, except Vocula's own sounds.
 
-Nothing is transcribed yet, and no model runs while a meeting records. The audio
+Nothing is transcribed yet, and no model runs on what a meeting records. The audio
 is kept on this Mac, encrypted, until a later version of Vocula transcribes it;
 *Recorded meetings*, below, says where, under which key, and how to delete it.
 
@@ -131,8 +144,10 @@ all in Settings → History.
 
 **Recorded meetings**, in `~/Library/Application Support/app.vocula.mac/Meetings/`
 — a folder per meeting, named by a random identifier, holding the recording in
-pieces three seconds long. Nothing reaches that folder unencrypted: each piece is
-sealed with AES-GCM in memory before it is written. The key is a second one in
+pieces three seconds long and a header that says when the meeting started and
+ended, how it ended — stopped by you, by itself, at sleep, at quit, or cut off —
+and when you dictated during it. Nothing reaches that folder unencrypted: each
+piece, and the header, is sealed with AES-GCM in memory before it is written. The key is a second one in
 your login Keychain — service `app.vocula.mac`, account `meetings`, separate from
 the history's, account `history` — and what is said above about the history key
 (what protects it, and that it is not bound to this Mac) is true of this one. It
@@ -140,9 +155,12 @@ is read once, when a meeting starts; if it cannot be read, the meeting does not
 start. The folders' dates still show when a meeting was recorded and roughly how
 long it ran.
 
-A meeting stays there until a later version of Vocula transcribes it. **This
-version cannot delete one**: there is no button for it yet, and nothing deletes
-it on a timer. Deleting the `Meetings` folder deletes every meeting in it. The
+A meeting stays there until a later version of Vocula transcribes it, and it is
+not small: each track is kept whole as 16 kHz mono 16-bit samples — the sound of
+other apps through its silences too — which comes to about 115 MB per track per
+hour, so about 230 MB for an hour of meeting. That is computed from the format,
+not measured. **This version cannot delete one**: there is no button for it
+yet, and nothing deletes it on a timer. Deleting the `Meetings` folder deletes every meeting in it. The
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
 
@@ -158,8 +176,10 @@ the language detector was, as bare percentages that name no language, and, with
 clean-up on, how long a slow pass took or why its result was not used. Lines
 about a model name the recognition engine, which says whether one of your
 languages is outside the 25 that Parakeet hears. A meeting writes a line when it
-starts and one when it stops, with how many seconds each track recorded and held
-sound, and a line for each problem it ran into. It holds the last 2,000 events.
+starts and one when it stops, saying why it stopped and how many seconds each
+track recorded and held sound; a line when it closes an earlier meeting that was
+cut off, when it lets the Mac go to sleep, and when it loses the microphone or
+opens it again; and a line for each other problem it ran into. It holds the last 2,000 events.
 "Reveal the Diagnostic Log in Finder" in the menu takes you to it.
 
 ## What leaves this Mac

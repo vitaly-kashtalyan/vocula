@@ -74,7 +74,7 @@ Nothing you say. Ever.
 
 | What | Where it happens |
 | --- | --- |
-| Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until a later version transcribes them. |
+| Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and records everything it hears, anything you dictate meanwhile included; the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until a later version transcribes them. |
 | Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
@@ -166,7 +166,10 @@ silent recording, a refusal and a dead microphone all cost nothing.
   does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
   model, downloaded when you ask for it — by switching clean-up on, or with its
-  `Load` button.
+  `Load` button. A recorded meeting takes about 230 MB an hour and is kept until
+  you delete it by hand: each of its two tracks is stored whole as 16 kHz mono
+  16-bit samples, the other apps' track through its silences too, which is about
+  115 MB per track per hour — computed from that format, not measured.
 - Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, **Microphone**, and **System
@@ -299,6 +302,18 @@ Stated here rather than discovered later.
   newer version exists. Settings → Permissions says so at the top. Quit Vocula,
   drag it by itself into Applications in the Finder (if it is already there, drag
   it out and back in), and open it from there.
+- **Record Meeting is a beta that only records.** This version cannot play back,
+  export, transcribe or delete a meeting inside the app. Every meeting stays in
+  `~/Library/Application Support/app.vocula.mac/Meetings/`, about 230 MB an
+  hour, until you delete that folder by hand, which deletes them all. A
+  Bluetooth headset's or an iPhone's microphone is never recorded in a meeting:
+  when dictation uses one, the meeting records other apps alone.
+- **A meeting keeps the Mac awake.** While one records, Vocula holds an
+  assertion against idle sleep, `vocula.meeting` in `pmset -g assertions`;
+  closing the lid or choosing Sleep still sleeps the Mac, and ends the meeting.
+  A meeting stops by itself only after 15 minutes in which nothing was heard,
+  and any sound from any app counts, however faint — so a meeting forgotten
+  beside music or a video keeps the Mac awake until you choose *Stop Meeting*.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
