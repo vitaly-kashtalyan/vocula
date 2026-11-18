@@ -119,7 +119,7 @@ final class Meetings {
     guard let recorder else { return }
     follower?.cancel()
     let stream = signals.subscribe()
-    follower = Task.detached(priority: .utility) { await recorder.follow(stream) }
+    follower = Task { await recorder.follow(stream) }
   }
 
   private func release() {

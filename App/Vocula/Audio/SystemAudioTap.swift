@@ -5,23 +5,25 @@ import VoculaKit
 
 actor SystemAudioTap: MeetingTrackSource {
   typealias Outputs =
-    @Sendable () -> (candidates: [MeetingOutputCandidate], defaultOutputUID: String?)
+    @Sendable () throws -> (candidates: [MeetingOutputCandidate], defaultOutputUID: String?)
 
   static let queue = DispatchSerialQueue(label: "vocula.meeting.tap")
 
   static let liveOutputs: Outputs = {
     let system = AudioObjectID(kAudioObjectSystemObject)
-    let devices = objects(system, kAudioHardwarePropertyDevices)
+    let devices = try objects(system, kAudioHardwarePropertyDevices, step: "output")
     let candidates = devices.compactMap { device -> MeetingOutputCandidate? in
-      guard let uid = uid(of: device) else { return nil }
       var transport = UInt32(0)
-      _ = read(device, kAudioDevicePropertyTransportType, &transport)
+      guard let uid = uid(of: device),
+        read(device, kAudioDevicePropertyTransportType, &transport) == noErr,
+        let outputStreams = try? objects(
+          device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput, step: "output"),
+        let inputStreams = try? objects(
+          device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput, step: "output")
+      else { return nil }
       return MeetingOutputCandidate(
         uid: uid, isBuiltIn: transport == kAudioDeviceTransportTypeBuiltIn,
-        outputStreams: objects(device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput)
-          .count,
-        inputStreams: objects(device, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput)
-          .count)
+        outputStreams: outputStreams.count, inputStreams: inputStreams.count)
     }
     var output = AudioObjectID(kAudioObjectUnknown)
     let found = read(system, kAudioHardwarePropertyDefaultOutputDevice, &output) == noErr
@@ -48,7 +50,7 @@ actor SystemAudioTap: MeetingTrackSource {
   func start() async throws {
     try refuseIfAbandoned()
     guard !VoculaAppDelegate.isSecondCopy else { throw MeetingFailure.secondCopy }
-    let (candidates, defaultOutputUID) = outputs()
+    let (candidates, defaultOutputUID) = try outputs()
     guard
       let clock = MeetingClockDevice.choose(among: candidates, defaultOutputUID: defaultOutputUID)
     else { throw MeetingFailure.failed(step: "output", code: 0) }
@@ -221,7 +223,9 @@ actor SystemAudioTap: MeetingTrackSource {
 
   private static func liveRate(of aggregate: AudioObjectID) -> Double? {
     captureRate(
-      inputStreams: objects(aggregate, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput),
+      inputStreams: (try? objects(
+        aggregate, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeInput, step: "format"))
+        ?? [],
       format: { stream in
         var format = AudioStreamBasicDescription()
         return read(stream, kAudioStreamPropertyVirtualFormat, &format) == noErr ? format : nil
@@ -265,19 +269,15 @@ actor SystemAudioTap: MeetingTrackSource {
 
   private static func objects(
     _ owner: AudioObjectID, _ selector: AudioObjectPropertySelector,
-    _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal
-  ) -> [AudioObjectID] {
+    _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal, step: String
+  ) throws -> [AudioObjectID] {
     var address = address(selector, scope)
     var size = UInt32(0)
-    guard AudioObjectGetPropertyDataSize(owner, &address, 0, nil, &size) == noErr else {
-      return []
-    }
+    try check(step, AudioObjectGetPropertyDataSize(owner, &address, 0, nil, &size))
     var ids = [AudioObjectID](
       repeating: AudioObjectID(kAudioObjectUnknown),
       count: Int(size) / MemoryLayout<AudioObjectID>.size)
-    guard AudioObjectGetPropertyData(owner, &address, 0, nil, &size, &ids) == noErr else {
-      return []
-    }
+    try check(step, AudioObjectGetPropertyData(owner, &address, 0, nil, &size, &ids))
     return Array(ids.prefix(Int(size) / MemoryLayout<AudioObjectID>.size))
   }
 }

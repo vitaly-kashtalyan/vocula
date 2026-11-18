@@ -391,6 +391,40 @@ struct MeetingsTests {
     await finishes(rig.meetings.toggle())
   }
 
+  @Test func aStatusOfAnEarlierMeetingChangesNothing() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    try await rig.record()
+    let startedAt = rig.meetings.status.startedAt
+    rig.meetings.apply(MeetingStatus(notice: .autoStopped), of: 1)
+    rig.meetings.apply(
+      MeetingStatus(
+        isRecording: true, startedAt: Date(timeIntervalSince1970: 1), warnings: [.noSystemAudio]),
+      of: 1)
+    #expect(rig.meetings.status.isRecording)
+    #expect(rig.meetings.status.notice == nil)
+    #expect(rig.meetings.status.warnings.isEmpty)
+    #expect(rig.meetings.status.startedAt == startedAt)
+    await finishes(rig.meetings.toggle())
+    #expect(!rig.meetings.status.isRecording)
+    #expect(rig.mics[1].stopCount == 1)
+  }
+
+  @Test func aStartWithNoDependenciesLeavesTheSwitchIdle() {
+    let calls = MeetingCallCounter()
+    let meetings = Meetings(
+      diagnosticLog: { nil }, status: MeetingStatusModel(announce: { _ in }),
+      makeDependencies: { _, _ in
+        calls.increment()
+        return nil
+      })
+    #expect(meetings.toggle() == nil)
+    #expect(meetings.toggle() == nil)
+    #expect(calls.value == 2)
+    #expect(!meetings.holdsAMeeting)
+  }
+
   @Test func aSecondCopyCreatesNoStore() {
     #expect(Meetings.makeStore() == nil)
     #expect(Meetings.live(log: nil, recover: true) == nil)

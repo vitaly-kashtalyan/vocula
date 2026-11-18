@@ -57,7 +57,7 @@ private func fill(_ list: UnsafeMutablePointer<AudioBufferList>, channel: Int, _
     do {
       let buffer = try #require(TrackBuffer(rate: 48_000))
       tone.withUnsafeBufferPointer { buffer.write($0, hostNanos: 1_000_000_000) }
-      mic.buffer = buffer
+      mic.adopt(buffer)
       released = buffer
     }
     #expect(mic.drain().runs.map(\.start) == [1_000_000_000])
@@ -67,6 +67,15 @@ private func fill(_ list: UnsafeMutablePointer<AudioBufferList>, channel: Int, _
     #expect(mic.drain().runs.map(\.start) == [2_000_000_000])
     #expect(released == nil)
     #expect(mic.drain() == TrackDrain())
+  }
+
+  @Test func finishedReturnsAfterARefusedStartAndAStop() async {
+    let mic = MeetingMicrophone(onEnded: {})
+    await mic.finished()
+    await #expect(throws: MeetingFailure.secondCopy) { try await mic.start() }
+    mic.stop()
+    await mic.finished()
+    #expect(mic.callbacks == 0)
   }
 
   @Test func onlyChannelZeroIsKept() throws {

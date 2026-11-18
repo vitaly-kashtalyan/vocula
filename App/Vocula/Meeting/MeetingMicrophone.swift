@@ -130,8 +130,9 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   private let ended = OneShot()
   private let resampler = MeetingResampler()
   private let lock = NSLock()
+  private let queue = DispatchQueue(label: "vocula.meeting.microphone", qos: .userInitiated)
   private var stopped = false
-  var buffer: TrackBuffer?
+  private var buffer: TrackBuffer?
   private var input: Input?
   private var monitor: AudioDeviceMonitor?
   private var poll: Task<Void, Never>?
@@ -148,11 +149,11 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
 
   func start() async throws {
     try await withCheckedThrowingContinuation { continuation in
-      DispatchQueue.global(qos: .userInitiated).async {
-        continuation.resume(with: Result { try self.openChosenDevice() })
-      }
+      queue.async { continuation.resume(with: Result { try self.openChosenDevice() }) }
     }
   }
+
+  func adopt(_ buffer: TrackBuffer) { lock.withLock { self.buffer = buffer } }
 
   private func openChosenDevice() throws {
     try refuseIfStopped()
@@ -191,7 +192,9 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
     }
   }
 
-  func finished() async {}
+  func finished() async {
+    await withCheckedContinuation { continuation in queue.async { continuation.resume() } }
+  }
 
   func drain() -> TrackDrain {
     let (held, isLast) = lock.withLock { (buffer, stopped) }
