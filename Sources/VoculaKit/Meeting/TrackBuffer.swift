@@ -6,7 +6,9 @@ public struct TrackDrain: Equatable, Sendable {
   public let droppedNanos: UInt64
   public let contendedNanos: UInt64
 
-  public init(
+  public init() { self.init(runs: []) }
+
+  init(
     runs: [MeetingRun] = [], freshRuns: Int = 0, droppedNanos: UInt64 = 0,
     contendedNanos: UInt64 = 0
   ) {
@@ -96,6 +98,7 @@ public final class TrackBuffer: @unchecked Sendable {
   }
 
   private let lock = NSLock()
+  let drainLock = NSLock()
   private let first: Half
   private let second: Half
   private var writingFirst = true
@@ -199,6 +202,8 @@ public final class TrackBuffer: @unchecked Sendable {
   }
 
   public func drain(resample: (UnsafeBufferPointer<Float>, Double) -> [Float]?) -> TrackDrain {
+    drainLock.lock()
+    defer { drainLock.unlock() }
     lock.lock()
     let taken = writingFirst ? first : second
     writingFirst.toggle()

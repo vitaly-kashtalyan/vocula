@@ -16,6 +16,14 @@ private func write(_ b: TrackBuffer, frames: Int, value: Float = 0, at: UInt64) 
 
 private func buffer(_ rate: Double = 16_000) -> TrackBuffer { TrackBuffer(rate: rate)! }
 
+private final class Drains: @unchecked Sendable {
+  private let lock = NSLock()
+  private var taken: [TrackDrain] = []
+
+  func append(_ drain: TrackDrain) { lock.withLock { taken.append(drain) } }
+  var all: [TrackDrain] { lock.withLock { taken } }
+}
+
 @Suite struct TrackBufferTests {
   @Test func aBufferWithin20msExtendsTheRun() {
     let b = buffer()
@@ -206,6 +214,46 @@ private func buffer(_ rate: Double = 16_000) -> TrackBuffer { TrackBuffer(rate: 
     }
     #expect(starts == [0, 10 * ms, 50 * ms, 60 * ms])
     #expect(fresh == [1, 0, 1, 0])
+  }
+
+  @Test func aSecondDrainWaitsForTheFirst() {
+    let b = buffer()
+    write(b, frames: 160, value: 0.25, at: 0)
+    let held = DispatchSemaphore(value: 0)
+    let release = DispatchSemaphore(value: 0)
+    let done = DispatchSemaphore(value: 0)
+    let drains = Drains()
+    Thread {
+      drains.append(
+        b.drain { samples, _ in
+          held.signal()
+          release.wait()
+          return Array(samples)
+        })
+      done.signal()
+    }.start()
+    held.wait()
+    write(b, frames: 160, value: 0.5, at: 10 * ms)
+    Thread {
+      drains.append(b.drain(resample: identity))
+      done.signal()
+    }.start()
+    let free = b.drainLock.try()
+    if free { b.drainLock.unlock() }
+    #expect(!free)
+    release.signal()
+    done.wait()
+    done.wait()
+    write(b, frames: 160, value: 0.75, at: 20 * ms)
+    let runs = (drains.all + [b.drain(resample: identity)]).flatMap(\.runs).sorted {
+      $0.start < $1.start
+    }
+    #expect(runs.map(\.start) == [0, 10 * ms, 20 * ms])
+    #expect(
+      runs.map(\.samples)
+        == [0.25, 0.5, 0.75].map {
+          Array(repeating: MeetingRun.sample($0), count: 160)
+        })
   }
 
   @Test func aDrainConvertsOutsideTheLock() {
