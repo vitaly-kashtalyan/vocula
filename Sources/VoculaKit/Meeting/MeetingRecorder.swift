@@ -349,12 +349,15 @@ public actor MeetingRecorder {
   private func confirmReopen() {
     guard let reopened = unconfirmed else { return }
     let microphone = microphones[reopened.index]
-    if microphone.callbacks > 0 {
+    let ended = endedWhileOpening == reopened.index
+    if !ended, microphone.callbacks > 0 {
       unconfirmed = nil
       deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")
       microphoneState = .running(since: reopened.since)
       deviceWatch = nil
-    } else if HostTime.elapsed(from: reopened.since, to: deps.now()) >= MeetingLiveness.tenSeconds {
+    } else if ended
+      || HostTime.elapsed(from: reopened.since, to: deps.now()) >= MeetingLiveness.tenSeconds
+    {
       unconfirmed = nil
       microphone.stop()
       reopenAt = schedule.timerAttemptFailed(at: deps.now())

@@ -491,9 +491,15 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
 
 @Suite(.timeLimit(.minutes(1))) struct MeetingRecorderLivenessTests {
   @Test func aReopenThatNeverDeliversBacksOffUnderOneWarning() async {
-    let h = MeetingHarness(mics: [])
+    let mics = (0..<5).map { _ in FakeTrackSource() }
+    let h = MeetingHarness(mics: mics)
     await h.recorder.start()
-    await runSeconds(130, h)
+    await runSeconds(24, h)
+    #expect(mics[1].stopCount == 0)
+    await runSeconds(1, h)
+    #expect(mics[1].stopCount == 1)
+    await runSeconds(105, h)
+    #expect(mics.map(\.stopCount) == [1, 1, 1, 1, 1])
     #expect(details(of: "meeting.micLost", in: h).count == 1)
     #expect(h.micsMadeAt == [0, 15, 35, 65, 115].map { anchor + $0 * s })
     #expect(details(of: "meeting.micReopened", in: h).isEmpty)
@@ -597,12 +603,29 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
     mics[1].openStart()
   }
 
+  @Test func aReopenedMicrophoneThatEndsBeforeItIsConfirmedIsAFailedAttempt() async {
+    let mics = [FakeTrackSource(), delivering()]
+    let h = MeetingHarness(mics: mics)
+    await h.recorder.start()
+    await mics[0].onEnded?()
+    await runSeconds(5, h)
+    await mics[1].onEnded?()
+    await runSeconds(1, h)
+    #expect(details(of: "meeting.micReopened", in: h).isEmpty)
+    #expect(mics[1].stopCount == 1)
+    await runSeconds(10, h)
+    #expect(h.micsMadeAt == [0, 5, 16].map { anchor + $0 * s })
+    #expect(details(of: "meeting.micLost", in: h).count == 1)
+  }
+
   @Test func aStaleEndFromAReplacedMicrophoneChangesNothing() async {
-    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let mics = [FakeTrackSource(), delivering()]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     await mics[0].onEnded?()
     await h.recorder.deviceListChanged()
+    await runSeconds(1, h)
+    #expect(details(of: "meeting.micReopened", in: h) == ["count=1"])
     await mics[0].onEnded?()
     #expect(h.kinds().filter { $0 == "meeting.micLost" }.count == 1)
     #expect(mics[1].stopCount == 0)
@@ -626,7 +649,7 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
   }
 
   @Test func speechOnAReopenedMicrophoneKeepsTheMeeting() async {
-    let mics = [FakeTrackSource(), FakeTrackSource(drains: [voice(at: anchor)])]
+    let mics = [FakeTrackSource(), delivering(FakeTrackSource(drains: [voice(at: anchor)]))]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     await mics[0].onEnded?()
