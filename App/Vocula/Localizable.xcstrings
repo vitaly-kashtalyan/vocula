@@ -9902,7 +9902,7 @@
       }
     },
     "meeting.status.autoStopSoon" : {
-      "comment" : "Menu line in the last minute before the silence stop; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line in the last minute before the silence stop; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -9962,7 +9962,7 @@
       }
     },
     "meeting.status.autoStopped" : {
-      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10022,7 +10022,7 @@
       }
     },
     "meeting.status.cannotSave" : {
-      "comment" : "Menu line while chunks fail to be written; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line while chunks fail to be written; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10082,7 +10082,7 @@
       }
     },
     "meeting.status.cannotStart" : {
-      "comment" : "Menu line after Record failed, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. \"login keychain\" is Apple's name. Does not wrap.",
+      "comment" : "Menu line after Record failed, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. \"login keychain\" is Apple's name: write it as a Mac set to this language shows it (see Localization/glossary.md). Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10142,7 +10142,7 @@
       }
     },
     "meeting.status.endedBySleep" : {
-      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line after the meeting ended, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10202,7 +10202,7 @@
       }
     },
     "meeting.status.label" : {
-      "comment" : "VoiceOver label of the meeting's menu bar item while a meeting records; spoken, never drawn. \"Vocula\" is never translated.",
+      "comment" : "VoiceOver label of the meeting's menu bar item while a meeting records; also announced by VoiceOver when a meeting starts. Spoken, never drawn. \"Vocula\" is never translated.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10262,7 +10262,7 @@
       }
     },
     "meeting.status.labelNotice" : {
-      "comment" : "VoiceOver label of the meeting's menu bar item after a meeting ended or failed to start, while the item still says why; spoken, never drawn. \"Vocula\" is never translated.",
+      "comment" : "VoiceOver label of the meeting's menu bar item after a meeting ended or failed to start, while the item still says why; also announced by VoiceOver when the user stops a meeting. Spoken, never drawn. \"Vocula\" is never translated.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10322,7 +10322,7 @@
       }
     },
     "meeting.status.microphoneNotOpened" : {
-      "comment" : "Menu line for the whole meeting: why the microphone is not recorded and what still is; also spoken by VoiceOver. Does not wrap.",
+      "comment" : "Menu line for the whole meeting: why the microphone is not recorded and what still is; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10382,7 +10382,7 @@
       }
     },
     "meeting.status.microphoneStopped" : {
-      "comment" : "Menu line while the microphone is lost or failed to open; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line while the microphone is lost or failed to open; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10442,7 +10442,7 @@
       }
     },
     "meeting.status.noSystemAudio" : {
-      "comment" : "Menu line while the system-audio track delivers nothing; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line while the system-audio track delivers nothing; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10502,7 +10502,7 @@
       }
     },
     "meeting.status.noSystemAudioYet" : {
-      "comment" : "Menu line after a minute without any sound from other apps; worded to be true whether or not permission was denied. Both pane names are Apple's own, as that Mac shows them. Also spoken by VoiceOver. Does not wrap.",
+      "comment" : "Menu line after a minute without any sound from other apps; worded to be true whether or not permission was denied. \"System Audio Recording\" and \"Privacy & Security\" are Apple's names: write them as a Mac set to this language shows them (see Localization/glossary.md). Also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10562,7 +10562,7 @@
       }
     },
     "meeting.status.since" : {
-      "comment" : "Menu line while a meeting records, fixed at its start; the argument is a time of day, already formatted. Does not wrap.",
+      "comment" : "Menu line while a meeting records, fixed at its start; the argument is a time of day, already formatted. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10622,7 +10622,7 @@
       }
     },
     "meeting.status.waitingForPermission" : {
-      "comment" : "Menu line while macOS's own System Audio Recording dialog is unanswered; also spoken by VoiceOver when it appears. Does not wrap.",
+      "comment" : "Menu line while macOS's own System Audio Recording dialog is unanswered; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -11042,7 +11042,7 @@
       }
     },
     "menu.item.dismissMeetingNotice" : {
-      "comment" : "Item in the meeting's menu bar menu after the meeting ended; hides that menu bar item. Menu line: does not wrap.",
+      "comment" : "Item in the meeting's menu bar menu after the meeting ended; hides that menu bar item. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -11642,7 +11642,7 @@
       }
     },
     "menu.item.recordMeeting" : {
-      "comment" : "Item in Vocula's menu bar menu; starts recording a meeting: the microphone and the sound other apps play. \"(Beta)\" marks unfinished work. Menu line: does not wrap.",
+      "comment" : "Item in Vocula's menu bar menu; starts recording a meeting: the microphone and the sound other apps play. \"(Beta)\" marks unfinished work. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -11882,7 +11882,7 @@
       }
     },
     "menu.item.stopMeeting" : {
-      "comment" : "Item in Vocula's menu bar menu and in the meeting's own menu bar menu; ends the meeting recording. Menu line: does not wrap.",
+      "comment" : "Item in Vocula's menu bar menu and in the meeting's own menu bar menu; ends the meeting recording. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
