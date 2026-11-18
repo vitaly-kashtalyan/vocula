@@ -6,6 +6,11 @@ public actor MeetingStore {
   private static let sampleRate = 16_000
 
   private let directory: URL
+  private let queue = DispatchSerialQueue(label: "vocula.meeting.store", qos: .utility)
+
+  public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    queue.asUnownedSerialExecutor()
+  }
 
   public init(directory: URL) {
     self.directory = directory
