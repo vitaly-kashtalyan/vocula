@@ -78,7 +78,7 @@ struct MeetingStatusModelTests {
       MeetingStatus(isRecording: true, startedAt: Date(), warnings: [.waitingForPermission]))
     #expect(
       spoken.lines == [
-        String(localized: MenuCopy.meetingStatusLabel(recording: true)) + " "
+        String(localized: MenuCopy.meetingStatusLabel(recording: true)) + "\n"
           + String(localized: MenuCopy.meetingWarning(.waitingForPermission))
       ])
   }

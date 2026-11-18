@@ -39,7 +39,7 @@ final class MeetingStatusModel {
       case .notice(let notice): String(localized: MenuCopy.meetingNotice(notice))
       }
     }
-    if !spoken.isEmpty { announce(spoken.joined(separator: " ")) }
+    if !spoken.isEmpty { announce(spoken.joined(separator: "\n")) }
   }
 
   func dismiss() {
