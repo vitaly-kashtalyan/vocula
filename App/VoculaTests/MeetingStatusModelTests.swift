@@ -45,10 +45,56 @@ struct MeetingStatusModelTests {
 
   @Test func aWarningIsAnnouncedOnce() {
     let (model, spoken) = make()
-    let status = MeetingStatus(isRecording: true, startedAt: Date(), warnings: [.noSystemAudio])
+    let start = Date()
+    model.update(MeetingStatus(isRecording: true, startedAt: start))
+    let status = MeetingStatus(isRecording: true, startedAt: start, warnings: [.noSystemAudio])
     model.update(status)
     model.update(status)
-    #expect(spoken.lines == [String(localized: MenuCopy.meetingWarning(.noSystemAudio))])
+    #expect(
+      spoken.lines.dropFirst() == [String(localized: MenuCopy.meetingWarning(.noSystemAudio))])
+  }
+
+  @Test func aStartAndAStopAreAnnounced() {
+    let (model, spoken) = make()
+    model.update(MeetingStatus(isRecording: true, startedAt: Date()))
+    model.update(MeetingStatus())
+    #expect(
+      spoken.lines == [
+        String(localized: MenuCopy.meetingStatusLabel(recording: true)),
+        String(localized: MenuCopy.meetingStatusLabel(recording: false)),
+      ])
+  }
+
+  @Test func aMeetingThatEndsWithANoticeSpeaksOnlyTheNotice() {
+    let (model, spoken) = make()
+    model.update(MeetingStatus(isRecording: true, startedAt: Date()))
+    model.update(MeetingStatus(notice: .autoStopped))
+    #expect(spoken.lines.dropFirst() == [String(localized: MenuCopy.meetingNotice(.autoStopped))])
+  }
+
+  @Test func oneUpdateIsSpokenAsOneAnnouncement() {
+    let (model, spoken) = make()
+    model.update(
+      MeetingStatus(isRecording: true, startedAt: Date(), warnings: [.waitingForPermission]))
+    #expect(
+      spoken.lines == [
+        String(localized: MenuCopy.meetingStatusLabel(recording: true)) + " "
+          + String(localized: MenuCopy.meetingWarning(.waitingForPermission))
+      ])
+  }
+
+  @Test(arguments: [(true, false, false), (false, true, false), (false, false, true)])
+  func onlyAUsersRemovalOfAShownItemActs(hiddenFirst: Bool, written: Bool, removes: Bool) async {
+    let (model, _) = make()
+    model.update(MeetingStatus(isRecording: true, startedAt: Date()))
+    let putBack = hiddenFirst ? model.statusItemRemoved() : nil
+    let shownBefore = model.statusItemShown
+    let removal = model.insertionWritten(written)
+    #expect((removal != nil) == removes)
+    #expect(model.statusItemShown == (shownBefore && !removes))
+    await putBack?.value
+    await removal?.value
+    #expect(model.statusItemShown)
   }
 
   @Test func aRemovedItemComesBackWhileRecording() async {

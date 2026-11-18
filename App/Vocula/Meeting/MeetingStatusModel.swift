@@ -31,18 +31,28 @@ final class MeetingStatusModel {
     if notice != new.notice { notice = new.notice }
     let shown = MeetingStatusRules.showsItem(new)
     if statusItemShown != shown { statusItemShown = shown }
-    for announcement in MeetingStatusRules.announcements(from: old, to: new) {
+    let spoken = MeetingStatusRules.announcements(from: old, to: new).map { announcement in
       switch announcement {
-      case .warning(let warning): announce(String(localized: MenuCopy.meetingWarning(warning)))
-      case .notice(let notice): announce(String(localized: MenuCopy.meetingNotice(notice)))
+      case .started: String(localized: MenuCopy.meetingStatusLabel(recording: true))
+      case .stopped: String(localized: MenuCopy.meetingStatusLabel(recording: false))
+      case .warning(let warning): String(localized: MenuCopy.meetingWarning(warning))
+      case .notice(let notice): String(localized: MenuCopy.meetingNotice(notice))
       }
     }
+    if !spoken.isEmpty { announce(spoken.joined(separator: " ")) }
   }
 
   func dismiss() {
     if notice != nil { notice = nil }
     let shown = MeetingStatusRules.showsItem(status)
     if statusItemShown != shown { statusItemShown = shown }
+  }
+
+  @discardableResult
+  func insertionWritten(_ inserted: Bool) -> Task<Void, Never>? {
+    // Workaround: SwiftUI echoes every programmatic isInserted change through the binding's setter (three times, with the value just built), so only a false while the item is shown is the user removing it.
+    guard !inserted, statusItemShown else { return nil }
+    return statusItemRemoved()
   }
 
   @discardableResult

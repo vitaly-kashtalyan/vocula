@@ -39,6 +39,26 @@ import Testing
       ])
   }
 
+  @Test(arguments: [
+    (MeetingStatus(), MeetingStatus(isRecording: true), [MeetingAnnouncement.started]),
+    (
+      MeetingStatus(), MeetingStatus(isRecording: true, warnings: [.waitingForPermission]),
+      [.started, .warning(.waitingForPermission)]
+    ),
+    (MeetingStatus(isRecording: true), MeetingStatus(), [.stopped]),
+    (
+      MeetingStatus(isRecording: true, warnings: [.noSystemAudio]),
+      MeetingStatus(notice: .autoStopped), [.notice(.autoStopped)]
+    ),
+    (MeetingStatus(isRecording: true), MeetingStatus(isRecording: true), []),
+    (MeetingStatus(), MeetingStatus(), []),
+  ])
+  func recordingStartsAndStopsAreAnnounced(
+    old: MeetingStatus, new: MeetingStatus, announced: [MeetingAnnouncement]
+  ) {
+    #expect(MeetingStatusRules.announcements(from: old, to: new) == announced)
+  }
+
   @Test func aRemovedItemComesBackWhileRecording() {
     #expect(MeetingStatusRules.removal(of: MeetingStatus(isRecording: true)) == .putBack)
     #expect(MeetingStatusRules.removal(of: MeetingStatus(notice: .endedBySleep)) == .dismiss)

@@ -22,6 +22,7 @@ public struct MeetingStatus: Equatable, Sendable {
 }
 
 public enum MeetingAnnouncement: Equatable, Sendable {
+  case started, stopped
   case warning(MeetingWarning)
   case notice(MeetingNotice)
 }
@@ -41,7 +42,10 @@ public enum MeetingStatusRules {
   public static func announcements(from old: MeetingStatus, to new: MeetingStatus)
     -> [MeetingAnnouncement]
   {
-    var announced = new.warnings.filter { !old.warnings.contains($0) }.map {
+    var announced: [MeetingAnnouncement] = []
+    if new.isRecording && !old.isRecording { announced.append(.started) }
+    if old.isRecording && !new.isRecording && new.notice == nil { announced.append(.stopped) }
+    announced += new.warnings.filter { !old.warnings.contains($0) }.map {
       MeetingAnnouncement.warning($0)
     }
     if let notice = new.notice, notice != old.notice { announced.append(.notice(notice)) }
