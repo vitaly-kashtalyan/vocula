@@ -83,6 +83,7 @@ public actor MeetingRecorder {
   private var system: (any MeetingTrackSource)?
   private var microphoneState = MicrophoneTrackState.opening
   private var endedWhileOpening: Int?
+  private var unconfirmed: (index: Int, since: UInt64)?
   private var systemState = SystemTrackState.failed
   private var systemStart: Task<Void, Never>?
   private var loop: Task<Void, Never>?
@@ -326,10 +327,8 @@ public actor MeetingRecorder {
 
   func reopenMicrophone(due: UInt64, byTimer: Bool) async {
     guard let state = await openMicrophone() else { return }
-    if case .running = state {
-      deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")
-      microphoneState = state
-      deviceWatch = nil
+    if case .running(let since) = state {
+      unconfirmed = (microphones.count - 1, since)
     } else if byTimer {
       reopenAt = schedule.timerAttemptFailed(at: deps.now())
     } else {
@@ -347,8 +346,24 @@ public actor MeetingRecorder {
     await sample()
   }
 
+  private func confirmReopen() {
+    guard let reopened = unconfirmed else { return }
+    let microphone = microphones[reopened.index]
+    if microphone.callbacks > 0 {
+      unconfirmed = nil
+      deps.log?.record("meeting.micReopened", "count=\(schedule.reopened())")
+      microphoneState = .running(since: reopened.since)
+      deviceWatch = nil
+    } else if HostTime.elapsed(from: reopened.since, to: deps.now()) >= MeetingLiveness.tenSeconds {
+      unconfirmed = nil
+      microphone.stop()
+      reopenAt = schedule.timerAttemptFailed(at: deps.now())
+    }
+  }
+
   private func sample() async {
     guard phase == .recording else { return }
+    confirmReopen()
     if let due = takeReopen(dueBy: deps.now()) {
       reopening = Task { [weak self] in await self?.reopenMicrophone(due: due, byTimer: true) }
     }

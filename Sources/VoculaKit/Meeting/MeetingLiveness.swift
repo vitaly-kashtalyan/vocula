@@ -69,7 +69,7 @@ public struct MeetingLiveness: Sendable {
   }
 
   private static let second: UInt64 = 1_000_000_000
-  private static let tenSeconds = 10 * second
+  static let tenSeconds = 10 * second
   private static let permissionLimit = 15 * second
   private static let soundLimit = 60 * second
 

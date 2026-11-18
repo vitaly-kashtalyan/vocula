@@ -254,6 +254,21 @@ import Testing
     #expect(snapshot(root).filter { $0.key.contains(old.id.uuidString) } == before)
   }
 
+  @Test func aMissingAudioDirectoryMeansTheStartTime() async throws {
+    let root = meetingTemporaryDirectory()
+    let cipher = MarkingCipher()
+    let old = header()
+    try plant(header: old, chunks: [:], in: root)
+    try FileManager.default.removeItem(
+      at: root.appendingPathComponent(old.id.uuidString).appendingPathComponent("audio"))
+    let store = MeetingStore(directory: root)
+    let count = try await store.begin(header(), cipher: cipher, recovering: true)
+    let recovered = await store.header(of: old.id, cipher: cipher)
+    #expect(count == 1)
+    #expect(recovered?.end == started)
+    #expect(recovered?.endedBy == .interrupted)
+  }
+
   @Test func aHeaderInAnotherMeetingsFolderIsNotThatMeeting() async throws {
     let root = meetingTemporaryDirectory()
     let cipher = MarkingCipher()

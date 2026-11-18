@@ -89,7 +89,14 @@ public actor MeetingStore {
   }
 
   private static func chunkURLs(of track: MeetingTrack, in audio: URL) throws -> [URL] {
-    try FileManager.default.contentsOfDirectory(atPath: audio.path)
+    let names: [String]
+    do {
+      names = try FileManager.default.contentsOfDirectory(atPath: audio.path)
+    } catch CocoaError.fileReadNoSuchFile {
+      names = []
+    }
+    return
+      names
       .filter { $0.hasPrefix("\(track.rawValue)-") && $0.hasSuffix(".sealed") }.sorted()
       .map { audio.appendingPathComponent($0) }
   }

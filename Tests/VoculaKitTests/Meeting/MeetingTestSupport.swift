@@ -436,6 +436,7 @@ final class MeetingHarness: @unchecked Sendable {
     var statuses: [MeetingStatus] = []
     var waiting: [FakeTrackSource]
     var made = 0
+    var madeAt: [UInt64] = []
     var watches = 0
     var filesWhenEnded: [String]?
     weak var watch: AnyObject?
@@ -443,9 +444,12 @@ final class MeetingHarness: @unchecked Sendable {
 
     init(_ mics: [FakeTrackSource]) { waiting = mics }
 
-    func microphone(_ onEnded: @escaping @Sendable () async -> Void) -> FakeTrackSource {
+    func microphone(_ onEnded: @escaping @Sendable () async -> Void, at now: UInt64)
+      -> FakeTrackSource
+    {
       let mic = lock.withLock {
         made += 1
+        madeAt.append(now)
         return waiting.isEmpty ? FakeTrackSource() : waiting.removeFirst()
       }
       mic.onEnded = onEnded
@@ -505,7 +509,7 @@ final class MeetingHarness: @unchecked Sendable {
       .init(
         store: store,
         cipher: { try cipher.call() },
-        makeMicrophone: { record.microphone($0) },
+        makeMicrophone: { record.microphone($0, at: clock.now()) },
         makeSystemAudio: { system },
         holdPower: { power.hold($0) },
         watchDeviceList: { record.watched($0) },
@@ -532,6 +536,7 @@ final class MeetingHarness: @unchecked Sendable {
 
   var statuses: [MeetingStatus] { record.lock.withLock { record.statuses } }
   var micsMade: Int { record.lock.withLock { record.made } }
+  var micsMadeAt: [UInt64] { record.lock.withLock { record.madeAt } }
   var deviceWatches: Int { record.lock.withLock { record.watches } }
   var deviceWatch: AnyObject? { record.lock.withLock { record.watch } }
   var audioFilesWhenEnded: [String]? { record.lock.withLock { record.filesWhenEnded } }

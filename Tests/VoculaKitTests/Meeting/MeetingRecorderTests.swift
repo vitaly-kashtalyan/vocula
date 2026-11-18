@@ -473,19 +473,66 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
   await firstOf({ await h.clock.untilSleeping() }, { await h.ended.wait() })
 }
 
-@Suite(.timeLimit(.minutes(1))) struct MeetingRecorderLivenessTests {
-  @Test func aMicrophoneThatFailsAtRecordIsRetried() async {
-    let h = MeetingHarness(mics: failingMicrophones(1) + [FakeTrackSource()])
-    await h.recorder.start()
-    await h.tick(.seconds(5))
+private func delivering(_ source: FakeTrackSource = FakeTrackSource()) -> FakeTrackSource {
+  source.callbacks = 1
+  return source
+}
+
+private func runSeconds(_ seconds: Int, _ h: MeetingHarness) async {
+  for _ in 0..<seconds {
+    await h.tick(.seconds(1))
     await h.settleReopen()
+  }
+}
+
+private func details(of kind: String, in h: MeetingHarness) -> [String] {
+  h.log.recent(100).reversed().filter { $0.kind == kind }.map(\.detail)
+}
+
+@Suite(.timeLimit(.minutes(1))) struct MeetingRecorderLivenessTests {
+  @Test func aReopenThatNeverDeliversBacksOffUnderOneWarning() async {
+    let h = MeetingHarness(mics: [])
+    await h.recorder.start()
+    await runSeconds(130, h)
+    #expect(details(of: "meeting.micLost", in: h).count == 1)
+    #expect(h.micsMadeAt == [0, 15, 35, 65, 115].map { anchor + $0 * s })
+    #expect(details(of: "meeting.micReopened", in: h).isEmpty)
+    #expect(
+      details(of: "meeting.warning", in: h).filter { $0 == "reason=microphoneStopped" }.count == 1)
+    let stopped = h.statuses.map { $0.warnings.contains(.microphoneStopped) }
+    #expect(stopped.contains(true))
+    #expect(stopped.drop { !$0 }.allSatisfy { $0 })
+  }
+
+  @Test func aReopenCountsOnceTheMicrophoneDelivers() async {
+    let h = MeetingHarness(mics: [FakeTrackSource(), FakeTrackSource(), delivering(), delivering()])
+    await h.recorder.start()
+    await runSeconds(35, h)
+    #expect(h.micsMadeAt == [0, 15, 35].map { anchor + $0 * s })
+    #expect(details(of: "meeting.micReopened", in: h).isEmpty)
+    await runSeconds(1, h)
+    #expect(details(of: "meeting.micReopened", in: h) == ["count=2"])
+    #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == false)
+    #expect(h.deviceWatch == nil)
+    await runSeconds(16, h)
+    #expect(h.micsMadeAt == [0, 15, 35, 51].map { anchor + $0 * s })
+    #expect(details(of: "meeting.micLost", in: h).count == 2)
+    #expect(details(of: "meeting.micReopened", in: h) == ["count=2", "count=1"])
+    #expect(h.statuses.last?.warnings.contains(.microphoneStopped) == false)
+  }
+
+  @Test func aMicrophoneThatFailsAtRecordIsRetried() async {
+    let h = MeetingHarness(mics: failingMicrophones(1) + [delivering()])
+    await h.recorder.start()
+    await runSeconds(5, h)
     #expect(h.micsMade == 2)
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
   }
 
   @Test func aMicrophoneThatEndsWhileOpeningIsLostAndReopened() async {
     let first = FakeTrackSource(start: .gated)
-    let h = MeetingHarness(mics: [first, FakeTrackSource()])
+    let h = MeetingHarness(mics: [first, delivering()])
     let starting = Task { await h.recorder.start() }
     await first.startCalled.wait()
     await first.onEnded?()
@@ -493,15 +540,15 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     #expect(await value(of: starting) != nil)
     #expect(h.kinds().filter { $0 == "meeting.micLost" }.count == 1)
     #expect(first.stopCount == 1)
-    await h.tick(.seconds(5))
-    await h.settleReopen()
+    await runSeconds(5, h)
     #expect(h.micsMade == 2)
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
   }
 
   @Test func aReopenedMicrophoneThatEndsWhileOpeningIsRetried() async {
     let slow = FakeTrackSource(start: .gated)
-    let mics = [FakeTrackSource(), slow, FakeTrackSource()]
+    let mics = [FakeTrackSource(), slow, delivering()]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     await mics[0].onEnded?()
@@ -515,11 +562,12 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     await h.tick(.seconds(10))
     await h.settleReopen()
     #expect(h.micsMade == 3)
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=2")
   }
 
   @Test func aMicrophoneThatNeverDeliversIsLostAndReopened() async {
-    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let mics = [FakeTrackSource(), delivering()]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     await h.tick(.seconds(9))
@@ -534,6 +582,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     await h.tick(.seconds(4))
     await h.settleReopen()
     #expect(h.micsMade == 2)
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
   }
 
@@ -588,7 +637,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
   }
 
   @Test func aLostMicrophoneIsReopenedOnADeviceChange() async {
-    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let mics = [FakeTrackSource(), delivering()]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     await mics[0].onEnded?()
@@ -596,6 +645,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     await h.recorder.deviceListChanged()
     #expect(h.micsMade == 2)
     #expect(mics[1].startCount == 1)
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
   }
 
@@ -638,7 +688,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
   }
 
   @Test func aSlowReopenHoldsUpNeitherTheFlushNorTheSample() async {
-    let slow = FakeTrackSource(start: .gated)
+    let slow = delivering(FakeTrackSource(start: .gated))
     let mics = [FakeTrackSource(drains: [TrackDrain(), voice(at: anchor)]), slow]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
@@ -652,6 +702,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     #expect(h.micsMade == 2)
     slow.openStart()
     await h.settleReopen()
+    await runSeconds(1, h)
     #expect(h.detail(of: "meeting.micReopened") == "count=1")
     #expect(h.micsMade == 2)
   }
@@ -670,7 +721,7 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
   }
 
   @Test func theDeviceListIsWatchedOnlyDuringALoss() async {
-    let mics = [FakeTrackSource(), FakeTrackSource()]
+    let mics = [FakeTrackSource(), delivering()]
     let h = MeetingHarness(mics: mics)
     await h.recorder.start()
     #expect(h.deviceWatches == 0)
@@ -679,6 +730,8 @@ private func pastFifteenMinutes(_ h: MeetingHarness) async {
     #expect(h.deviceWatch != nil)
     await h.recorder.deviceListChanged()
     #expect(h.micsMade == 2)
+    #expect(h.deviceWatch != nil)
+    await runSeconds(1, h)
     #expect(h.deviceWatch == nil)
   }
 
