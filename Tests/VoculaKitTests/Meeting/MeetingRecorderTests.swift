@@ -858,6 +858,24 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
     #expect(h.audioFiles() == ["mic-000001.sealed", "system-000001.sealed"])
   }
 
+  @Test func audioThatCouldNotBeSavedIsCountedAsDropped() async {
+    let marking = MarkingCipher()
+    let second = TrackDrain(
+      runs: [MeetingRun(start: anchor, samples: Array(repeating: 400, count: 16_000))],
+      freshRuns: 1)
+    let h = MeetingHarness(
+      cipher: CipherSource(marking), mics: [FakeTrackSource(drains: [second])],
+      system: FakeTrackSource(drains: [second]))
+    await h.recorder.start()
+    marking.failNext(2)
+    await h.tick(.seconds(3))
+    await h.recorder.stop(.stopped)
+    #expect(
+      h.detail(of: "meeting.stop")
+        == "reason=stopped micSeconds=0 micSoundSeconds=0 systemSeconds=0 systemSoundSeconds=0"
+        + " runs=0 droppedSeconds=2")
+  }
+
   @Test func aContendedWriteIsAGapNotAWarning() async {
     let contended = TrackDrain(runs: voice(at: anchor).runs, freshRuns: 1, contendedNanos: s)
     let h = MeetingHarness(mics: [FakeTrackSource(drains: [contended])])

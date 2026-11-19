@@ -193,6 +193,16 @@ private final class Drains: @unchecked Sendable {
     #expect(d.droppedNanos == 25 * s)
   }
 
+  @Test func aWriteLongerThanTheBacklogKeepsItsNewestFrames() {
+    let b = buffer(8_000)
+    let ramp = (0..<300_000).map { Float($0) / 300_000 }
+    ramp.withUnsafeBufferPointer { b.write($0, hostNanos: 0) }
+    let d = b.drain(resample: identity)
+    #expect(d.runs.map(\.start) == [7_500 * ms])
+    #expect(d.runs.first?.samples == ramp[60_000...].map(MeetingRun.sample))
+    #expect(d.droppedNanos == 7_500 * ms)
+  }
+
   @Test func recordsKeepTheirOwnFrames() {
     let b = buffer()
     write(b, frames: 160, value: 0.25, at: 0)

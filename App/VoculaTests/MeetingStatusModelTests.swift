@@ -31,6 +31,26 @@ struct MeetingStatusModelTests {
     #expect(model.symbol == "record.circle.fill")
   }
 
+  private func shown(_ model: MeetingStatusModel) async -> String? {
+    for _ in 0..<100 where model.elapsed == nil { try? await Task.sleep(for: .milliseconds(10)) }
+    return model.elapsed
+  }
+
+  @Test func theTimerCountsFromTheStartAndStopsWithTheRecording() async throws {
+    let (model, _) = make()
+    model.update(MeetingStatus(isRecording: true, startedAt: Date(timeIntervalSinceNow: -65)))
+    let first = await shown(model)
+    #expect(first == MeetingStatusRules.elapsed(65) || first == MeetingStatusRules.elapsed(66))
+    model.update(MeetingStatus(isRecording: true, startedAt: Date(timeIntervalSinceNow: -5)))
+    let restarted = await shown(model)
+    #expect(
+      restarted == MeetingStatusRules.elapsed(5) || restarted == MeetingStatusRules.elapsed(6))
+    model.update(MeetingStatus())
+    #expect(model.elapsed == nil)
+    try await Task.sleep(for: .milliseconds(1_200))
+    #expect(model.elapsed == nil)
+  }
+
   @Test func theMenuObservesOnlyRecording() {
     let (model, _) = make()
     model.update(MeetingStatus(isRecording: true, startedAt: Date()))
