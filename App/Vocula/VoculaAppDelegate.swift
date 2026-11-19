@@ -176,6 +176,7 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
   func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
     guard !Self.isHostingTests else { return .terminateNow }
     Task { @MainActor in
+      await self.coordinator.meetings.stopForTermination()
       await self.coordinator.finishInFlightWork()
       sender.reply(toApplicationShouldTerminate: true)
     }

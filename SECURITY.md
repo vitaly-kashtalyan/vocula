@@ -1,8 +1,9 @@
 # Reporting a security problem
 
 Vocula installs a global event tap, holds Accessibility, pastes into whatever
-application is focused, and keeps a year of dictation history encrypted under a
-key in your login keychain. A defect in any of those is worth telling me about
+application is focused, keeps a year of dictation history encrypted under a
+key in your login keychain, and records meetings to disk, encrypted under a
+second key there. A defect in any of those is worth telling me about
 before it is public.
 
 **Use GitHub's private vulnerability reporting** — the *Report a vulnerability*
@@ -11,10 +12,13 @@ can read. Please do not open a public issue for anything in the list below.
 
 ## In scope
 
-- Reading, decrypting or corrupting the history file, or its keychain key.
+- Reading, decrypting or corrupting the history files or a recorded meeting, or
+  either of their keychain keys.
 - Getting text inserted somewhere that should have been refused — a password
   field, or anything reached while secure input is up.
-- Anything that makes the app record or transmit audio outside a dictation.
+- Anything that makes the app record audio outside a dictation or a meeting you
+  started, keep recording after *Stop Meeting*, an automatic stop, sleep or
+  quit, or transmit audio at all.
 - Forging a licence, or making the verifier accept one it should not.
 - Code execution through a model download, a build script, or a workflow here.
 

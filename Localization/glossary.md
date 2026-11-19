@@ -40,6 +40,8 @@ These are read off a real Mac in the target language, never invented.
 | `System Settings → Keyboard → Press 🌐 key to` | `OnboardingModel.keyboardPath` |
 | `System Settings → Screen Time → Content & Privacy` | `OnboardingModel.screenTimePath` |
 | `System Settings → Sound → Input` | `refusal.silentInput.volumeDown` |
+| `System Audio Recording` | `meeting.status.noSystemAudioYet`, and the pane the system-audio prompt sends the user to |
+| `login keychain` | `meeting.status.cannotStart` — Keychain Access's name for the keychain Vocula's meeting key lives in |
 | `Press 🌐 key to → Do Nothing` | The globe row's title, verbatim from the Keyboard pane |
 | `Finder` | Reveal in Finder, the diagnostics menu item, and the translocated placement footer |
 | `Quit` | The app menu's verb — the menu item, Quit and Reopen, the placement warning's footers, and the message after Accessibility is turned off |

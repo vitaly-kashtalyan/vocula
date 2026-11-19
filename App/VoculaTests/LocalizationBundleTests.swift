@@ -38,7 +38,7 @@ struct LocalizationBundleTests {
       english.localizedString(
         forKey: "NSMicrophoneUsageDescription",
         value: nil, table: "InfoPlist")
-        == "Vocula records audio only while you are dictating.")
+        == "Vocula records audio only while you dictate or record a meeting.")
     let localized = Bundle.main.localizedInfoDictionary?["NSMicrophoneUsageDescription"]
     #expect((localized as? String)?.isEmpty == false)
   }

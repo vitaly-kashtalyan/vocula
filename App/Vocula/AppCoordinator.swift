@@ -90,6 +90,7 @@ final class AppCoordinator: ObservableObject {
   private var refusalDedup = RefusalDedup()
   private var diagnosticLog: DiagnosticLog?
   private var runningModel: ModelID?
+  private(set) lazy var meetings = Meetings(diagnosticLog: { [weak self] in self?.diagnosticLog })
 
   private static var launchDetail: String {
     let version = Bundle.main.shortVersion
@@ -269,6 +270,7 @@ final class AppCoordinator: ObservableObject {
         await controller.handle(signal)
       }
     }
+    meetings.pipelineStarted(signals)
     let installed = monitor.start()
     if !VoculaAppDelegate.isSecondCopy {
       log("tap.install", "ok=\(installed)")

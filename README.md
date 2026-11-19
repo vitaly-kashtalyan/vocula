@@ -74,7 +74,7 @@ Nothing you say. Ever.
 
 | What | Where it happens |
 | --- | --- |
-| Audio capture | This Mac. The microphone opens on the record key and closes on release. |
+| Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and records everything it hears, anything you dictate meanwhile included; the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until a later version transcribes them. |
 | Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
@@ -110,9 +110,13 @@ including us. It is a count, and it is all it is.
 The exceptions, stated rather than buried: Settings → Microphone opens the input
 to draw a level meter, so you can see that it hears you before you rely on it —
 macOS shows its orange dot for as long as it does, and the samples are measured
-and dropped. Insertion goes through the system pasteboard for about a second,
-which other applications can read. Both are in [PRIVACY.md](PRIVACY.md), at
-length, along with what none of this protects you from.
+and dropped. *Record Meeting (Beta)* keeps the microphone open until the meeting
+stops, records the sound other apps play through macOS's System Audio Recording
+permission, and keeps both on disk, encrypted under their own key, until a later
+version transcribes them — this version cannot delete a meeting inside the app.
+Insertion goes through the system pasteboard for about a second, which other
+applications can read. All three are in [PRIVACY.md](PRIVACY.md), at length,
+along with what none of this protects you from.
 
 ## Install
 
@@ -137,10 +141,11 @@ bundle id **and its signature**, and the encrypted history key is ACL'd to the
 same signature. An ad-hoc signature changes on every build.
 
 > [!IMPORTANT]
-> A copy you compile yourself is signed ad-hoc, so macOS asks for both
-> permissions again every time you rebuild it, and the history key does not
+> A copy you compile yourself is signed ad-hoc, so macOS asks for Accessibility
+> and Microphone again every time you rebuild it, and the history key does not
 > survive a rebuild. Point `App/Local.xcconfig` at your own Apple team to stop
-> that.
+> that. It can still record a meeting: it gets its own System Audio Recording
+> prompt and records (measured); whether a rebuild asks again is not measured.
 
 Building it yourself is free, and of course always will be.
 `App/Signing.xcconfig` ships ad-hoc by default precisely so that a stranger with
@@ -161,10 +166,14 @@ silent recording, a refusal and a dead microphone all cost nothing.
   does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
   model, downloaded when you ask for it — by switching clean-up on, or with its
-  `Load` button.
-- Two permissions, each asked for when it is first needed: **Accessibility**,
+  `Load` button. A recorded meeting takes about 230 MB an hour and is kept until
+  you delete it by hand: each of its two tracks is stored whole as 16 kHz mono
+  16-bit samples, the other apps' track through its silences too, which is about
+  115 MB per track per hour — computed from that format, not measured.
+- Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
-  window and lets ⌘V reach another application, and **Microphone**.
+  window and lets ⌘V reach another application, **Microphone**, and **System
+  Audio Recording**, asked the first time you record a meeting.
 
 Apple Silicon only, and the binary is built for `arm64` alone. Recognition runs
 on the GPU and the Neural Engine; an Intel Mac has neither in a form this can
@@ -217,7 +226,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1153 tests: 868 from `swift test`, 267 in the hosted app bundle, 18 driving the
+1425 tests: 1082 from `swift test`, 325 in the hosted app bundle, 18 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
@@ -293,6 +302,18 @@ Stated here rather than discovered later.
   newer version exists. Settings → Permissions says so at the top. Quit Vocula,
   drag it by itself into Applications in the Finder (if it is already there, drag
   it out and back in), and open it from there.
+- **Record Meeting is a beta that only records.** This version cannot play back,
+  export, transcribe or delete a meeting inside the app. Every meeting stays in
+  `~/Library/Application Support/app.vocula.mac/Meetings/`, about 230 MB an
+  hour, until you delete that folder by hand, which deletes them all. A
+  Bluetooth headset's or an iPhone's microphone is never recorded in a meeting:
+  when dictation uses one, the meeting records other apps alone.
+- **A meeting keeps the Mac awake.** While one records, Vocula holds an
+  assertion against idle sleep, `vocula.meeting` in `pmset -g assertions`;
+  closing the lid or choosing Sleep still sleeps the Mac, and ends the meeting.
+  A meeting stops by itself only after 15 minutes in which nothing was heard,
+  and any sound from any app counts, however faint — so a meeting forgotten
+  beside music or a video keeps the Mac awake until you choose *Stop Meeting*.
 - **A licence cannot be revoked individually.** Verification is offline, so
   there is no server to ask — which is the whole point, and the cost is that a
   refund leaves a working key.
