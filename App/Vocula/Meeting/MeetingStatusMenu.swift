@@ -36,7 +36,10 @@ struct MeetingStatusLabel: View {
   let model: MeetingStatusModel
 
   var body: some View {
-    Image(systemName: model.symbol)
-      .accessibilityLabel(Text(MenuCopy.meetingStatusLabel(recording: model.isRecording)))
+    HStack {
+      Image(systemName: model.symbol)
+        .accessibilityLabel(Text(MenuCopy.meetingStatusLabel(recording: model.isRecording)))
+      if let elapsed = model.elapsed { Text(verbatim: elapsed).monospacedDigit() }
+    }
   }
 }

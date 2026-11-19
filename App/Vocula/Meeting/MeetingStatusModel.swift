@@ -9,8 +9,11 @@ final class MeetingStatusModel {
   private(set) var warnings: [MeetingWarning] = []
   private(set) var notice: MeetingNotice?
   private(set) var statusItemShown = false
+  private(set) var elapsed: String?
 
   @ObservationIgnored private let announce: @MainActor (String) -> Void
+  @ObservationIgnored private var ticking: Date?
+  @ObservationIgnored private var ticker: Task<Void, Never>?
 
   init(announce: @escaping @MainActor (String) -> Void = { Announce.say($0) }) {
     self.announce = announce
@@ -31,6 +34,7 @@ final class MeetingStatusModel {
     if notice != new.notice { notice = new.notice }
     let shown = MeetingStatusRules.showsItem(new)
     if statusItemShown != shown { statusItemShown = shown }
+    tick(from: new.isRecording ? new.startedAt : nil)
     let spoken = MeetingStatusRules.announcements(from: old, to: new).map { announcement in
       switch announcement {
       case .started: String(localized: MenuCopy.meetingStatusLabel(recording: true))
@@ -40,6 +44,21 @@ final class MeetingStatusModel {
       }
     }
     if !spoken.isEmpty { announce(spoken.joined(separator: "\n")) }
+  }
+
+  private func tick(from since: Date?) {
+    guard since != ticking else { return }
+    ticking = since
+    ticker?.cancel()
+    if elapsed != nil { elapsed = nil }
+    guard let since else { return }
+    ticker = Task { [weak self] in
+      while !Task.isCancelled {
+        let text = MeetingStatusRules.elapsed(Int(Date().timeIntervalSince(since)))
+        if self?.elapsed != text { self?.elapsed = text }
+        try? await Task.sleep(for: .seconds(1))
+      }
+    }
   }
 
   func dismiss() {

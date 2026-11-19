@@ -41,6 +41,13 @@ public enum MeetingStatusRules {
     }
   }
 
+  public static func elapsed(_ seconds: Int, locale: Locale = .interface) -> String {
+    let pattern: Duration.TimeFormatStyle.Pattern =
+      seconds < 3600 ? .minuteSecond : .hourMinuteSecond
+    return Duration.seconds(max(seconds, 0)).formatted(
+      Duration.TimeFormatStyle(pattern: pattern, locale: locale))
+  }
+
   public static func showsItem(_ status: MeetingStatus) -> Bool {
     status.isRecording || status.notice != nil
   }

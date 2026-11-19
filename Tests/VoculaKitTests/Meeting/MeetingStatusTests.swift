@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import VoculaKit
@@ -22,6 +23,11 @@ import Testing
   func aMeetingThatEndedByItselfShowsTheCalmSymbol(_ notice: MeetingNotice) {
     let status = MeetingStatus(notice: notice)
     #expect(MeetingStatusRules.symbol(for: status) == MeetingStatusRules.endedSymbol)
+  }
+
+  @Test(arguments: [(0, "0:00"), (754, "12:34"), (3599, "59:59"), (3723, "1:02:03"), (-5, "0:00")])
+  func theTimerShowsHoursOnlyOnceThereAreAny(_ seconds: Int, _ shown: String) {
+    #expect(MeetingStatusRules.elapsed(seconds, locale: Locale(identifier: "en_US_POSIX")) == shown)
   }
 
   @Test func aMeetingThatCouldNotStartShowsTheWarningSymbol() {
