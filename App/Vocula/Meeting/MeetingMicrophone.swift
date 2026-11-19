@@ -125,6 +125,18 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
       })
   }
 
+  private struct Held {
+    var input: Input?
+    var monitor: AudioDeviceMonitor?
+    var poll: Task<Void, Never>?
+
+    func close() {
+      poll?.cancel()
+      monitor?.stop()
+      input?.close()
+    }
+  }
+
   private let onEnded: @Sendable () async -> Void
   private let chooseDevice: @Sendable () -> UInt32?
   private let ended = OneShot()
@@ -133,9 +145,7 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
   private let queue = DispatchQueue(label: "vocula.meeting.microphone", qos: .userInitiated)
   private var stopped = false
   private var buffer: TrackBuffer?
-  private var input: Input?
-  private var monitor: AudioDeviceMonitor?
-  private var poll: Task<Void, Never>?
+  private var held = Held()
 
   init(
     onEnded: @escaping @Sendable () async -> Void,
@@ -145,7 +155,7 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
     self.chooseDevice = chooseDevice
   }
 
-  deinit { close() }
+  deinit { held.close() }
 
   func start() async throws {
     try await withCheckedThrowingContinuation { continuation in
@@ -164,23 +174,26 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
     }
     try refuseIfStopped()
     let input = try Self.open(device, format: format)
-    try lock.withLock {
-      guard !stopped else {
-        input.close()
-        throw MeetingFailure.failed(step: "stopped", code: 0)
-      }
-      self.input = input
+    let kept = lock.withLock {
+      guard !stopped else { return false }
       buffer = input.capture.buffer
-      monitor = AudioDeviceMonitor(device: device, openedRate: format.rate, diagnose: nil) {
-        [weak self] _ in Task { self?.end() }
-      }
-      poll = Task { [weak self, buffer = input.capture.buffer] in
-        var watchdog = InputLivenessWatchdog()
-        while !Task.isCancelled {
-          do { try await Task.sleep(for: InputLivenessWatchdog.checkInterval) } catch { return }
-          if watchdog.check(buffersDelivered: buffer.callbacks) == .dead { self?.end() }
-        }
-      }
+      held = Held(
+        input: input,
+        monitor: AudioDeviceMonitor(device: device, openedRate: format.rate, diagnose: nil) {
+          [weak self] _ in Task { self?.end() }
+        },
+        poll: Task { [weak self, buffer = input.capture.buffer] in
+          var watchdog = InputLivenessWatchdog()
+          while !Task.isCancelled {
+            do { try await Task.sleep(for: InputLivenessWatchdog.checkInterval) } catch { return }
+            if watchdog.check(buffersDelivered: buffer.callbacks) == .dead { self?.end() }
+          }
+        })
+      return true
+    }
+    guard kept else {
+      input.close()
+      throw MeetingFailure.failed(step: "stopped", code: 0)
     }
   }
 
@@ -188,8 +201,8 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
     _ = ended.fire()
     lock.withLock {
       stopped = true
-      close()
-    }
+      return released()
+    }.close()
   }
 
   func finished() async {
@@ -213,18 +226,14 @@ final class MeetingMicrophone: MeetingTrackSource, @unchecked Sendable {
 
   private func end() {
     guard ended.fire() else { return }
-    lock.withLock { close() }
+    lock.withLock { released() }.close()
     let onEnded = onEnded
     Task { await onEnded() }
   }
 
-  private func close() {
-    poll?.cancel()
-    poll = nil
-    monitor?.stop()
-    monitor = nil
-    input?.close()
-    input = nil
+  private func released() -> Held {
+    defer { held = Held() }
+    return held
   }
 
   private static func open(_ device: AudioDeviceID, format: CaptureFormat) throws -> Input {
