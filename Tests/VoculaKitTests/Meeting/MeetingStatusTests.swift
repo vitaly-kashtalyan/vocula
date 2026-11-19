@@ -15,8 +15,17 @@ import Testing
   }
 
   @Test func aNoticeKeepsTheItemAfterTheMeeting() {
-    let status = MeetingStatus(notice: .autoStopped)
-    #expect(MeetingStatusRules.showsItem(status))
+    #expect(MeetingStatusRules.showsItem(MeetingStatus(notice: .autoStopped)))
+  }
+
+  @Test(arguments: [MeetingNotice.autoStopped, .endedBySleep])
+  func aMeetingThatEndedByItselfShowsTheCalmSymbol(_ notice: MeetingNotice) {
+    let status = MeetingStatus(notice: notice)
+    #expect(MeetingStatusRules.symbol(for: status) == MeetingStatusRules.endedSymbol)
+  }
+
+  @Test func aMeetingThatCouldNotStartShowsTheWarningSymbol() {
+    let status = MeetingStatus(notice: .cannotStart)
     #expect(MeetingStatusRules.symbol(for: status) == MeetingStatusRules.warningSymbol)
   }
 

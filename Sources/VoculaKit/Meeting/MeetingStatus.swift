@@ -30,9 +30,15 @@ public enum MeetingAnnouncement: Equatable, Sendable {
 public enum MeetingStatusRules {
   public static let recordingSymbol = "record.circle.fill"
   public static let warningSymbol = "exclamationmark.circle.fill"
+  public static let endedSymbol = "record.circle"
 
   public static func symbol(for status: MeetingStatus) -> String {
-    status.warnings.isEmpty && status.notice == nil ? recordingSymbol : warningSymbol
+    guard status.warnings.isEmpty else { return warningSymbol }
+    switch status.notice {
+    case nil: return recordingSymbol
+    case .cannotStart: return warningSymbol
+    case .autoStopped, .endedBySleep: return endedSymbol
+    }
   }
 
   public static func showsItem(_ status: MeetingStatus) -> Bool {
