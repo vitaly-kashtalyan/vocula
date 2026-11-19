@@ -37,8 +37,9 @@ struct MeetingStatusLabel: View {
 
   var body: some View {
     Group {
-      if let elapsed = model.elapsed {
-        Image(nsImage: Self.timer(symbol: model.symbol, elapsed: elapsed))
+      if let elapsed = model.elapsed, let timer = Self.timer(symbol: model.symbol, elapsed: elapsed)
+      {
+        Image(nsImage: timer)
       } else {
         Image(systemName: model.symbol)
       }
@@ -48,16 +49,17 @@ struct MeetingStatusLabel: View {
 
   // Workaround: a MenuBarExtra label draws its Text in the menu bar's proportional font and
   // drops .monospacedDigit(), so the item changed width every second; an image keeps its size.
-  private static func timer(symbol: String, elapsed: String) -> NSImage {
+  // Rendered at 2x because the one image serves the menu bar of every display.
+  private static func timer(symbol: String, elapsed: String) -> NSImage? {
     let renderer = ImageRenderer(
       content: HStack(spacing: 4) {
         Image(systemName: symbol)
         Text(verbatim: elapsed).monospacedDigit()
       }
       .font(Font(NSFont.menuBarFont(ofSize: 0))))
-    renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
-    let image = renderer.nsImage ?? NSImage()
-    image.isTemplate = true
+    renderer.scale = 2
+    let image = renderer.nsImage
+    image?.isTemplate = true
     return image
   }
 }
