@@ -17,17 +17,26 @@ final class Meetings {
   private var recorder: MeetingRecorder?
   private var follower: Task<Void, Never>?
   private var signals: StreamFanout<DictationSignal>?
+  private let parts: MeetingTranscriptionParts
+  private var schedule = MeetingPassSchedule()
+  private var hold: MeetingHoldGate?
+  private var holdFollower: Task<Void, Never>?
+  private(set) var pass: Task<Void, Never>?
+  private var terminating = false
+  private(set) var refreshing: Task<Void, Never>?
 
   init(
     diagnosticLog: @escaping @MainActor () -> DiagnosticLog?,
     status: MeetingStatusModel = MeetingStatusModel(),
     makeDependencies: @escaping MakeDependencies = { Meetings.live(log: $0, recover: $1) },
-    sleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+    sleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
+    transcription: MeetingTranscriptionParts = .live
   ) {
     self.diagnosticLog = diagnosticLog
     self.status = status
     self.makeDependencies = makeDependencies
     self.sleep = sleep
+    parts = transcription
   }
 
   var holdsAMeeting: Bool { recorder != nil || follower != nil }
@@ -49,9 +58,15 @@ final class Meetings {
       }
       dependencies.publish = { [weak self] in await self?.apply($0, of: meeting) }
       dependencies.ended = { [weak self] in await self?.ended(meeting) }
+      status.clearTranscriptionOutcome()
+      if schedule.recordingStarted() == .cancel { pass?.cancel() }
+      if hold == nil { hold = parts.makeHold() }
       let recorder = MeetingRecorder(dependencies)
       self.recorder = recorder
-      if let signals { follow(signals) }
+      if let signals {
+        follow(signals)
+        if holdFollower == nil { listen(signals) }
+      }
       return Task { await recorder.start() }
     }
   }
@@ -62,16 +77,42 @@ final class Meetings {
     guard meetingSwitch.isCurrent(meeting), !(new.isRecording && concluded == meeting) else {
       return
     }
+    let started = new.isRecording && !status.isRecording
     if new.isRecording { meetingSwitch.began(meeting) } else { concluded = meeting }
     status.update(new)
+    if started { refreshListing() }
+  }
+
+  @discardableResult
+  func copyTranscript(_ id: UUID) -> Task<Void, Never> {
+    let read = parts.transcript
+    return Task {
+      guard let listing = status.transcripts.first(where: { $0.id == id }),
+        let transcript = await read(id)
+      else {
+        status.transcriptUnreadable()
+        return
+      }
+      let labels: [MeetingSpeaker: String] = [
+        .me: String(localized: MenuCopy.meetingSpeakerMe),
+        .others: String(localized: MenuCopy.meetingSpeakerOthers),
+      ]
+      parts.paste(
+        MeetingMarkdown.render(
+          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels))
+    }
   }
 
   func pipelineStarted(_ signals: StreamFanout<DictationSignal>) {
     self.signals = signals
     follow(signals)
+    if hold != nil { listen(signals) }
   }
 
   func stopForTermination() async {
+    terminating = true
+    schedule.terminate()
+    pass?.cancel()
     guard recorder != nil || stopping != nil else { return }
     let previous = stopping
     let recorder = recorder
@@ -133,6 +174,68 @@ final class Meetings {
       await follower?.value
       await recorder?.stop(.stopped)
       await previous?.value
+      await self.meetingEnded()
+    }
+  }
+
+  private func meetingEnded() async {
+    if !terminating, status.notice != .cannotStart,
+      schedule.requested(recording: recorder != nil) == .start
+    {
+      await startPass()
+    }
+    await dropHoldIfIdle()
+  }
+
+  private func startPass() async {
+    let hold = self.hold ?? parts.makeHold()
+    self.hold = hold
+    guard
+      let transcriber = parts.makeTranscriber(
+        diagnosticLog(), hold, { [weak self] in await self?.status.update(transcription: $0) })
+    else {
+      await passEnded()
+      return
+    }
+    pass = Task {
+      await transcriber.run()
+      await self.passEnded()
+    }
+  }
+
+  private func passEnded() async {
+    pass = nil
+    refreshListing()
+    if schedule.passEnded(recording: recorder != nil) == .start {
+      await startPass()
+    } else {
+      await dropHoldIfIdle()
+    }
+  }
+
+  private func dropHoldIfIdle() async {
+    guard recorder == nil, pass == nil, schedule.isIdle, let follower = holdFollower else { return }
+    holdFollower = nil
+    hold = nil
+    follower.cancel()
+    await follower.value
+  }
+
+  private func listen(_ signals: StreamFanout<DictationSignal>) {
+    holdFollower?.cancel()
+    guard let hold else { return }
+    let stream = signals.subscribe()
+    holdFollower = Task {
+      for await signal in stream { await hold.received(signal) }
+      if !Task.isCancelled { await hold.streamEnded() }
+    }
+  }
+
+  private func refreshListing() {
+    let listing = parts.listing
+    let log = diagnosticLog()
+    refreshing = Task {
+      if let found = await listing(log) { status.update(transcripts: found) }
     }
   }
 }

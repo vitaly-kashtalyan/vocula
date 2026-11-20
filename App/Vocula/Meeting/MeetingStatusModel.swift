@@ -10,6 +10,9 @@ final class MeetingStatusModel {
   private(set) var notice: MeetingNotice?
   private(set) var statusItemShown = false
   private(set) var elapsed: String?
+  private(set) var transcription: MeetingTranscription?
+  private(set) var copyFailed = false
+  private(set) var transcripts: [MeetingListing] = []
 
   @ObservationIgnored private let announce: @MainActor (String) -> Void
   @ObservationIgnored private var ticking: Date?
@@ -19,7 +22,19 @@ final class MeetingStatusModel {
     self.announce = announce
   }
 
-  var symbol: String { MeetingStatusRules.symbol(for: status) }
+  var symbol: String {
+    MeetingStatusRules.symbol(for: status, transcription: transcription, copyFailed: copyFailed)
+  }
+
+  var label: MeetingStatusRules.Label {
+    MeetingStatusRules.label(for: status, transcription: transcription)
+  }
+
+  var canDismiss: Bool {
+    if notice != nil || copyFailed { return true }
+    if case .finished = transcription { return true }
+    return false
+  }
 
   private var status: MeetingStatus {
     MeetingStatus(
@@ -32,8 +47,7 @@ final class MeetingStatusModel {
     if startedAt != new.startedAt { startedAt = new.startedAt }
     if warnings != new.warnings { warnings = new.warnings }
     if notice != new.notice { notice = new.notice }
-    let shown = MeetingStatusRules.showsItem(new)
-    if statusItemShown != shown { statusItemShown = shown }
+    refreshShown()
     tick(from: new.isRecording ? new.startedAt : nil)
     let spoken = MeetingStatusRules.announcements(from: old, to: new).map { announcement in
       switch announcement {
@@ -61,9 +75,41 @@ final class MeetingStatusModel {
     }
   }
 
+  func update(transcription new: MeetingTranscription?) {
+    let old = transcription
+    if transcription != new { transcription = new }
+    refreshShown()
+    let spoken = MeetingStatusRules.announcements(from: old, to: new).flatMap {
+      MenuCopy.meetingTranscription($0).map { String(localized: $0) }
+    }
+    if !spoken.isEmpty { announce(spoken.joined(separator: "\n")) }
+  }
+
+  func update(transcripts new: [MeetingListing]) {
+    if transcripts != new { transcripts = new }
+  }
+
+  func transcriptUnreadable() {
+    guard !copyFailed else { return }
+    copyFailed = true
+    refreshShown()
+    announce(String(localized: MenuCopy.transcriptUnreadable))
+  }
+
+  func clearTranscriptionOutcome() {
+    if case .finished = transcription { transcription = nil }
+    if copyFailed { copyFailed = false }
+    refreshShown()
+  }
+
   func dismiss() {
     if notice != nil { notice = nil }
-    let shown = MeetingStatusRules.showsItem(status)
+    clearTranscriptionOutcome()
+  }
+
+  private func refreshShown() {
+    let shown = MeetingStatusRules.showsItem(
+      status, transcription: transcription, copyFailed: copyFailed)
     if statusItemShown != shown { statusItemShown = shown }
   }
 
@@ -76,11 +122,15 @@ final class MeetingStatusModel {
 
   @discardableResult
   func statusItemRemoved() -> Task<Void, Never>? {
-    switch MeetingStatusRules.removal(of: status) {
+    switch MeetingStatusRules.removal(of: status, transcription: transcription) {
     case .putBack:
       statusItemShown = false
       return Task { @MainActor in
-        if MeetingStatusRules.showsItem(status) { statusItemShown = true }
+        if MeetingStatusRules.showsItem(
+          status, transcription: transcription, copyFailed: copyFailed)
+        {
+          statusItemShown = true
+        }
       }
     case .dismiss:
       dismiss()

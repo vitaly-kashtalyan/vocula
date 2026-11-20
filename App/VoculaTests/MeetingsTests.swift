@@ -199,6 +199,49 @@ private final class PowerSpy: @unchecked Sendable {
   }
 }
 
+private struct NoSpeech: SpeechDetecting {
+  func markup(_ samples: [Float]) async throws -> SpeechMarkup {
+    SpeechMarkup(segments: [], totalDuration: .zero)
+  }
+}
+
+@MainActor
+private final class PassProbe {
+  var made = 0
+  var blocking = false
+  var listing: [MeetingListing]?
+  var transcript: MeetingTranscript?
+  var pasted: [String] = []
+  let cipherGate = Latch()
+
+  func parts(store: MeetingStore) -> MeetingTranscriptionParts {
+    MeetingTranscriptionParts(
+      makeHold: {
+        MeetingHoldGate(
+          hold: DictationHold(passDeadline: { _ in .zero }, refineWait: { nil }),
+          now: { 0 }, sleep: { try await Task.sleep(for: $0) })
+      },
+      makeTranscriber: { [self] log, hold, publish in
+        made += 1
+        guard blocking else { return nil }
+        let gate = cipherGate
+        return MeetingTranscriber(
+          MeetingTranscriber.Dependencies(
+            store: store,
+            cipher: {
+              await gate.wait()
+              return PassthroughCipher()
+            },
+            model: { nil }, makeRecognizer: { _ in throw CancellationError() },
+            makeDetector: { NoSpeech() }, hold: hold, now: { 0 },
+            sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))
+      },
+      listing: { [self] _ in await self.listing },
+      transcript: { [self] _ in await self.transcript },
+      paste: { [self] in pasted.append($0) })
+  }
+}
+
 @discardableResult
 private func finishes(_ task: Task<Void, Never>?) async -> Bool {
   guard let task else { return true }
@@ -218,6 +261,7 @@ private final class Rig {
   let quit = ManualSleeper()
   let ticks = ManualSleeper()
   let fanout = StreamFanout<DictationSignal>(bufferingPolicy: .unbounded)
+  let passes = PassProbe()
   let root: URL
   let store: MeetingStore
   let log: DiagnosticLog
@@ -236,7 +280,8 @@ private final class Rig {
     makeDependencies: { [weak self] log, recover in
       self?.dependencies(log: log, recover: recover)
     },
-    sleep: { [quit] in try await quit.sleep(for: $0) })
+    sleep: { [quit] in try await quit.sleep(for: $0) },
+    transcription: passes.parts(store: store))
 
   init(key: KeySource = KeySource(), systemFinish: StubTrack.Finish...) {
     let temporary = FileManager.default.temporaryDirectory
@@ -305,13 +350,15 @@ struct MeetingsTests {
     #expect(rig.recoverFlags.isEmpty)
     #expect(rig.fanout.subscriberCount == 0)
     #expect(!rig.meetings.holdsAMeeting)
+    #expect(rig.passes.made == 0)
+    #expect(rig.meetings.refreshing == nil)
   }
 
   @Test func everythingIsReleasedWhenTheMeetingEnds() async throws {
     let rig = Rig()
     rig.meetings.pipelineStarted(rig.fanout)
     try await rig.record()
-    #expect(rig.fanout.subscriberCount == 1)
+    #expect(rig.fanout.subscriberCount == 2)
     #expect(rig.meetings.holdsAMeeting)
     await finishes(rig.meetings.toggle())
     #expect(!rig.meetings.holdsAMeeting)
@@ -354,11 +401,96 @@ struct MeetingsTests {
     #expect(rig.mic.stopCount == 0)
     #expect(rig.system.stopCount == 0)
     rig.meetings.pipelineStarted(rig.fanout)
-    #expect(rig.fanout.subscriberCount == 1)
+    #expect(rig.fanout.subscriberCount == 2)
     rig.fanout.emit(.start(session: 2))
     rig.fanout.finishAll()
     await finishes(rig.meetings.toggle())
     #expect(await rig.header()?.endedBy == .stopped)
+  }
+
+  @Test func aStopRequestsAPass() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 1)
+  }
+
+  @Test func quitRequestsNoPass() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await rig.meetings.stopForTermination()
+    await finishes(rig.meetings.stopping)
+    #expect(rig.passes.made == 0)
+  }
+
+  @Test func recordCancelsAPassAndTheNextStopRunsIt() async throws {
+    let rig = Rig()
+    rig.passes.blocking = true
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 1)
+    let first = try #require(rig.meetings.pass)
+    try await rig.record()
+    await first.value
+    #expect(rig.meetings.pass == nil)
+    #expect(rig.passes.made == 1)
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 2)
+    rig.passes.cipherGate.open()
+    await rig.meetings.pass?.value
+  }
+
+  @Test func theListingRefreshesWhenRecordingStarts() async throws {
+    let rig = Rig()
+    let listing = MeetingListing(
+      id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+    rig.passes.listing = [listing]
+    try await rig.record()
+    await rig.meetings.refreshing?.value
+    #expect(rig.meetings.status.transcripts == [listing])
+    rig.passes.listing = nil
+    await finishes(rig.meetings.toggle())
+    await rig.meetings.refreshing?.value
+    #expect(rig.meetings.status.transcripts == [listing])
+  }
+
+  @Test func copyPutsMarkdownOnThePasteboard() async {
+    let rig = Rig()
+    let id = UUID()
+    rig.meetings.status.update(transcripts: [
+      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
+    ])
+    rig.passes.transcript = MeetingTranscript(
+      model: nil,
+      utterances: [
+        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello", dictation: false)
+      ])
+    await rig.meetings.copyTranscript(id).value
+    let me = String(localized: MenuCopy.meetingSpeakerMe)
+    #expect(rig.passes.pasted.count == 1)
+    #expect(rig.passes.pasted.first?.hasPrefix("---\ndate: 1970-01-01T00:00:00Z\n") == true)
+    #expect(rig.passes.pasted.first?.contains("**\(me)** [00:00:01]: hello") == true)
+    #expect(!rig.meetings.status.copyFailed)
+  }
+
+  @Test func anUnreadableCopyIsShown() async {
+    let rig = Rig()
+    let id = UUID()
+    rig.meetings.status.update(transcripts: [
+      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
+    ])
+    await rig.meetings.copyTranscript(id).value
+    #expect(rig.passes.pasted.isEmpty)
+    #expect(rig.meetings.status.copyFailed)
+    #expect(rig.meetings.status.statusItemShown)
+  }
+
+  @Test func recordClearsAFinishedPass() async throws {
+    let rig = Rig()
+    rig.meetings.status.update(transcription: .finished(transcribed: 1, failed: 0))
+    try await rig.record()
+    #expect(rig.meetings.status.transcription == nil)
+    await finishes(rig.meetings.toggle())
   }
 
   @Test func theRecoveryFlagReachesTheDependencies() async throws {
@@ -425,8 +557,16 @@ struct MeetingsTests {
     #expect(!meetings.holdsAMeeting)
   }
 
+  @Test func aSecondCopyListsNoTranscripts() async {
+    #expect(await MeetingTranscriptionParts.liveListing(log: nil) == nil)
+    #expect(await MeetingTranscriptionParts.liveTranscript(UUID()) == nil)
+  }
+
   @Test func aSecondCopyCreatesNoStore() {
     #expect(Meetings.makeStore() == nil)
+    #expect(
+      MeetingTranscriptionParts.liveTranscriber(
+        log: nil, hold: MeetingTranscriptionParts.liveHold(), publish: { _ in }) == nil)
     #expect(Meetings.live(log: nil, recover: true) == nil)
   }
 

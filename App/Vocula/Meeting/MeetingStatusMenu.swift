@@ -25,9 +25,32 @@ struct MeetingStatusMenu: View {
       if let since = meetings.status.startedAt { Text(MenuCopy.meetingSince(since)) }
     }
     ForEach(meetings.status.warnings, id: \.self) { Text(MenuCopy.meetingWarning($0)) }
-    if let notice = meetings.status.notice {
-      Text(MenuCopy.meetingNotice(notice))
+    if let notice = meetings.status.notice { Text(MenuCopy.meetingNotice(notice)) }
+    if let transcription = meetings.status.transcription {
+      ForEach(Array(MenuCopy.meetingTranscription(transcription).enumerated()), id: \.offset) {
+        Text($0.element)
+      }
+    }
+    if meetings.status.copyFailed { Text(MenuCopy.transcriptUnreadable) }
+    if meetings.status.canDismiss {
       Button(MenuCopy.dismissMeetingNotice) { meetings.dismiss() }
+    }
+    CopyTranscriptMenu(meetings: meetings)
+  }
+}
+
+struct CopyTranscriptMenu: View {
+  let meetings: Meetings
+
+  var body: some View {
+    if !meetings.status.transcripts.isEmpty {
+      Menu(MenuCopy.copyTranscript) {
+        ForEach(meetings.status.transcripts) { listing in
+          Button(MenuCopy.transcriptRow(startedAt: listing.startedAt, duration: listing.duration)) {
+            meetings.copyTranscript(listing.id)
+          }
+        }
+      }
     }
   }
 }
@@ -44,7 +67,7 @@ struct MeetingStatusLabel: View {
         Image(systemName: model.symbol)
       }
     }
-    .accessibilityLabel(Text(MenuCopy.meetingStatusLabel(recording: model.isRecording)))
+    .accessibilityLabel(Text(MenuCopy.meetingItemLabel(model.label)))
   }
 
   // Workaround: a MenuBarExtra label draws its Text in the menu bar's proportional font and

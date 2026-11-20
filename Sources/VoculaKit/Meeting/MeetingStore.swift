@@ -13,6 +13,12 @@ public struct MeetingListing: Equatable, Sendable, Identifiable {
   public let id: UUID
   public let startedAt: Date
   public let duration: TimeInterval
+
+  public init(id: UUID, startedAt: Date, duration: TimeInterval) {
+    self.id = id
+    self.startedAt = startedAt
+    self.duration = duration
+  }
 }
 
 public enum MeetingChunkRead: Equatable, Sendable {

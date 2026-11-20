@@ -160,4 +160,72 @@ struct MeetingStatusModelTests {
     #expect(recording == "Vocula is recording a meeting")
     #expect(notice != recording)
   }
+
+  @Test func aPassIsShownAndItsEndAnnouncedOnce() {
+    let (model, spoken) = make()
+    model.update(transcription: .running(percent: 10))
+    #expect(model.statusItemShown)
+    #expect(model.label == .transcribing)
+    #expect(model.symbol == MeetingStatusRules.transcribingSymbol)
+    #expect(spoken.lines.isEmpty)
+    model.update(transcription: .finished(transcribed: 1, failed: 0))
+    model.update(transcription: .finished(transcribed: 1, failed: 0))
+    #expect(
+      spoken.lines == [
+        String(localized: MenuCopy.meetingTranscription(.finished(transcribed: 1, failed: 0))[0])
+      ])
+    #expect(model.canDismiss)
+  }
+
+  @Test func theRecorderCannotClearTheTranscriptionState() {
+    let (model, _) = make()
+    model.update(transcription: .finished(transcribed: 2, failed: 0))
+    model.update(MeetingStatus())
+    #expect(model.transcription == .finished(transcribed: 2, failed: 0))
+    #expect(model.statusItemShown)
+  }
+
+  @Test func dismissClearsTheFinishedPass() {
+    let (model, _) = make()
+    model.update(transcription: .finished(transcribed: 1, failed: 1))
+    model.dismiss()
+    #expect(model.transcription == nil)
+    #expect(!model.statusItemShown)
+  }
+
+  @Test func aRunningPassSurvivesDismiss() {
+    let (model, _) = make()
+    model.update(transcription: .running(percent: 3))
+    model.dismiss()
+    #expect(model.transcription == .running(percent: 3))
+    #expect(model.statusItemShown)
+  }
+
+  @Test func anUnreadableCopyIsShownAndAnnouncedOnce() {
+    let (model, spoken) = make()
+    model.transcriptUnreadable()
+    model.transcriptUnreadable()
+    #expect(spoken.lines == [String(localized: MenuCopy.transcriptUnreadable)])
+    #expect(model.statusItemShown)
+    #expect(model.symbol == MeetingStatusRules.warningSymbol)
+    model.dismiss()
+    #expect(!model.copyFailed)
+    #expect(!model.statusItemShown)
+  }
+
+  @Test func theMainMenuIgnoresProgress() {
+    let (model, _) = make()
+    let fired = Flag()
+    withObservationTracking({
+      _ = model.isRecording
+      _ = model.transcripts
+    }) { fired.raised = true }
+    model.update(transcription: .running(percent: 5))
+    model.update(transcription: .running(percent: 6))
+    #expect(!fired.raised)
+    model.update(transcripts: [
+      MeetingListing(id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+    ])
+    #expect(fired.raised)
+  }
 }

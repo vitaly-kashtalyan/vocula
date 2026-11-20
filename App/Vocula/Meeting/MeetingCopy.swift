@@ -22,6 +22,88 @@ extension MenuCopy {
     recording ? meetingLabel : meetingLabelNotice
   }
 
+  static func meetingItemLabel(_ label: MeetingStatusRules.Label) -> LocalizedStringResource {
+    switch label {
+    case .recording: meetingLabel
+    case .transcribing: transcribingLabel
+    case .idle: meetingLabelNotice
+    }
+  }
+
+  static let copyTranscript = LocalizedStringResource(
+    "menu.item.copyTranscript", defaultValue: "Copy Transcript",
+    comment:
+      "Submenu in Vocula's menu bar menu and in the meeting's own menu bar menu; lists the meetings already turned into text, and choosing one copies its transcript. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
+  static func transcriptRow(startedAt: Date, duration: TimeInterval) -> LocalizedStringResource {
+    let when = startedAt.formatted(
+      Date.FormatStyle(date: .abbreviated, time: .shortened).locale(.interface))
+    let length = Duration.seconds(max(0, duration.rounded())).formatted(
+      .units(allowed: [.hours, .minutes, .seconds], width: .abbreviated).locale(.interface))
+    return LocalizedStringResource(
+      "meeting.transcript.row", defaultValue: "\(when) · \(length)",
+      comment:
+        "One row of the Copy Transcript submenu: when the meeting started (date and time, already formatted), then how long it lasted (already formatted). Drawn on one menu line that does not wrap; keep the separator short."
+    )
+  }
+
+  static let meetingSpeakerMe = LocalizedStringResource(
+    "meeting.speaker.me", defaultValue: "Me",
+    comment:
+      "Label of the user's own lines in a copied meeting transcript: what the microphone heard. Pasted as text wherever the user pastes it, often into an AI chat; one short word."
+  )
+
+  static let meetingSpeakerOthers = LocalizedStringResource(
+    "meeting.speaker.others", defaultValue: "Others",
+    comment:
+      "Label of the other participants' lines in a copied meeting transcript: what the other apps played, the people on the call. Pasted as text wherever the user pastes it; one short word."
+  )
+
+  static func meetingTranscribing(_ percent: Int) -> LocalizedStringResource {
+    let done = (Double(percent) / 100).formatted(
+      .percent.precision(.fractionLength(0)).locale(.interface))
+    return LocalizedStringResource(
+      "meeting.status.transcribing", defaultValue: "Transcribing meetings — \(done)",
+      comment:
+        "Menu line while Vocula turns recorded meetings into text; the argument is how much is done, already formatted as a percent. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+    )
+  }
+
+  static func meetingTranscription(_ value: MeetingTranscription) -> [LocalizedStringResource] {
+    switch value {
+    case .running(let percent): [meetingTranscribing(percent)]
+    case .finished(let transcribed, let failed):
+      (transcribed > 0 ? [transcriptReady] : []) + (failed > 0 ? [transcriptionFailed] : [])
+    }
+  }
+
+  static let transcriptUnreadable = LocalizedStringResource(
+    "meeting.status.transcriptUnreadable", defaultValue: "This transcript could not be read.",
+    comment:
+      "Menu line after the user chose a meeting in Copy Transcript and its saved text could not be opened, so nothing was copied; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
+  private static let transcribingLabel = LocalizedStringResource(
+    "meeting.status.labelTranscribing", defaultValue: "Vocula is transcribing meetings",
+    comment:
+      "VoiceOver label of the meeting's menu bar item while recorded meetings are being turned into text. Spoken, never drawn. \"Vocula\" is never translated."
+  )
+
+  private static let transcriptReady = LocalizedStringResource(
+    "meeting.status.transcriptReady", defaultValue: "Transcript ready",
+    comment:
+      "Menu line after recorded meetings were turned into text, which Copy Transcript now lists; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
+  private static let transcriptionFailed = LocalizedStringResource(
+    "meeting.status.transcriptionFailed",
+    defaultValue:
+      "Some meetings could not be transcribed; Vocula will try again after the next meeting.",
+    comment:
+      "Menu line when some recorded meetings could not be turned into text; their recordings are kept and retried after the next meeting ends. Also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
   static func meetingSince(_ date: Date) -> LocalizedStringResource {
     let time = date.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(.interface))
     return LocalizedStringResource(
