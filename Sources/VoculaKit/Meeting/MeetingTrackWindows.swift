@@ -1,19 +1,19 @@
 import Foundation
 
-public struct MeetingWindow: Equatable, Sendable {
+struct MeetingWindow: Equatable, Sendable {
   public let start: Int
   public let samples: [Int16]
 
-  public init(start: Int, samples: [Int16]) {
+  init(start: Int, samples: [Int16]) {
     self.start = start
     self.samples = samples
   }
 }
 
-public struct MeetingTrackWindows: Sendable {
+struct MeetingTrackWindows: Sendable {
   public enum Failure: Error, Equatable { case pastEnd }
 
-  public static let windowSamples = 960_000
+  static let windowSamples = 960_000
   static let endSlack = 16_000
 
   private enum Part: Sendable {

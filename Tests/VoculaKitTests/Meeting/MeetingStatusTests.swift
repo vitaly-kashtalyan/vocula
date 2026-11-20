@@ -182,15 +182,15 @@ import Testing
   }
 
   @Test func progressIsNotAnnounced() {
-    #expect(Rules.announcements(from: nil, to: .running(percent: 0)).isEmpty)
-    #expect(Rules.announcements(from: .running(percent: 0), to: .running(percent: 50)).isEmpty)
+    #expect(Rules.announcements(from: nil, to: .running(percent: 0)) == nil)
+    #expect(Rules.announcements(from: .running(percent: 0), to: .running(percent: 50)) == nil)
   }
 
   @Test func aFinishedPassIsAnnouncedOnce() {
     let ready = MeetingTranscription.finished(transcribed: 1, failed: 0)
-    #expect(Rules.announcements(from: .running(percent: 99), to: ready) == [ready])
-    #expect(Rules.announcements(from: ready, to: ready).isEmpty)
-    #expect(Rules.announcements(from: ready, to: nil).isEmpty)
+    #expect(Rules.announcements(from: .running(percent: 99), to: ready) == ready)
+    #expect(Rules.announcements(from: ready, to: ready) == nil)
+    #expect(Rules.announcements(from: ready, to: nil) == nil)
   }
 
   @Test func removingDuringAPassPutsItBack() {

@@ -22,7 +22,6 @@ final class Meetings {
   private var hold: MeetingHoldGate?
   private var holdFollower: Task<Void, Never>?
   private(set) var pass: Task<Void, Never>?
-  private var terminating = false
   private(set) var refreshing: Task<Void, Never>?
 
   init(
@@ -112,7 +111,6 @@ final class Meetings {
   }
 
   func stopForTermination() async {
-    terminating = true
     schedule.terminate()
     pass?.cancel()
     guard recorder != nil || stopping != nil else { return }
@@ -181,7 +179,7 @@ final class Meetings {
   }
 
   private func meetingEnded() async {
-    if !terminating, status.notice != .cannotStart,
+    if status.notice != .cannotStart,
       schedule.requested(recording: recorder != nil) == .start
     {
       await startPass()

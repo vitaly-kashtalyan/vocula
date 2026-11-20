@@ -596,7 +596,7 @@ func trackSamples(
   else { return [] }
   var windows = MeetingTrackWindows(anchor: header.anchor, end: end)
   for name in try await store.chunkNames(of: meeting, track: track) {
-    if case .chunk(let chunk) = try await store.readChunk(
+    if let chunk = try await store.readChunk(
       of: meeting, track: track, name: name, cipher: cipher)
     {
       try windows.add(chunk)

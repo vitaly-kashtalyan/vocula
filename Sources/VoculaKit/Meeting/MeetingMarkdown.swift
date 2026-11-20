@@ -5,23 +5,19 @@ public enum MeetingMarkdown {
     _ transcript: MeetingTranscript, startedAt: Date, duration: TimeInterval,
     labels: [MeetingSpeaker: String]
   ) -> String {
-    let spoken = transcript.utterances.filter { !$0.dictation }
-    var speakers: [String] = []
-    for utterance in spoken {
-      let label = labels[utterance.speaker] ?? utterance.speaker.rawValue
-      if !speakers.contains(label) { speakers.append(label) }
+    let spoken = transcript.utterances.filter { !$0.dictation }.map {
+      (utterance: $0, label: labels[$0.speaker] ?? $0.speaker.rawValue)
     }
-    let date = ISO8601DateFormatter.string(
-      from: startedAt, timeZone: TimeZone(identifier: "UTC")!, formatOptions: .withInternetDateTime)
+    var speakers: [String] = []
+    for label in spoken.map(\.label) where !speakers.contains(label) { speakers.append(label) }
     var lines = [
       "---",
-      "date: \(date)",
+      "date: \(startedAt.formatted(.iso8601))",
       "duration: \(clock(duration))",
       "speakers: [\(speakers.joined(separator: ", "))]",
       "---",
     ]
-    for utterance in spoken {
-      let label = labels[utterance.speaker] ?? utterance.speaker.rawValue
+    for (utterance, label) in spoken {
       lines += ["", "**\(label)** [\(clock(utterance.start))]: \(utterance.text)"]
     }
     return lines.joined(separator: "\n") + "\n"

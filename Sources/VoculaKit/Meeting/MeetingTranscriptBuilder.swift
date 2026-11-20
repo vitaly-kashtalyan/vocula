@@ -1,13 +1,13 @@
 import Foundation
 
-public enum MeetingTranscriptBuilder {
+enum MeetingTranscriptBuilder {
   public static let pause = 0.7
-  public static let echoShare = 0.6
-  public static let echoReach = 1.5
+  static let echoShare = 0.6
+  static let echoReach = 1.5
 
   private static let trimmed = CharacterSet.punctuationCharacters.union(.symbols)
 
-  public static func dictationRanges(_ spans: [DictationSpan], anchor: UInt64)
+  static func dictationRanges(_ spans: [DictationSpan], anchor: UInt64)
     -> [ClosedRange<Double>]
   {
     spans.map { span in

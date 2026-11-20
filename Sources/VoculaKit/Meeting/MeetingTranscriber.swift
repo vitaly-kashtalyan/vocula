@@ -91,8 +91,6 @@ public actor MeetingTranscriber {
     var start = 0
   }
 
-  private static let rate = 16_000
-
   private let deps: Dependencies
   private var recognizer: (any MeetingRecognizing)?
   private var detector: (any SpeechDetecting)?
@@ -109,12 +107,6 @@ public actor MeetingTranscriber {
 
   public func run() async {
     let began = deps.now()
-    tally = Tally()
-    remaining = 0
-    total = 0
-    read = 0
-    percent = nil
-    model = nil
     var outcome: Stop?
     do { try await pass() } catch let stop as Stop { outcome = stop } catch {
       outcome = .pass(step: "pass", code: 0)
@@ -163,7 +155,7 @@ public actor MeetingTranscriber {
     guard !pending.isEmpty else { return }
     total = pending.reduce(0) { sum, item in
       let seconds = max(0, item.header.end?.timeIntervalSince(item.header.startedAt) ?? 0)
-      return sum + 2 * Int(seconds * Double(Self.rate))
+      return sum + 2 * Int(seconds * AudioFormat.sampleRate)
     }
     await progress()
     guard let chosen = await deps.model() else { throw Stop.pass(step: "model", code: 0) }
@@ -219,18 +211,17 @@ public actor MeetingTranscriber {
     var out: [TimedText] = []
     for name in names {
       try checkCancelled()
-      let chunk: MeetingChunkRead
+      let chunk: MeetingChunk?
       do {
         chunk = try await deps.store.readChunk(
           of: header.id, track: track, name: name, cipher: cipher)
       } catch {
         throw Self.meetingStop(error)
       }
-      switch chunk {
-      case .chunk(let chunk):
+      if let chunk {
         opened += 1
         do { try windows.add(chunk) } catch { throw Stop.meeting(step: "open", code: 0) }
-      case .corrupt:
+      } else {
         tally.skipped += 1
       }
       while let window = windows.next(final: false) {
@@ -283,7 +274,8 @@ public actor MeetingTranscriber {
     try checkCancelled()
     guard let recognizer else { throw Stop.pass(step: "model", code: 0) }
     let padded = MeetingPieces.padded(samples)
-    let deadline = Timings.default.passDeadline(forAudio: .milliseconds(samples.count / 16))
+    let deadline = Timings.default.passDeadline(
+      forAudio: PCMSamples.duration(sampleCount: samples.count))
     let sleep = deps.sleep
     let languages = model.languages
     let words: [TimedText]?
@@ -303,7 +295,7 @@ public actor MeetingTranscriber {
     }
     guard let words else { throw Stop.meeting(step: "recognize", code: 0) }
     tally.pieces += 1
-    let shift = Double(offset) / Double(Self.rate)
+    let shift = Double(offset) / AudioFormat.sampleRate
     return words.map { TimedText(start: $0.start + shift, end: $0.end + shift, text: $0.text) }
   }
 
@@ -351,7 +343,7 @@ public actor MeetingTranscriber {
   private func summarize(took: UInt64) {
     var fields = [
       "meetings=\(tally.transcribed)",
-      "audioSeconds=\(read / Self.rate)",
+      "audioSeconds=\(read / Int(AudioFormat.sampleRate))",
       "pieces=\(tally.pieces)",
       "utterances=\(tally.utterances)",
       "echoDropped=\(tally.echoDropped)",

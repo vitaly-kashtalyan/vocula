@@ -28,9 +28,9 @@ public enum MeetingAnnouncement: Equatable, Sendable {
 }
 
 public enum MeetingStatusRules {
-  public static let recordingSymbol = "record.circle.fill"
+  static let recordingSymbol = "record.circle.fill"
   public static let warningSymbol = "exclamationmark.circle.fill"
-  public static let endedSymbol = "record.circle"
+  static let endedSymbol = "record.circle"
 
   public static func symbol(for status: MeetingStatus) -> String {
     guard status.warnings.isEmpty else { return warningSymbol }
@@ -159,9 +159,9 @@ extension MeetingStatusRules {
 
   public static func announcements(
     from old: MeetingTranscription?, to new: MeetingTranscription?
-  ) -> [MeetingTranscription] {
-    guard let new, case .finished = new, new != old else { return [] }
-    return [new]
+  ) -> MeetingTranscription? {
+    guard let new, case .finished = new, new != old else { return nil }
+    return new
   }
 
   public static func removal(of status: MeetingStatus, transcription: MeetingTranscription?)

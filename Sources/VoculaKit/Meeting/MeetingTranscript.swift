@@ -9,15 +9,6 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   public init(rawValue: String) {
     self.rawValue = rawValue
   }
-
-  public init(from decoder: any Decoder) throws {
-    rawValue = try decoder.singleValueContainer().decode(String.self)
-  }
-
-  public func encode(to encoder: any Encoder) throws {
-    var container = encoder.singleValueContainer()
-    try container.encode(rawValue)
-  }
 }
 
 public struct TimedText: Equatable, Sendable {
@@ -66,7 +57,7 @@ public struct MeetingTranscript: Codable, Equatable, Sendable {
   public let model: String?
   public let utterances: [MeetingUtterance]
 
-  public static func recognized(by model: ModelID, utterances: [MeetingUtterance])
+  static func recognized(by model: ModelID, utterances: [MeetingUtterance])
     -> MeetingTranscript
   {
     MeetingTranscript(model: model.rawValue, utterances: utterances)

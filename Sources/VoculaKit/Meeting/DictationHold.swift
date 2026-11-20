@@ -35,7 +35,7 @@ public struct DictationHold: Sendable {
     open = [:]
   }
 
-  public func clearsAt(_ now: UInt64) -> UInt64? {
+  func clearsAt(_ now: UInt64) -> UInt64? {
     var latest = heldUntil
     var nextCap: UInt64?
     for start in open.values.sorted() {
@@ -53,12 +53,7 @@ public struct DictationHold: Sendable {
   private func until(start: UInt64, end: UInt64, after previous: UInt64) -> UInt64 {
     let spoken = Duration.nanoseconds(Int64(min(HostTime.elapsed(from: start, to: end), .max / 2)))
     let wait = passDeadline(spoken) + (refineWait() ?? .zero)
-    return HostTime.adding(max(end, previous), Self.nanos(wait))
-  }
-
-  static func nanos(_ duration: Duration) -> UInt64 {
-    let parts = duration.components
-    return HostTime.nanos(Double(parts.seconds) + Double(parts.attoseconds) / 1e18)
+    return HostTime.adding(max(end, previous), HostTime.nanos(wait / .seconds(1)))
   }
 }
 
@@ -88,7 +83,7 @@ public actor MeetingHoldGate {
 
   var isHeld: Bool { hold.clearsAt(now()) != nil }
 
-  public func waitUntilClear() async -> Duration {
+  func waitUntilClear() async -> Duration {
     let began = now()
     while let until = hold.clearsAt(now()) {
       let step = min(HostTime.elapsed(from: now(), to: until), Self.step)

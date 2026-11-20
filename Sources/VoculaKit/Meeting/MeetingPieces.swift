@@ -1,14 +1,14 @@
 import Foundation
 
-public enum MeetingPieces {
-  public static let maxPiece = 480_000
-  public static let joinGap = 16_000
-  public static let carryReach = 16_000
-  public static let minPiece = 8_000
+enum MeetingPieces {
+  static let maxPiece = 480_000
+  static let joinGap = 16_000
+  static let carryReach = 16_000
+  static let minPiece = 8_000
 
-  public struct Plan: Equatable, Sendable {
-    public let pieces: [Range<Int>]
-    public let carryFrom: Int?
+  struct Plan: Equatable, Sendable {
+    let pieces: [Range<Int>]
+    let carryFrom: Int?
   }
 
   public static func lift(_ raw: [Int16]) -> [Float] {
@@ -21,8 +21,9 @@ public enum MeetingPieces {
 
   public static func plan(segments: [SpeechSegment], count: Int, isLast: Bool) -> Plan {
     let ranges = segments.map { segment -> Range<Int> in
-      let from = min(count, max(0, segment.start.milliseconds * 16))
-      return from..<min(count, max(from, segment.end.milliseconds * 16))
+      let from = min(count, max(0, PCMSamples.sampleCount(inLeading: segment.start.milliseconds)))
+      return
+        from..<min(count, max(from, PCMSamples.sampleCount(inLeading: segment.end.milliseconds)))
     }
     .filter { !$0.isEmpty }
     .sorted { $0.lowerBound < $1.lowerBound }
@@ -50,7 +51,7 @@ public enum MeetingPieces {
     return Plan(pieces: pieces, carryFrom: nil)
   }
 
-  public static func padded(_ samples: [Float]) -> [Float] {
+  static func padded(_ samples: [Float]) -> [Float] {
     samples.count >= minPiece
       ? samples : samples + [Float](repeating: 0, count: minPiece - samples.count)
   }

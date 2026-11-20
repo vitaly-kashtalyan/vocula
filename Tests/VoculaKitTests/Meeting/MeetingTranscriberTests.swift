@@ -129,6 +129,7 @@ final class TranscriberRig: @unchecked Sendable {
   let cipher = MarkingCipher()
   var model: MeetingModel? = MeetingModel(model: .largeV3Turbo, languages: .default)
   var recognizerLoadError: (any Error)?
+  var deadlinesOnTheWallClock = false
   lazy var hold = MeetingHoldGate(
     hold: DictationHold(passDeadline: { max(.seconds(30), $0) }, refineWait: { nil }),
     now: { [clock] in clock.now() }, sleep: { [clock] in try await clock.sleep(for: $0) })
@@ -157,7 +158,13 @@ final class TranscriberRig: @unchecked Sendable {
         makeDetector: { [self] in PassDetector(detectors) },
         hold: hold,
         now: { [clock] in clock.now() },
-        sleep: { [clock] in try await clock.sleep(for: $0) },
+        sleep: { [clock, deadlinesOnTheWallClock] duration in
+          if deadlinesOnTheWallClock {
+            try await Task.sleep(for: .seconds(3_600))
+          } else {
+            try await clock.sleep(for: duration)
+          }
+        },
         publish: { [published] in published.add($0) },
         log: log))
   }
@@ -410,6 +417,7 @@ final class TranscriberRig: @unchecked Sendable {
 
   @Test func aDictationBetweenPiecesHoldsTheNextPiece() async throws {
     let rig = TranscriberRig()
+    rig.deadlinesOnTheWallClock = true
     rig.recognizers.clock = rig.clock
     try rig.meeting(lasting: 8, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 4, for: 1)])
     let hold = rig.hold
@@ -425,6 +433,7 @@ final class TranscriberRig: @unchecked Sendable {
 
   @Test func aDictationBetweenWindowsHoldsTheNextWindow() async throws {
     let rig = TranscriberRig()
+    rig.deadlinesOnTheWallClock = true
     rig.detectors.clock = rig.clock
     try rig.meeting(lasting: 70, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 62, for: 1)])
     let hold = rig.hold

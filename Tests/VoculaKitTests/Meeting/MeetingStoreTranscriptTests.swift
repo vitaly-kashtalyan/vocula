@@ -147,7 +147,7 @@ import Testing
     #expect(names == ["mic-000000.sealed", "mic-000001.sealed"])
     let read = try await store.readChunk(
       of: header.id, track: .mic, name: names[1], cipher: MarkingCipher())
-    #expect(read == .chunk(chunk(.mic, 1)))
+    #expect(read == chunk(.mic, 1))
   }
 
   @Test func aCorruptChunkReadsAsCorrupt() async throws {
@@ -156,7 +156,7 @@ import Testing
     try plant(header: header, chunks: ["audio/mic-000000.sealed": Data("garbage".utf8)], in: root)
     let read = try await MeetingStore(directory: root).readChunk(
       of: header.id, track: .mic, name: "mic-000000.sealed", cipher: MarkingCipher())
-    #expect(read == .corrupt)
+    #expect(read == nil)
   }
 
   @Test func aChunkFiledUnderTheOtherTrackIsCorrupt() async throws {
@@ -165,7 +165,7 @@ import Testing
     try plant(header: header, chunks: ["audio/mic-000000.sealed": sealed(chunk(.system))], in: root)
     let read = try await MeetingStore(directory: root).readChunk(
       of: header.id, track: .mic, name: "mic-000000.sealed", cipher: MarkingCipher())
-    #expect(read == .corrupt)
+    #expect(read == nil)
   }
 
   @Test func anUnreadableChunkFileFails() async throws {

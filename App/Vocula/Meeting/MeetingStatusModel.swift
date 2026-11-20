@@ -79,10 +79,9 @@ final class MeetingStatusModel {
     let old = transcription
     if transcription != new { transcription = new }
     refreshShown()
-    let spoken = MeetingStatusRules.announcements(from: old, to: new).flatMap {
-      MenuCopy.meetingTranscription($0).map { String(localized: $0) }
-    }
-    if !spoken.isEmpty { announce(spoken.joined(separator: "\n")) }
+    guard let finished = MeetingStatusRules.announcements(from: old, to: new) else { return }
+    announce(
+      MenuCopy.meetingTranscription(finished).map { String(localized: $0) }.joined(separator: "\n"))
   }
 
   func update(transcripts new: [MeetingListing]) {
@@ -112,10 +111,12 @@ final class MeetingStatusModel {
     clearTranscriptionOutcome()
   }
 
+  private var itemShouldShow: Bool {
+    MeetingStatusRules.showsItem(status, transcription: transcription, copyFailed: copyFailed)
+  }
+
   private func refreshShown() {
-    let shown = MeetingStatusRules.showsItem(
-      status, transcription: transcription, copyFailed: copyFailed)
-    if statusItemShown != shown { statusItemShown = shown }
+    if statusItemShown != itemShouldShow { statusItemShown = itemShouldShow }
   }
 
   @discardableResult
@@ -131,9 +132,7 @@ final class MeetingStatusModel {
     case .putBack:
       statusItemShown = false
       return Task { @MainActor in
-        if MeetingStatusRules.showsItem(
-          status, transcription: transcription, copyFailed: copyFailed)
-        {
+        if itemShouldShow {
           statusItemShown = true
         }
       }
