@@ -496,9 +496,9 @@ struct MeetingsTests {
     rig.passes.transcript = MeetingTranscript(
       model: "largeV3Turbo",
       utterances: [
-        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello", dictation: false)
+        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello")
       ])
-    await rig.meetings.copyTranscript(id).value
+    await rig.meetings.copyTranscript(id, includeMe: true).value
     let me = String(localized: MenuCopy.meetingSpeakerMe)
     #expect(rig.passes.pasted.count == 1)
     #expect(rig.passes.pasted.first?.hasPrefix("---\ndate: 1970-01-01T00:00:00Z\n") == true)
@@ -507,13 +507,30 @@ struct MeetingsTests {
     #expect(!rig.meetings.status.statusItemShown)
   }
 
+  @Test func aCopyCanLeaveMyLinesOut() async {
+    let rig = Rig()
+    let id = UUID()
+    rig.meetings.status.update(transcripts: [
+      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 9)
+    ])
+    rig.passes.transcript = MeetingTranscript(
+      model: "largeV3Turbo",
+      utterances: [
+        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "mine"),
+        MeetingUtterance(start: 3, end: 4, speaker: .others, text: "theirs"),
+      ])
+    await rig.meetings.copyTranscript(id, includeMe: false).value
+    #expect(rig.passes.pasted.first?.contains("theirs") == true)
+    #expect(rig.passes.pasted.first?.contains("mine") == false)
+  }
+
   @Test func anUnreadableCopyIsShown() async {
     let rig = Rig()
     let id = UUID()
     rig.meetings.status.update(transcripts: [
       MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
     ])
-    await rig.meetings.copyTranscript(id).value
+    await rig.meetings.copyTranscript(id, includeMe: true).value
     #expect(rig.passes.pasted.isEmpty)
     #expect(rig.meetings.status.copyFailed)
     #expect(rig.meetings.status.statusItemShown)

@@ -14,7 +14,8 @@ import Testing
     + MeetingWarning.allCases.map(MenuCopy.meetingWarning)
     + MeetingNotice.allCases.map(MenuCopy.meetingNotice)
     + [
-      MenuCopy.copyTranscript, MenuCopy.meetingSpeakerMe, MenuCopy.meetingSpeakerOthers,
+      MenuCopy.copyTranscript, MenuCopy.copyIncludesMe, MenuCopy.meetingSpeakerMe,
+      MenuCopy.meetingSpeakerOthers,
       MenuCopy.meetingTranscribing(40), MenuCopy.transcriptUnreadable,
       MenuCopy.meetingItemLabel(.transcribing),
     ]

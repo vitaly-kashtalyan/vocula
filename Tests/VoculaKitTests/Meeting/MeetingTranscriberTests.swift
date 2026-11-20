@@ -255,17 +255,18 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.detectors.released == 1)
   }
 
-  @Test func wordsLandAtTheirTimeAndDictationsAreMarked() async throws {
+  @Test func wordsLandAtTheirTimeAndDictationIsLeftOut() async throws {
     let rig = TranscriberRig()
     let header = try rig.meeting(
-      lasting: 8, mic: [rig.speech(at: 1, for: 1)], system: [rig.speech(at: 5, for: 1)],
+      lasting: 12,
+      mic: [rig.speech(at: 1, for: 1), rig.speech(at: 8, for: 1)],
+      system: [rig.speech(at: 5, for: 1)],
       dictations: [DictationSpan(start: rig.s + rig.s / 2, end: rig.s * 5 / 2)])
     await rig.run()
     let utterances = try #require(await rig.transcript(of: header)?.utterances)
-    #expect(utterances.map(\.speaker) == [.me, .others])
-    #expect(abs(utterances[0].start - 1.1) < 0.001)
-    #expect(abs(utterances[1].start - 5.1) < 0.001)
-    #expect(utterances.map(\.dictation) == [true, false])
+    #expect(utterances.map(\.speaker) == [.others, .me])
+    #expect(abs(utterances[0].start - 5.1) < 0.001)
+    #expect(abs(utterances[1].start - 8.1) < 0.001)
   }
 
   @Test func anEmptyMeetingNeedsNoModel() async throws {

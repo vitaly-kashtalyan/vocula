@@ -43,8 +43,8 @@ import Testing
   }
 
   @Test func anUtteranceNeverEndsBeforeItStarts() throws {
-    #expect(MeetingUtterance(start: 3, end: 1, speaker: .me, text: "x", dictation: false).end == 3)
-    let stored = Data(#"{"start":5,"end":4,"speaker":"me","text":"x","dictation":false}"#.utf8)
+    #expect(MeetingUtterance(start: 3, end: 1, speaker: .me, text: "x").end == 3)
+    let stored = Data(#"{"start":5,"end":4,"speaker":"me","text":"x"}"#.utf8)
     #expect(try JSONDecoder().decode(MeetingUtterance.self, from: stored).end == 5)
   }
 

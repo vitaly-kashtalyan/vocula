@@ -230,7 +230,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1563 tests: 1202 from `swift test`, 343 in the hosted app bundle, 18 driving the
+1566 tests: 1204 from `swift test`, 344 in the hosted app bundle, 18 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
@@ -310,11 +310,11 @@ Stated here rather than discovered later.
   this Mac into lines labelled *Me* (your microphone) and *Others* (everything
   other apps played) — it does not tell the other speakers apart yet — and
   deletes the audio; speech the model misses is lost with it, and so is a reply
-  of yours that mostly repeats what the other side just said, which is dropped
-  as echo. A meeting ended by quitting Vocula, or one whose transcription a quit
+  of yours that repeats, two words or more in a row, what the other side just
+  said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
   interrupted, keeps its audio until the next meeting you record ends. *Copy
-  Transcript* copies a transcript as Markdown, without what you dictated during
-  it; after Vocula restarts the item is absent until a meeting you record next
+  Transcript* copies a transcript as Markdown, with or without your own lines
+  (*Include My Lines*); after Vocula restarts the item is absent until a meeting you record next
   starts, because the meeting key is not read before then. This version cannot
   play back, export to a file or delete a meeting inside the app: every
   transcript, and the audio of any meeting not yet transcribed, stays in

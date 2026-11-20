@@ -83,7 +83,7 @@ final class Meetings {
   }
 
   @discardableResult
-  func copyTranscript(_ id: UUID) -> Task<Void, Never> {
+  func copyTranscript(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
     let read = parts.transcript
     let log = diagnosticLog()
     return Task {
@@ -99,7 +99,8 @@ final class Meetings {
       ]
       parts.paste(
         MeetingMarkdown.render(
-          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels))
+          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels,
+          includeMe: includeMe))
       status.transcriptCopied()
     }
   }

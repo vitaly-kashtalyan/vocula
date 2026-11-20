@@ -32,7 +32,7 @@ import Testing
   private func transcript(_ text: String = "hi") -> MeetingTranscript {
     MeetingTranscript(
       model: "m",
-      utterances: [MeetingUtterance(start: 0, end: 1, speaker: .me, text: text, dictation: false)])
+      utterances: [MeetingUtterance(start: 0, end: 1, speaker: .me, text: text)])
   }
 
   private func meeting(_ id: UUID, in root: URL) -> URL {

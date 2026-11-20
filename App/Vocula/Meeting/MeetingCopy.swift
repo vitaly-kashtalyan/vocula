@@ -36,6 +36,12 @@ extension MenuCopy {
       "Submenu in Vocula's menu bar menu and in the meeting's own menu bar menu; lists the meetings already turned into text, and choosing one copies its transcript. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
+  static let copyIncludesMe = LocalizedStringResource(
+    "menu.item.copyIncludesMe", defaultValue: "Include My Lines",
+    comment:
+      "Checkable item at the top of the Copy Transcript submenu. When checked, a copied transcript includes the user's own lines (what their microphone heard); when unchecked, only the other participants' lines, for someone who only listened. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
   static func transcriptRow(startedAt: Date, duration: TimeInterval) -> LocalizedStringResource {
     let when = startedAt.formatted(
       Date.FormatStyle(date: .abbreviated, time: .shortened).locale(.interface))

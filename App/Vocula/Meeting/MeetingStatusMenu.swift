@@ -40,14 +40,19 @@ struct MeetingStatusMenu: View {
 }
 
 struct CopyTranscriptMenu: View {
+  static let includeMeKey = "meeting.copy.includesMe"
+
   let meetings: Meetings
+  @AppStorage(Self.includeMeKey) private var includeMe = true
 
   var body: some View {
     if !meetings.status.transcripts.isEmpty {
       Menu(MenuCopy.copyTranscript) {
+        Toggle(MenuCopy.copyIncludesMe, isOn: $includeMe)
+        Divider()
         ForEach(meetings.status.transcripts) { listing in
           Button(MenuCopy.transcriptRow(startedAt: listing.startedAt, duration: listing.duration)) {
-            meetings.copyTranscript(listing.id)
+            meetings.copyTranscript(listing.id, includeMe: includeMe)
           }
         }
       }

@@ -30,8 +30,8 @@ recovered from. A meeting does save audio, and that includes what you dictate
 while one records: the meeting holds the same microphone and keeps every sample
 it hears, so your dictated words are in that meeting's recording, and the
 meeting notes when each dictation began and ended. Once the meeting is
-transcribed, those words are in its transcript too, marked as dictated, and its
-audio is deleted. The next section says how.
+transcribed, those words are left out of its transcript, and its audio is
+deleted. The next section says how.
 
 Recognition runs entirely on this Mac, using a model downloaded from this
 project's GitHub releases.
@@ -81,9 +81,10 @@ everything this Mac plays, from every app, except Vocula's own sounds.
 earlier meeting still waiting, using its own copy of the recognition model
 dictation uses — loaded only while it transcribes, and nothing is sent anywhere.
 What your microphone heard becomes lines labelled *Me*, what other apps played
-lines labelled *Others*. A line of yours whose words mostly repeat what other
-apps played within a second and a half is left out, as the call heard back
-through your speakers — so a short reply that echoes the other side can be lost.
+lines labelled *Others*. Two or more words of yours in a row that repeat what
+other apps played within a second and a half are left out, as the call heard
+back through your speakers — so a reply that repeats the other side's words
+loses them. What you dictate during the meeting is left out too.
 It waits while you dictate. It stops when you record another meeting and starts
 again once that one ends, from the beginning of the meeting it was on. Quitting
 Vocula stops it too, and a meeting that ended because you quit is not
@@ -187,7 +188,7 @@ day or everything — nor the one-year retention.
 *Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts the
 transcript you choose on the clipboard as Markdown — a front-matter header with
 the meeting's start in UTC, its length and who spoke, then each line with its
-time from the start — leaving out what you dictated during it. After Vocula
+time from the start; with *Include My Lines* unticked, only the *Others* lines. After Vocula
 restarts the item is absent until a meeting you record next starts, because the
 meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
 encryption does not follow it.
@@ -210,7 +211,7 @@ cut off, when it lets the Mac go to sleep, and when it loses the microphone or
 opens it again; each transcription pass that recognised any audio or wrote a
 transcript writes one line
 saying how many meetings it transcribed, how many seconds of audio and pieces it
-went through, how many lines the transcripts hold and how many of yours were
+went through, how many lines the transcripts hold and how many of your words were
 dropped as echo, how many of the recording's three-second pieces it could not open, how long it took
 and waited for dictation, and which model it used — never the text; and a line
 for each other problem it ran into. It holds the last 2,000 events.

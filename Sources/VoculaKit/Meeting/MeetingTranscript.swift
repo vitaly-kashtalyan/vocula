@@ -28,16 +28,14 @@ public struct MeetingUtterance: Codable, Equatable, Sendable {
   public let end: Double
   public let speaker: MeetingSpeaker
   public let text: String
-  public let dictation: Bool
 
-  private enum CodingKeys: String, CodingKey { case start, end, speaker, text, dictation }
+  private enum CodingKeys: String, CodingKey { case start, end, speaker, text }
 
-  public init(start: Double, end: Double, speaker: MeetingSpeaker, text: String, dictation: Bool) {
+  public init(start: Double, end: Double, speaker: MeetingSpeaker, text: String) {
     self.start = start
     self.end = max(start, end)
     self.speaker = speaker
     self.text = text
-    self.dictation = dictation
   }
 
   public init(from decoder: any Decoder) throws {
@@ -46,8 +44,7 @@ public struct MeetingUtterance: Codable, Equatable, Sendable {
       start: try fields.decode(Double.self, forKey: .start),
       end: try fields.decode(Double.self, forKey: .end),
       speaker: try fields.decode(MeetingSpeaker.self, forKey: .speaker),
-      text: try fields.decode(String.self, forKey: .text),
-      dictation: try fields.decode(Bool.self, forKey: .dictation))
+      text: try fields.decode(String.self, forKey: .text))
   }
 }
 

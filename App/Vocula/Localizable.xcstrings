@@ -11401,6 +11401,66 @@
         }
       }
     },
+    "menu.item.copyIncludesMe" : {
+      "comment" : "Checkable item at the top of the Copy Transcript submenu. When checked, a copied transcript includes the user's own lines (what their microphone heard); when unchecked, only the other participants' lines, for someone who only listened. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meine Beiträge einbeziehen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Include My Lines"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Incluir mis intervenciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inclure mes interventions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Includi i miei interventi"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uwzględniaj moje wypowiedzi"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Incluir minhas falas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Включать мои реплики"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Включати мої репліки"
+          }
+        }
+      }
+    },
     "menu.item.copyLastTranscript" : {
       "comment" : "Menu bar item; puts the previous dictation on the clipboard.",
       "extractionState" : "extracted_with_value",

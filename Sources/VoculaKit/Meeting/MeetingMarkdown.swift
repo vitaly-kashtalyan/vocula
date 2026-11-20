@@ -3,9 +3,9 @@ import Foundation
 public enum MeetingMarkdown {
   public static func render(
     _ transcript: MeetingTranscript, startedAt: Date, duration: TimeInterval,
-    labels: [MeetingSpeaker: String]
+    labels: [MeetingSpeaker: String], includeMe: Bool
   ) -> String {
-    let spoken = transcript.utterances.filter { !$0.dictation }.map {
+    let spoken = transcript.utterances.filter { includeMe || $0.speaker != .me }.map {
       (utterance: $0, label: labels[$0.speaker] ?? $0.speaker.rawValue)
     }
     var speakers: [String] = []

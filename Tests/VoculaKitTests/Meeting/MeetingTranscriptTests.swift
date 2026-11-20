@@ -12,18 +12,18 @@ import Testing
     let transcript = MeetingTranscript(
       model: "largeV3Turbo",
       utterances: [
-        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello", dictation: false)
+        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello")
       ])
     let top = try object(JSONEncoder().encode(transcript))
     #expect(Set(top.keys) == ["model", "utterances"])
     let utterance = try #require((top["utterances"] as? [[String: Any]])?.first)
-    #expect(Set(utterance.keys) == ["start", "end", "speaker", "text", "dictation"])
+    #expect(Set(utterance.keys) == ["start", "end", "speaker", "text"])
     #expect(utterance["speaker"] as? String == "me")
   }
 
   @Test func anUnknownSpeakerDecodes() throws {
     let json = Data(
-      #"{"model":"m","utterances":[{"start":0,"end":1,"speaker":"speaker-3","text":"x","dictation":false}]}"#
+      #"{"model":"m","utterances":[{"start":0,"end":1,"speaker":"speaker-3","text":"x"}]}"#
         .utf8)
     let transcript = try JSONDecoder().decode(MeetingTranscript.self, from: json)
     #expect(transcript.utterances.first?.speaker.rawValue == "speaker-3")
@@ -31,7 +31,7 @@ import Testing
 
   @Test func utterancesWithoutAModelDoNotDecode() {
     let json = Data(
-      #"{"utterances":[{"start":0,"end":1,"speaker":"me","text":"x","dictation":false}]}"#.utf8)
+      #"{"utterances":[{"start":0,"end":1,"speaker":"me","text":"x"}]}"#.utf8)
     #expect(throws: DecodingError.self) {
       try JSONDecoder().decode(MeetingTranscript.self, from: json)
     }
@@ -41,9 +41,9 @@ import Testing
   }
 
   @Test func utterancesAreKeptInTimeOrder() {
-    let late = MeetingUtterance(start: 5, end: 6, speaker: .others, text: "b", dictation: false)
-    let early = MeetingUtterance(start: 1, end: 2, speaker: .me, text: "a", dictation: false)
-    let tieMe = MeetingUtterance(start: 5, end: 6, speaker: .me, text: "c", dictation: false)
+    let late = MeetingUtterance(start: 5, end: 6, speaker: .others, text: "b")
+    let early = MeetingUtterance(start: 1, end: 2, speaker: .me, text: "a")
+    let tieMe = MeetingUtterance(start: 5, end: 6, speaker: .me, text: "c")
     let transcript = MeetingTranscript.recognized(
       by: .largeV3Turbo, utterances: [late, early, tieMe])
     #expect(transcript.utterances.map(\.text) == ["a", "b", "c"])
@@ -53,8 +53,8 @@ import Testing
     let transcript = MeetingTranscript(
       model: "parakeetUltra",
       utterances: [
-        MeetingUtterance(start: 0.5, end: 1.25, speaker: .others, text: "да", dictation: false),
-        MeetingUtterance(start: 2, end: 3, speaker: .me, text: "note", dictation: true),
+        MeetingUtterance(start: 0.5, end: 1.25, speaker: .others, text: "да"),
+        MeetingUtterance(start: 2, end: 3, speaker: .me, text: "note"),
       ])
     let decoded = try JSONDecoder().decode(
       MeetingTranscript.self, from: JSONEncoder().encode(transcript))

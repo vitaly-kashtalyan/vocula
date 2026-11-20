@@ -17,17 +17,15 @@ import Testing
     MeetingTranscriptBuilder.build(me: me, others: others, dictations: dictations)
   }
 
-  @Test func wordsInsideASpanAreDictation() {
+  @Test func dictationIsLeftOut() {
     let me = [
-      TimedText(start: 1.85, end: 2.05, text: "a"),
-      TimedText(start: 1.9, end: 2.1, text: "b"),
-      TimedText(start: 2.4, end: 3.0, text: "c"),
-      TimedText(start: 3.4, end: 4.6, text: "d"),
-      TimedText(start: 3.95, end: 4.15, text: "e"),
+      TimedText(start: 1.85, end: 2.05, text: "kept"),
+      TimedText(start: 1.9, end: 2.1, text: "dictated"),
+      TimedText(start: 3.4, end: 4.6, text: "dictated"),
+      TimedText(start: 3.95, end: 4.15, text: "after"),
     ]
     let result = build(me: me, dictations: [2.0...4.0])
-    #expect(result.utterances.map(\.text) == ["a", "b c d", "e"])
-    #expect(result.utterances.map(\.dictation) == [false, true, false])
+    #expect(result.utterances.map(\.text) == ["kept", "after"])
   }
 
   @Test func aGapUnderSevenTenthsMerges() {
@@ -47,7 +45,21 @@ import Testing
     let result = build(
       me: words("the build is green", from: 10.2), others: words("the build is green", from: 10))
     #expect(result.utterances.map(\.speaker) == [.others])
-    #expect(result.echoDropped == 1)
+    #expect(result.echoDropped == 4)
+  }
+
+  @Test func echoIsCutOutAndMyWordsStay() {
+    let result = build(
+      me: words("radio electronic warfare right now I am speaking", from: 0.1),
+      others: words("radio electronic warfare saved the bridge", from: 0))
+    #expect(result.utterances.first { $0.speaker == .me }?.text == "right now I am speaking")
+    #expect(result.echoDropped == 3)
+  }
+
+  @Test func aLoneMatchingWordStays() {
+    let result = build(me: words("yes I agree", from: 5.1), others: words("yes", from: 5))
+    #expect(result.utterances.first { $0.speaker == .me }?.text == "yes I agree")
+    #expect(result.echoDropped == 0)
   }
 
   @Test func aReplyAfterTheReachSurvives() {
@@ -55,15 +67,6 @@ import Testing
       me: words("the build is green", from: 12.6), others: words("the build is green", from: 10))
     #expect(result.utterances.map(\.speaker) == [.others, .me])
     #expect(result.echoDropped == 0)
-  }
-
-  @Test func echoNeedsSixtyPercent() {
-    let others = words("alpha beta gamma", from: 20)
-    let dropped = build(me: words("alpha beta gamma delta omega", from: 20.1), others: others)
-    #expect(dropped.echoDropped == 1)
-    let kept = build(me: words("alpha beta delta omega sigma", from: 20.1), others: others)
-    #expect(kept.echoDropped == 0)
-    #expect(kept.utterances.contains { $0.speaker == .me })
   }
 
   @Test func oneOthersWordMatchesOnce() {
@@ -76,7 +79,16 @@ import Testing
     #expect(MeetingTranscriptBuilder.normalized("«don't»") == "don't")
     #expect(MeetingTranscriptBuilder.normalized("IT") == "it")
     let result = build(me: words("Green, build!", from: 1.1), others: words("green build", from: 1))
-    #expect(result.echoDropped == 1)
+    #expect(result.echoDropped == 2)
+  }
+
+  @Test func othersAreSplitWhereIStartSpeaking() {
+    let result = build(
+      me: [TimedText(start: 4.05, end: 4.4, text: "question")],
+      others: words("one two three four five six seven eight nine ten", from: 2, step: 0.5))
+    #expect(result.utterances.map(\.speaker) == [.others, .me, .others])
+    #expect(result.utterances.first?.text == "one two three four five")
+    #expect(result.utterances.last?.text == "six seven eight nine ten")
   }
 
   @Test func tracksInterleaveByStartMeFirstOnTies() {
