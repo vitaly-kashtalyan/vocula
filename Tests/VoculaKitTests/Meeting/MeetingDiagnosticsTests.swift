@@ -11,6 +11,18 @@ import Testing
     #expect(DiagnosticLog.redact(d) == d)
   }
 
+  @Test func transcriptionKindsAndKeysAreAllowed() {
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    let summary =
+      "meetings=2 audioSeconds=3 pieces=2 utterances=2 echoDropped=0 skippedChunks=1"
+      + " pausedSeconds=30 tookSeconds=4 model=largeV3Turbo"
+    log.record("meeting.transcribed", summary)
+    log.record("meeting.transcribeFailed", "step=recognize code=-7")
+    #expect(log.recent(2).map(\.kind) == ["meeting.transcribeFailed", "meeting.transcribed"])
+    #expect(log.recent(2).map(\.detail) == ["step=recognize code=-7", summary])
+  }
+
   @Test func aCounterTakesNoText() {
     #expect(DiagnosticLog.redact("micSeconds=abc") == "micSeconds=<dropped>")
     #expect(DiagnosticLog.redact("droppedSeconds=1.5") == "droppedSeconds=<dropped>")
