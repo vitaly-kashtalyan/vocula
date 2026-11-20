@@ -2,9 +2,25 @@ import Foundation
 
 public enum MeetingStoreError: Error, Equatable, Sendable { case failed(step: String, code: Int) }
 
-public actor MeetingStore {
-  private static let sampleRate = 16_000
+public struct MeetingWork: Equatable, Sendable {
+  public enum Kind: Equatable, Sendable { case recognize, emptyTranscript, removeAudio }
 
+  public let header: MeetingHeader
+  public let kind: Kind
+}
+
+public struct MeetingListing: Equatable, Sendable, Identifiable {
+  public let id: UUID
+  public let startedAt: Date
+  public let duration: TimeInterval
+}
+
+public enum MeetingChunkRead: Equatable, Sendable {
+  case chunk(MeetingChunk)
+  case corrupt
+}
+
+public actor MeetingStore {
   private let directory: URL
   private let queue = DispatchSerialQueue(label: "vocula.meeting.store", qos: .utility)
 
@@ -52,14 +68,105 @@ public actor MeetingStore {
     return header
   }
 
-  public func timeline(of meeting: UUID, track: MeetingTrack, cipher: any HistoryCipher) -> [Int16]
-  {
-    guard let header = header(of: meeting, cipher: cipher), let end = header.end else { return [] }
-    let seconds = max(0, end.timeIntervalSince(header.startedAt)).rounded(.up) + 1
-    let limit = Int(min(seconds, 86_400)) * Self.sampleRate
-    let urls = (try? Self.chunkURLs(of: track, in: audioDirectory(meeting))) ?? []
-    let chunks = urls.compactMap { Self.readChunk($0, of: track, cipher: cipher) }
-    return MeetingTimeline.samples(chunks, anchor: header.anchor, limit: limit)
+  public func work(cipher: any HistoryCipher) throws -> [MeetingWork] {
+    try meetingIDs().compactMap { id -> MeetingWork? in
+      guard let header = header(of: id, cipher: cipher), header.state == .recorded else {
+        return nil
+      }
+      guard FileManager.default.fileExists(atPath: transcriptURL(id).path) else {
+        let names = try? MeetingTrack.allCases.flatMap {
+          try Self.chunkURLs(of: $0, in: audioDirectory(id))
+        }
+        return MeetingWork(
+          header: header, kind: names?.isEmpty == true ? .emptyTranscript : .recognize)
+      }
+      guard (try? transcript(of: id, cipher: cipher)) != nil,
+        FileManager.default.fileExists(atPath: audioDirectory(id).path)
+      else { return nil }
+      return MeetingWork(header: header, kind: .removeAudio)
+    }
+    .sorted { $0.header.startedAt > $1.header.startedAt }
+  }
+
+  public func listing(cipher: any HistoryCipher) throws -> [MeetingListing] {
+    try meetingIDs().compactMap { id -> MeetingListing? in
+      guard FileManager.default.fileExists(atPath: transcriptURL(id).path),
+        let header = header(of: id, cipher: cipher)
+      else { return nil }
+      return MeetingListing(
+        id: id, startedAt: header.startedAt,
+        duration: max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0))
+    }
+    .sorted { $0.startedAt > $1.startedAt }
+  }
+
+  public func chunkNames(of meeting: UUID, track: MeetingTrack) throws -> [String] {
+    do {
+      return try Self.chunkURLs(of: track, in: audioDirectory(meeting)).map(\.lastPathComponent)
+    } catch {
+      throw MeetingStoreError.failed(step: "read", code: (error as NSError).code)
+    }
+  }
+
+  public func readChunk(
+    of meeting: UUID, track: MeetingTrack, name: String, cipher: any HistoryCipher
+  ) throws -> MeetingChunkRead {
+    let sealed: Data
+    do {
+      sealed = try Data(contentsOf: audioDirectory(meeting).appendingPathComponent(name))
+    } catch {
+      throw MeetingStoreError.failed(step: "read", code: (error as NSError).code)
+    }
+    guard let plain = try? cipher.open(sealed), let chunk = try? MeetingChunk(decoding: plain),
+      chunk.track == track
+    else { return .corrupt }
+    return .chunk(chunk)
+  }
+
+  public func writeTranscript(
+    _ transcript: MeetingTranscript, of meeting: UUID, cipher: any HistoryCipher
+  ) throws {
+    let plaintext: Data
+    do { plaintext = try JSONEncoder().encode(transcript) } catch {
+      throw MeetingStoreError.failed(step: "encode", code: 0)
+    }
+    let url = transcriptURL(meeting)
+    try seal(plaintext, cipher: cipher, to: url)
+    guard (try? self.transcript(of: meeting, cipher: cipher)) == transcript else {
+      unlink(url.path)
+      throw MeetingStoreError.failed(step: "verify", code: 0)
+    }
+  }
+
+  public func transcript(of meeting: UUID, cipher: any HistoryCipher) throws -> MeetingTranscript {
+    let sealed: Data
+    do { sealed = try Data(contentsOf: transcriptURL(meeting)) } catch {
+      throw MeetingStoreError.failed(step: "read", code: (error as NSError).code)
+    }
+    guard let plain = try? cipher.open(sealed),
+      let transcript = try? JSONDecoder().decode(MeetingTranscript.self, from: plain)
+    else { throw MeetingStoreError.failed(step: "open", code: 0) }
+    return transcript
+  }
+
+  public func removeAudio(of meeting: UUID) throws {
+    do {
+      try FileManager.default.removeItem(at: audioDirectory(meeting))
+    } catch CocoaError.fileNoSuchFile {
+    } catch {
+      throw MeetingStoreError.failed(step: "remove", code: (error as NSError).code)
+    }
+  }
+
+  private func meetingIDs() throws -> [UUID] {
+    do {
+      return try FileManager.default.contentsOfDirectory(atPath: directory.path).compactMap(
+        UUID.init(uuidString:))
+    } catch CocoaError.fileReadNoSuchFile {
+      return []
+    } catch {
+      throw MeetingStoreError.failed(step: "list", code: (error as NSError).code)
+    }
   }
 
   private func recoverInterrupted(cipher: any HistoryCipher) -> Int {
@@ -125,6 +232,10 @@ public actor MeetingStore {
 
   private func headerURL(_ id: UUID) -> URL {
     meetingDirectory(id).appendingPathComponent("header.sealed")
+  }
+
+  private func transcriptURL(_ id: UUID) -> URL {
+    meetingDirectory(id).appendingPathComponent("transcript.sealed")
   }
 
   private func makeDirectory(_ url: URL) throws {

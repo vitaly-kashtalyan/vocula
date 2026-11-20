@@ -301,7 +301,8 @@ import Testing
     _ = try await store.begin(header(), cipher: cipher, recovering: true)
     #expect(
       await store.header(of: old.id, cipher: cipher)?.end == started.addingTimeInterval(0.000125))
-    #expect(await store.timeline(of: old.id, track: .mic, cipher: cipher) == [7, 7])
+    #expect(
+      try await trackSamples(of: old.id, track: .mic, store: store, cipher: cipher) == [7, 7])
   }
 
   @Test func aChunkWithoutRunsFallsBackToTheOneBefore() async throws {
@@ -357,16 +358,8 @@ import Testing
       ], in: root)
     let store = MeetingStore(directory: root)
     #expect(
-      await store.timeline(of: h.id, track: .mic, cipher: cipher) == [7, 7, 0, 0, 7, 7])
-  }
-
-  @Test func aMeetingWithoutAnEndHasNoTimeline() async throws {
-    let root = meetingTemporaryDirectory()
-    let h = header()
-    try plant(
-      header: h, chunks: ["audio/mic-000000.sealed": sealed(chunk(.mic, 0, at: s, count: 4))],
-      in: root)
-    let store = MeetingStore(directory: root)
-    #expect(await store.timeline(of: h.id, track: .mic, cipher: MarkingCipher()) == [])
+      try await trackSamples(of: h.id, track: .mic, store: store, cipher: cipher) == [
+        7, 7, 0, 0, 7, 7,
+      ])
   }
 }

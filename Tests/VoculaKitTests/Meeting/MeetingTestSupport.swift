@@ -588,3 +588,21 @@ final class MeetingHarness: @unchecked Sendable {
     _ = await value(of: Task { await recorder.reopenSettled() })
   }
 }
+
+func trackSamples(
+  of meeting: UUID, track: MeetingTrack, store: MeetingStore, cipher: any HistoryCipher
+) async throws -> [Int16] {
+  guard let header = await store.header(of: meeting, cipher: cipher), let end = header.endHost
+  else { return [] }
+  var windows = MeetingTrackWindows(anchor: header.anchor, end: end)
+  for name in try await store.chunkNames(of: meeting, track: track) {
+    if case .chunk(let chunk) = try await store.readChunk(
+      of: meeting, track: track, name: name, cipher: cipher)
+    {
+      try windows.add(chunk)
+    }
+  }
+  var out: [Int16] = []
+  while let window = windows.next(final: true) { out += window.samples }
+  return out
+}
