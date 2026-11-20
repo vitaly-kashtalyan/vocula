@@ -74,6 +74,15 @@ import Testing
     #expect((lifted.map(abs).max() ?? 0) >= 0.29)
   }
 
+  @Test func aQuietWindowIsLiftedAfterALoudCarry() {
+    let carry = [Float](repeating: 0.9, count: 100)
+    let quiet = (0..<16_000).map { Int16($0 % 2 == 0 ? 328 : -328) }
+    let buffer = MeetingPieces.buffer(carry: carry, window: quiet)
+    #expect(buffer.count == 16_100)
+    #expect(Array(buffer.prefix(100)) == carry)
+    #expect((buffer.dropFirst(100).map(abs).max() ?? 0) >= 0.29)
+  }
+
   @Test func zerosAreNotLifted() {
     #expect(MeetingPieces.lift([Int16](repeating: 0, count: 1_000)).allSatisfy { $0 == 0 })
   }

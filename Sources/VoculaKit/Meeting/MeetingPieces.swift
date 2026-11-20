@@ -15,6 +15,10 @@ public enum MeetingPieces {
     PCMSamples.boostedIfQuiet(raw.map { Float($0) / 32767 })
   }
 
+  public static func buffer(carry: [Float], window: [Int16]) -> [Float] {
+    carry + lift(window)
+  }
+
   public static func plan(segments: [SpeechSegment], count: Int, isLast: Bool) -> Plan {
     let ranges = segments.map { segment -> Range<Int> in
       let from = min(count, max(0, segment.start.milliseconds * 16))
