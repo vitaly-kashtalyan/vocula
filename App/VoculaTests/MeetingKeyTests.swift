@@ -106,6 +106,22 @@ struct MeetingKeyTests {
     #expect(recording.calls == [.copy])
   }
 
+  @Test func theExistingKeyLookupNeverAdds() {
+    let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
+    #expect(throws: MeetingFailure.failed(step: "key", code: errSecItemNotFound)) {
+      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false, mayMint: false)
+    }
+    #expect(recording.calls == [.copy])
+  }
+
+  @Test func theExistingKeyLookupRefusesASecondCopy() {
+    let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
+    #expect(throws: MeetingFailure.secondCopy) {
+      try MeetingKey.cipher(keychain: recording.keychain, mayMint: false)
+    }
+    #expect(recording.calls == [])
+  }
+
   @Test func aSealOpensOnlyWithItsKey() throws {
     let plaintext = Data("meeting".utf8)
     let seal = MeetingSeal(key: SymmetricKey(size: .bits256))
