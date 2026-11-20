@@ -90,9 +90,7 @@ public actor WhisperMeetingRecognizer: MeetingRecognizing {
       }
     }
     if abort.isCancelled { throw CancellationError() }
-    guard status == 0 else {
-      throw TranscriptionError.engineFailed("whisper_full returned \(status)")
-    }
+    guard status == 0 else { throw MeetingFailure.failed(step: "whisper", code: status) }
     var out: [TimedText] = []
     for index in 0..<whisper_full_n_segments(context) {
       guard let segment = whisper_full_get_segment_text(context, index) else { continue }
