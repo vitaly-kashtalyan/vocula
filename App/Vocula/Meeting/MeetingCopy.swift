@@ -18,10 +18,6 @@ extension MenuCopy {
       "Item in the meeting's menu bar menu after a meeting ended, after recorded meetings were turned into text, or after a transcript could not be read; clears those lines, and hides that menu bar item unless meetings are still being turned into text. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
-  static func meetingStatusLabel(recording: Bool) -> LocalizedStringResource {
-    recording ? meetingLabel : meetingLabelNotice
-  }
-
   static func meetingItemLabel(_ label: MeetingStatusRules.Label) -> LocalizedStringResource {
     switch label {
     case .recording: meetingLabel

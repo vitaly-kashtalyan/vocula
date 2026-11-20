@@ -41,7 +41,7 @@ public actor MeetingTranscriber {
     public var makeDetector: @Sendable () -> any SpeechDetecting
     public var now: @Sendable () -> UInt64
     public var sleep: @Sendable (Duration) async throws -> Void
-    public var publish: @Sendable (MeetingTranscription?) async -> Void
+    public var publish: @Sendable (MeetingTranscription) async -> Void
     public var log: DiagnosticLog?
 
     public init(
@@ -52,7 +52,7 @@ public actor MeetingTranscriber {
       makeDetector: @escaping @Sendable () -> any SpeechDetecting,
       now: @escaping @Sendable () -> UInt64,
       sleep: @escaping @Sendable (Duration) async throws -> Void,
-      publish: @escaping @Sendable (MeetingTranscription?) async -> Void,
+      publish: @escaping @Sendable (MeetingTranscription) async -> Void,
       log: DiagnosticLog?
     ) {
       self.store = store
@@ -113,7 +113,6 @@ public actor MeetingTranscriber {
     }
     switch outcome {
     case .cancelled:
-      if percent != nil { await deps.publish(nil) }
       return
     case .pass(let step, let code):
       failed(step: step, code: code)
@@ -183,7 +182,7 @@ public actor MeetingTranscriber {
       dictations: MeetingTranscriptBuilder.dictationRanges(
         header.dictations, anchor: header.anchor))
     tally.echoDropped += built.echoDropped
-    return .recognized(by: model.model, utterances: built.utterances)
+    return MeetingTranscript(model: model.model.rawValue, utterances: built.utterances)
   }
 
   private func words(
@@ -342,6 +341,7 @@ public actor MeetingTranscriber {
   }
 
   private static func meetingStop(_ error: any Error) -> Stop {
+    if Task.isCancelled { return .cancelled }
     if case MeetingStoreError.failed(let step, let code) = error {
       return .meeting(step: step, code: code)
     }

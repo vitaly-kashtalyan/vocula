@@ -101,10 +101,10 @@ final class PassDetector: SpeechDetecting, @unchecked Sendable {
 
 final class Published: @unchecked Sendable {
   private let lock = NSLock()
-  private var values: [MeetingTranscription?] = []
+  private var values: [MeetingTranscription] = []
 
-  var all: [MeetingTranscription?] { lock.withLock { values } }
-  func add(_ value: MeetingTranscription?) { lock.withLock { values.append(value) } }
+  var all: [MeetingTranscription] { lock.withLock { values } }
+  func add(_ value: MeetingTranscription) { lock.withLock { values.append(value) } }
 }
 
 final class TranscriberRig: @unchecked Sendable {
@@ -427,7 +427,6 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.hasAudio(header))
     #expect(rig.recognizers.made == 1)
     #expect(rig.recognizers.released == 1)
-    #expect(rig.published.all.last == .some(nil))
   }
 
   @Test func aCancelledPassStillLogsWhatItDid() async throws {
@@ -438,7 +437,6 @@ final class TranscriberRig: @unchecked Sendable {
     rig.recognizers.onCall = { call in
       if call == 2 { rig.recognizers.stall = clock }
     }
-    rig.recognizers.stall = nil
     let pass = Task { await rig.run() }
     await rig.clock.untilSleeping(2)
     pass.cancel()

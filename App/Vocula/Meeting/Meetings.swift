@@ -173,7 +173,7 @@ final class Meetings {
 
   private func meetingEnded() async {
     if status.notice != .cannotStart,
-      schedule.requested(recording: recorder != nil) == .start
+      schedule.requested()
     {
       await startPass()
     }
@@ -196,7 +196,7 @@ final class Meetings {
   private func passEnded() async {
     pass = nil
     refreshListing()
-    if schedule.passEnded(recording: recorder != nil) == .start {
+    if schedule.passEnded() {
       await startPass()
     }
   }

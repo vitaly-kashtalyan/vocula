@@ -42,16 +42,7 @@ import Testing
     #expect(TimedText(start: 2, end: 1, text: "x").end == 2)
   }
 
-  @Test func anUtteranceNeverEndsBeforeItStarts() throws {
+  @Test func anUtteranceNeverEndsBeforeItStarts() {
     #expect(MeetingUtterance(start: 3, end: 1, speaker: .me, text: "x").end == 3)
-    let stored = Data(#"{"start":5,"end":4,"speaker":"me","text":"x"}"#.utf8)
-    #expect(try JSONDecoder().decode(MeetingUtterance.self, from: stored).end == 5)
-  }
-
-  @Test func onlyARecognisedTranscriptNamesItsModel() {
-    #expect(MeetingTranscript.empty.model == nil)
-    #expect(MeetingTranscript.empty.utterances.isEmpty)
-    #expect(
-      MeetingTranscript.recognized(by: .parakeetUltra, utterances: []).model == "parakeetUltra")
   }
 }

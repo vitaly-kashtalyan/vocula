@@ -1,25 +1,21 @@
 import Foundation
 
 public struct MeetingPassSchedule: Sendable {
-  public enum Action: Equatable, Sendable { case none, start }
-
-  public private(set) var running = false
+  private var running = false
   private var wanted = false
   private var terminated = false
 
   public init() {}
 
-  public var isIdle: Bool { !running && !wanted }
-
-  public mutating func requested(recording: Bool) -> Action {
-    guard !terminated else { return .none }
+  public mutating func requested() -> Bool {
+    guard !terminated else { return false }
     wanted = true
-    return startIfFree(recording: recording)
+    return startIfFree()
   }
 
-  public mutating func passEnded(recording: Bool) -> Action {
+  public mutating func passEnded() -> Bool {
     running = false
-    return startIfFree(recording: recording)
+    return startIfFree()
   }
 
   public mutating func terminate() {
@@ -27,10 +23,10 @@ public struct MeetingPassSchedule: Sendable {
     wanted = false
   }
 
-  private mutating func startIfFree(recording: Bool) -> Action {
-    guard wanted, !running, !recording, !terminated else { return .none }
+  private mutating func startIfFree() -> Bool {
+    guard wanted, !running, !terminated else { return false }
     running = true
     wanted = false
-    return .start
+    return true
   }
 }
