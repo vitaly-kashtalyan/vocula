@@ -106,6 +106,7 @@ public actor MeetingTranscriber {
     do { try await pass() } catch let stop as Stop { outcome = stop } catch {
       outcome = .pass(step: "pass", code: 0)
     }
+    if Task.isCancelled { outcome = .cancelled }
     if recognizer != nil || detector != nil {
       let hold = deps.hold
       tally.paused += await Task.detached { await hold.waitUntilClear() }.value

@@ -109,6 +109,8 @@ final class TranscriberRig: @unchecked Sendable {
   let log: DiagnosticLog
   let store: MeetingStore
   var cipherError: (any Error)?
+  var cipherWait: TestClock?
+  let cipher = MarkingCipher()
   var model: MeetingModel? = MeetingModel(model: .largeV3Turbo, languages: .default)
   var recognizerLoadError: (any Error)?
   lazy var hold = MeetingHoldGate(
@@ -127,8 +129,9 @@ final class TranscriberRig: @unchecked Sendable {
       MeetingTranscriber.Dependencies(
         store: store,
         cipher: { [self] in
+          if let cipherWait { try await cipherWait.sleep(for: .seconds(60)) }
           if let cipherError { throw cipherError }
-          return MarkingCipher()
+          return cipher
         },
         model: { [self] in model },
         makeRecognizer: { [self] _ in
@@ -263,6 +266,18 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.recognizers.made == 0)
   }
 
+  @Test func aCancelledKeyLookupPublishesNothing() async throws {
+    let rig = TranscriberRig()
+    rig.cipherWait = rig.clock
+    try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.clock.untilSleeping(1)
+    pass.cancel()
+    await pass.value
+    #expect(rig.published.all.isEmpty)
+    #expect(rig.lines("meeting.transcribeFailed").isEmpty)
+  }
+
   @Test func aListingFailureEndsThePass() async throws {
     let rig = TranscriberRig()
     try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
@@ -324,6 +339,32 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.lines("meeting.transcribeFailed") == ["step=recognize code=-7"])
     #expect(rig.hasAudio(newer))
     #expect(await rig.transcript(of: newer) == nil)
+    #expect(await rig.transcript(of: older) != nil)
+    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
+  }
+
+  @Test func anUnreadableChunkFileFailsTheMeetingAndMovesOn() async throws {
+    let rig = TranscriberRig()
+    let newer = try rig.meeting(startedAt: 800_000_600, mic: [rig.speech(at: 0.5, for: 1)])
+    let older = try rig.meeting(startedAt: 800_000_000, mic: [rig.speech(at: 0.5, for: 1)])
+    let file = rig.meetings.appendingPathComponent("\(newer.id.uuidString)/audio/mic-000000.sealed")
+    chmod(file.path, 0)
+    defer { chmod(file.path, 0o600) }
+    await rig.run()
+    #expect(rig.lines("meeting.transcribeFailed").first?.hasPrefix("step=read") == true)
+    #expect(rig.hasAudio(newer))
+    #expect(await rig.transcript(of: older) != nil)
+    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
+  }
+
+  @Test func aSealFailureFailsTheMeetingAndMovesOn() async throws {
+    let rig = TranscriberRig()
+    let newer = try rig.meeting(startedAt: 800_000_600, mic: [rig.speech(at: 0.5, for: 1)])
+    let older = try rig.meeting(startedAt: 800_000_000, mic: [rig.speech(at: 0.5, for: 1)])
+    rig.cipher.failNext(1)
+    await rig.run()
+    #expect(rig.lines("meeting.transcribeFailed") == ["step=seal code=0"])
+    #expect(rig.hasAudio(newer))
     #expect(await rig.transcript(of: older) != nil)
     #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
   }
