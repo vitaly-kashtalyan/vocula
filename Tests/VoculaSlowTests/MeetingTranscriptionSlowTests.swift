@@ -26,12 +26,6 @@ private func ready(_ urls: URL...) -> Bool {
   urls.allSatisfy { FileManager.default.fileExists(atPath: $0.path) }
 }
 
-private func freshGate() -> MeetingHoldGate {
-  MeetingHoldGate(
-    hold: DictationHold(passDeadline: { $0 }, refineWait: { nil }),
-    now: { DispatchTime.now().uptimeNanoseconds }, sleep: { try await Task.sleep(for: $0) })
-}
-
 @Suite(
   "A recorded meeting becomes Me and Others",
   .enabled(if: ready(whisperModel, detectorModel, parakeetModel)))
@@ -71,7 +65,6 @@ struct MeetingTranscriptionSlowTests {
         model: { MeetingModel(model: .largeV3Turbo, languages: languages) },
         makeRecognizer: { _ in try await recognizer() },
         makeDetector: { WhisperVADDetector(modelPath: detectorModel) },
-        hold: freshGate(),
         now: { DispatchTime.now().uptimeNanoseconds },
         sleep: { try await Task.sleep(for: $0) },
         publish: { _ in },

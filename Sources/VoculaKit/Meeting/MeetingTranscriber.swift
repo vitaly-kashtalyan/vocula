@@ -39,7 +39,6 @@ public actor MeetingTranscriber {
     public var model: @Sendable () async -> MeetingModel?
     public var makeRecognizer: @Sendable (MeetingModel) async throws -> any MeetingRecognizing
     public var makeDetector: @Sendable () -> any SpeechDetecting
-    public var hold: MeetingHoldGate
     public var now: @Sendable () -> UInt64
     public var sleep: @Sendable (Duration) async throws -> Void
     public var publish: @Sendable (MeetingTranscription?) async -> Void
@@ -51,7 +50,6 @@ public actor MeetingTranscriber {
       model: @escaping @Sendable () async -> MeetingModel?,
       makeRecognizer: @escaping @Sendable (MeetingModel) async throws -> any MeetingRecognizing,
       makeDetector: @escaping @Sendable () -> any SpeechDetecting,
-      hold: MeetingHoldGate,
       now: @escaping @Sendable () -> UInt64,
       sleep: @escaping @Sendable (Duration) async throws -> Void,
       publish: @escaping @Sendable (MeetingTranscription?) async -> Void,
@@ -62,7 +60,6 @@ public actor MeetingTranscriber {
       self.model = model
       self.makeRecognizer = makeRecognizer
       self.makeDetector = makeDetector
-      self.hold = hold
       self.now = now
       self.sleep = sleep
       self.publish = publish
@@ -83,7 +80,6 @@ public actor MeetingTranscriber {
     var utterances = 0
     var echoDropped = 0
     var skipped = 0
-    var paused = Duration.zero
   }
 
   private struct Carry {
@@ -114,12 +110,6 @@ public actor MeetingTranscriber {
     if Task.isCancelled { outcome = .cancelled }
     if tally.pieces > 0 || tally.transcribed > 0 {
       summarize(took: HostTime.elapsed(from: began, to: deps.now()))
-    }
-    if recognizer != nil || detector != nil {
-      let hold = deps.hold
-      tally.paused += await Task.detached { await hold.waitUntilClear() }.value
-      recognizer = nil
-      detector = nil
     }
     switch outcome {
     case .cancelled:
@@ -159,7 +149,6 @@ public actor MeetingTranscriber {
     }
     await progress()
     guard let chosen = await deps.model() else { throw Stop.pass(step: "model", code: 0) }
-    tally.paused += await deps.hold.waitUntilClear()
     try checkCancelled()
     do { recognizer = try await deps.makeRecognizer(chosen) } catch {
       throw Stop.pass(step: "model", code: Self.code(of: error))
@@ -243,7 +232,6 @@ public actor MeetingTranscriber {
   private func handle(
     _ window: MeetingWindow, isLast: Bool, carry: inout Carry, model: MeetingModel
   ) async throws -> [TimedText] {
-    tally.paused += await deps.hold.waitUntilClear()
     try checkCancelled()
     guard let detector else { throw Stop.pass(step: "vad", code: 0) }
     let buffer = MeetingPieces.buffer(carry: carry.samples, window: window.samples)
@@ -270,7 +258,6 @@ public actor MeetingTranscriber {
   private func recognize(_ samples: [Float], at offset: Int, model: MeetingModel) async throws
     -> [TimedText]
   {
-    tally.paused += await deps.hold.waitUntilClear()
     try checkCancelled()
     guard let recognizer else { throw Stop.pass(step: "model", code: 0) }
     let padded = MeetingPieces.padded(samples)
@@ -348,7 +335,6 @@ public actor MeetingTranscriber {
       "utterances=\(tally.utterances)",
       "echoDropped=\(tally.echoDropped)",
       "skippedChunks=\(tally.skipped)",
-      "pausedSeconds=\(tally.paused.components.seconds)",
       "tookSeconds=\(took / 1_000_000_000)",
     ]
     if let model { fields.append("model=\(model.rawValue)") }

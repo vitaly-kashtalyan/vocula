@@ -163,7 +163,6 @@ public final class DiagnosticLog: @unchecked Sendable {
     "utterances": .number,
     "echoDropped": .number,
     "skippedChunks": .number,
-    "pausedSeconds": .number,
     "tookSeconds": .number,
     "attempt": .number,
     "bytes": .number,

@@ -85,11 +85,10 @@ lines labelled *Others*. Two or more words of yours in a row that repeat what
 other apps played within a second and a half are left out, as the call heard
 back through your speakers — so a reply that repeats the other side's words
 loses them. What you dictate during the meeting is left out too.
-It waits while you dictate. It stops when you record another meeting and starts
-again once that one ends, from the beginning of the meeting it was on. Quitting
-Vocula stops it too, and a meeting that ended because you quit is not
-transcribed then: both wait, audio and all, until the next meeting you record
-ends. Once a meeting's transcript is written and read back, its audio is
+It runs alongside your dictation and alongside a meeting you record meanwhile,
+which is transcribed after it. Quitting Vocula stops it, and a meeting that
+ended because you quit is not transcribed then: both wait, audio and all, until
+the next meeting you record ends. Once a meeting's transcript is written and read back, its audio is
 deleted, and speech the model missed or misheard — with Whisper, including
 speech in a language you have not ticked — is gone with it, as is any piece of the
 recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts

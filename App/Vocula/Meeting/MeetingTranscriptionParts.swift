@@ -7,18 +7,15 @@ import VoculaWhisper
 struct MeetingTranscriptionParts {
   typealias Publish = @Sendable (MeetingTranscription?) async -> Void
 
-  var makeHold: @MainActor () -> MeetingHoldGate
   var makeTranscriber:
-    @MainActor (_ log: DiagnosticLog?, _ hold: MeetingHoldGate, _ publish: @escaping Publish) ->
-      MeetingTranscriber?
+    @MainActor (_ log: DiagnosticLog?, _ publish: @escaping Publish) -> MeetingTranscriber?
   var listing: @Sendable (_ log: DiagnosticLog?) async -> [MeetingListing]?
   var transcript: @Sendable (_ id: UUID, _ log: DiagnosticLog?) async -> MeetingTranscript?
   var paste: @MainActor (String) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeHold: { liveHold() },
-      makeTranscriber: { liveTranscriber(log: $0, hold: $1, publish: $2) },
+      makeTranscriber: { liveTranscriber(log: $0, publish: $1) },
       listing: { await liveListing(log: $0) },
       transcript: { await liveTranscript($0, log: $1) },
       paste: { text in
@@ -27,21 +24,9 @@ struct MeetingTranscriptionParts {
       })
   }
 
-  nonisolated static func liveHold() -> MeetingHoldGate {
-    MeetingHoldGate(
-      hold: DictationHold(
-        passDeadline: { Timings.default.passDeadline(forAudio: $0) },
-        refineWait: {
-          let settings = AppSettings()
-          return DictationHold.refineWait(
-            enabled: settings.refineEnabled, maximumSeconds: settings.refineMaximumWait)
-        }),
-      now: { Meetings.hostNanos() }, sleep: { try await Task.sleep(for: $0) })
-  }
-
-  @MainActor static func liveTranscriber(
-    log: DiagnosticLog?, hold: MeetingHoldGate, publish: @escaping Publish
-  ) -> MeetingTranscriber? {
+  @MainActor static func liveTranscriber(log: DiagnosticLog?, publish: @escaping Publish)
+    -> MeetingTranscriber?
+  {
     guard let store = Meetings.makeStore() else { return nil }
     return MeetingTranscriber(
       MeetingTranscriber.Dependencies(
@@ -50,7 +35,6 @@ struct MeetingTranscriptionParts {
         model: { await Task.detached(priority: .utility) { chosenModel() }.value },
         makeRecognizer: { try await recognizer(for: $0) },
         makeDetector: { WhisperVADDetector(modelPath: ModelStore.app().url(for: .speechDetector)) },
-        hold: hold,
         now: { Meetings.hostNanos() },
         sleep: { try await Task.sleep(for: $0) },
         publish: publish,

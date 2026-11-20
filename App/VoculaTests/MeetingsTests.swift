@@ -218,19 +218,11 @@ private final class PassProbe {
   var listing: [MeetingListing]?
   var transcript: MeetingTranscript?
   var pasted: [String] = []
-  var holds: [MeetingHoldGate] = []
   let cipherGate = Latch()
 
   func parts(store: MeetingStore) -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeHold: { [self] in
-        let hold = MeetingHoldGate(
-          hold: DictationHold(passDeadline: { _ in .zero }, refineWait: { nil }),
-          now: { 0 }, sleep: { try await Task.sleep(for: $0) })
-        holds.append(hold)
-        return hold
-      },
-      makeTranscriber: { [self] log, hold, publish in
+      makeTranscriber: { [self] log, publish in
         made += 1
         guard blocking else { return nil }
         let gate = cipherGate
@@ -242,7 +234,7 @@ private final class PassProbe {
               return PassthroughCipher()
             },
             model: { nil }, makeRecognizer: { _ in throw CancellationError() },
-            makeDetector: { NoSpeech() }, hold: hold, now: { 0 },
+            makeDetector: { NoSpeech() }, now: { 0 },
             sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))
       },
       listing: { [self] _ in await self.listing },
@@ -367,7 +359,7 @@ struct MeetingsTests {
     let rig = Rig()
     rig.meetings.pipelineStarted(rig.fanout)
     try await rig.record()
-    #expect(rig.fanout.subscriberCount == 2)
+    #expect(rig.fanout.subscriberCount == 1)
     #expect(rig.meetings.holdsAMeeting)
     await finishes(rig.meetings.toggle())
     #expect(!rig.meetings.holdsAMeeting)
@@ -410,7 +402,7 @@ struct MeetingsTests {
     #expect(rig.mic.stopCount == 0)
     #expect(rig.system.stopCount == 0)
     rig.meetings.pipelineStarted(rig.fanout)
-    #expect(rig.fanout.subscriberCount == 2)
+    #expect(rig.fanout.subscriberCount == 1)
     rig.fanout.emit(.start(session: 2))
     rig.fanout.finishAll()
     await finishes(rig.meetings.toggle())
@@ -432,21 +424,20 @@ struct MeetingsTests {
     #expect(rig.passes.made == 0)
   }
 
-  @Test func recordCancelsAPassAndTheNextStopRunsIt() async throws {
+  @Test func recordLeavesARunningPassAloneAndTheNextStopRunsAnotherAfterIt() async throws {
     let rig = Rig()
     rig.passes.blocking = true
     try await rig.record()
     await finishes(rig.meetings.toggle())
-    #expect(rig.passes.made == 1)
     let first = try #require(rig.meetings.pass)
     try await rig.record()
-    await first.value
-    #expect(rig.meetings.pass == nil)
-    #expect(rig.passes.made == 1)
+    #expect(!first.isCancelled)
     await finishes(rig.meetings.toggle())
-    #expect(rig.passes.made == 2)
+    #expect(rig.passes.made == 1)
     rig.passes.cipherGate.open()
+    await first.value
     await rig.meetings.pass?.value
+    #expect(rig.passes.made == 2)
   }
 
   @Test func theListingRefreshesWhenRecordingStarts() async throws {
@@ -461,29 +452,6 @@ struct MeetingsTests {
     await finishes(rig.meetings.toggle())
     await rig.meetings.refreshing?.value
     #expect(rig.meetings.status.transcripts == [listing])
-  }
-
-  @Test func dictationSignalsReachTheHold() async throws {
-    let rig = Rig()
-    rig.meetings.pipelineStarted(rig.fanout)
-    try await rig.record()
-    let hold = try #require(rig.passes.holds.last)
-    rig.fanout.emit(.start(session: 1))
-    var waited = 0
-    while await !hold.isHeld, waited < 200 {
-      try await Task.sleep(for: .milliseconds(5))
-      waited += 1
-    }
-    #expect(await hold.isHeld)
-    rig.fanout.emit(.stop(session: 1, reason: .releasedHold))
-    waited = 0
-    while await hold.isHeld, waited < 200 {
-      try await Task.sleep(for: .milliseconds(5))
-      waited += 1
-    }
-    #expect(await !hold.isHeld)
-    await finishes(rig.meetings.toggle())
-    #expect(rig.fanout.subscriberCount == 0)
   }
 
   @Test func copyPutsMarkdownOnThePasteboard() async {
@@ -628,8 +596,7 @@ struct MeetingsTests {
   @Test func aSecondCopyCreatesNoStore() {
     #expect(Meetings.makeStore() == nil)
     #expect(
-      MeetingTranscriptionParts.liveTranscriber(
-        log: nil, hold: MeetingTranscriptionParts.liveHold(), publish: { _ in }) == nil)
+      MeetingTranscriptionParts.liveTranscriber(log: nil, publish: { _ in }) == nil)
     #expect(Meetings.live(log: nil, recover: true) == nil)
   }
 

@@ -1,7 +1,7 @@
 import Foundation
 
 public struct MeetingPassSchedule: Sendable {
-  public enum Action: Equatable, Sendable { case none, start, cancel }
+  public enum Action: Equatable, Sendable { case none, start }
 
   public private(set) var running = false
   private var wanted = false
@@ -15,12 +15,6 @@ public struct MeetingPassSchedule: Sendable {
     guard !terminated else { return .none }
     wanted = true
     return startIfFree(recording: recording)
-  }
-
-  public mutating func recordingStarted() -> Action {
-    guard running else { return .none }
-    wanted = true
-    return .cancel
   }
 
   public mutating func passEnded(recording: Bool) -> Action {

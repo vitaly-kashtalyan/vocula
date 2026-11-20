@@ -54,9 +54,4 @@ import Testing
     #expect(
       MeetingTranscript.recognized(by: .parakeetUltra, utterances: []).model == "parakeetUltra")
   }
-
-  @Test(arguments: [(true, 30, Duration.seconds(30)), (false, 30, nil)])
-  func cleanUpAddsItsWaitOnlyWhenOn(enabled: Bool, seconds: Int, wait: Duration?) {
-    #expect(DictationHold.refineWait(enabled: enabled, maximumSeconds: seconds) == wait)
-  }
 }

@@ -8,16 +8,13 @@ final class RecognizerLog: @unchecked Sendable {
   private var madeCount = 0
   private var releasedCount = 0
   private var sizes: [Int] = []
-  private var moments: [UInt64] = []
   var failures: [Int: any Error] = [:]
   var stall: TestClock?
-  var clock: TestClock?
   var onCall: (@Sendable (Int) async -> Void)?
 
   var made: Int { lock.withLock { madeCount } }
   var released: Int { lock.withLock { releasedCount } }
   var calls: [Int] { lock.withLock { sizes } }
-  var times: [UInt64] { lock.withLock { moments } }
 
   func didMake() { lock.withLock { madeCount += 1 } }
   func didRelease() { lock.withLock { releasedCount += 1 } }
@@ -25,7 +22,6 @@ final class RecognizerLog: @unchecked Sendable {
   func called(_ size: Int) throws -> Int {
     try lock.withLock {
       sizes.append(size)
-      moments.append(clock?.now() ?? 0)
       if let failure = failures[sizes.count] { throw failure }
       return sizes.count
     }
@@ -55,14 +51,11 @@ final class DetectorLog: @unchecked Sendable {
   private var madeCount = 0
   private var releasedCount = 0
   private var callCount = 0
-  private var moments: [UInt64] = []
   var failures: [Int: any Error] = [:]
   var always: (any Error)?
-  var clock: TestClock?
 
   var made: Int { lock.withLock { madeCount } }
   var released: Int { lock.withLock { releasedCount } }
-  var times: [UInt64] { lock.withLock { moments } }
 
   func didMake() { lock.withLock { madeCount += 1 } }
   func didRelease() { lock.withLock { releasedCount += 1 } }
@@ -70,7 +63,6 @@ final class DetectorLog: @unchecked Sendable {
   func called() throws {
     try lock.withLock {
       callCount += 1
-      moments.append(clock?.now() ?? 0)
       if let always { throw always }
       if let failure = failures[callCount] { throw failure }
     }
@@ -129,10 +121,6 @@ final class TranscriberRig: @unchecked Sendable {
   let cipher = MarkingCipher()
   var model: MeetingModel? = MeetingModel(model: .largeV3Turbo, languages: .default)
   var recognizerLoadError: (any Error)?
-  var deadlinesOnTheWallClock = false
-  lazy var hold = MeetingHoldGate(
-    hold: DictationHold(passDeadline: { max(.seconds(30), $0) }, refineWait: { nil }),
-    now: { [clock] in clock.now() }, sleep: { [clock] in try await clock.sleep(for: $0) })
 
   init() {
     log = DiagnosticLog(fileURL: root.appendingPathComponent("diagnostics.json"))
@@ -156,32 +144,13 @@ final class TranscriberRig: @unchecked Sendable {
           return PassRecognizer(recognizers)
         },
         makeDetector: { [self] in PassDetector(detectors) },
-        hold: hold,
         now: { [clock] in clock.now() },
-        sleep: { [clock, deadlinesOnTheWallClock] duration in
-          if deadlinesOnTheWallClock {
-            try await Task.sleep(for: .seconds(3_600))
-          } else {
-            try await clock.sleep(for: duration)
-          }
-        },
+        sleep: { [clock] in try await clock.sleep(for: $0) },
         publish: { [published] in published.add($0) },
         log: log))
   }
 
   func run() async { await transcriber().run() }
-
-  func drive(_ pass: Task<Void, Never>) async {
-    let done = Published()
-    Task {
-      await pass.value
-      done.add(nil)
-    }
-    while done.all.isEmpty {
-      if clock.parked > 0 { clock.advance(by: .seconds(1)) }
-      await Task.yield()
-    }
-  }
 
   func speech(at seconds: Double, for length: Double, value: Int16 = 1_000) -> MeetingRun {
     MeetingRun(
@@ -416,38 +385,6 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.lines("meeting.transcribed").first?.contains("skippedChunks=1") == true)
   }
 
-  @Test func aDictationBetweenPiecesHoldsTheNextPiece() async throws {
-    let rig = TranscriberRig()
-    rig.deadlinesOnTheWallClock = true
-    rig.recognizers.clock = rig.clock
-    try rig.meeting(lasting: 8, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 4, for: 1)])
-    let hold = rig.hold
-    rig.recognizers.onCall = { call in
-      guard call == 1 else { return }
-      await hold.received(.start(session: 1))
-      await hold.received(.stop(session: 1, reason: .releasedHold))
-    }
-    await rig.drive(Task { await rig.run() })
-    #expect(rig.recognizers.times.count == 2)
-    #expect((rig.recognizers.times.last ?? 0) >= 30 * rig.s)
-  }
-
-  @Test func aDictationBetweenWindowsHoldsTheNextWindow() async throws {
-    let rig = TranscriberRig()
-    rig.deadlinesOnTheWallClock = true
-    rig.detectors.clock = rig.clock
-    try rig.meeting(lasting: 70, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 62, for: 1)])
-    let hold = rig.hold
-    rig.recognizers.onCall = { call in
-      guard call == 1 else { return }
-      await hold.received(.start(session: 1))
-      await hold.received(.stop(session: 1, reason: .releasedHold))
-    }
-    await rig.drive(Task { await rig.run() })
-    #expect(rig.detectors.times.count == 2)
-    #expect((rig.detectors.times.last ?? 0) >= 30 * rig.s)
-  }
-
   @Test func aWholeCorruptTrackFailsTheMeeting() async throws {
     let rig = TranscriberRig()
     let header = try rig.meeting(
@@ -509,42 +446,6 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.lines("meeting.transcribed").first?.hasPrefix("meetings=1 ") == true)
   }
 
-  @Test func cancellingWaitsForTheHoldBeforeReleasing() async throws {
-    let rig = TranscriberRig()
-    rig.recognizers.stall = rig.clock
-    try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
-    let pass = Task { await rig.run() }
-    await rig.clock.untilSleeping(2)
-    await rig.hold.received(.start(session: 1))
-    pass.cancel()
-    await rig.clock.untilSleeping(1)
-    #expect(rig.recognizers.released == 0)
-    await rig.hold.received(.stop(session: 1, reason: .releasedHold))
-    for _ in 0..<30 {
-      await rig.clock.untilSleeping(1)
-      rig.clock.advance(by: .seconds(1))
-    }
-    await pass.value
-    #expect(rig.recognizers.released == 1)
-  }
-
-  @Test func theHoldGatesTheModelLoad() async throws {
-    let rig = TranscriberRig()
-    let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
-    await rig.hold.received(.start(session: 1))
-    await rig.hold.received(.stop(session: 1, reason: .releasedHold))
-    let pass = Task { await rig.run() }
-    await rig.clock.untilSleeping(1)
-    #expect(rig.recognizers.made == 0)
-    for _ in 0..<30 {
-      await rig.clock.untilSleeping(1)
-      rig.clock.advance(by: .seconds(1))
-    }
-    await pass.value
-    #expect(await rig.transcript(of: header) != nil)
-    #expect(rig.lines("meeting.transcribed").first?.contains("pausedSeconds=30") == true)
-  }
-
   @Test func progressIsPublishedAsAWholePercent() async throws {
     let rig = TranscriberRig()
     try rig.meeting(
@@ -584,7 +485,7 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(
       lines.first
         == "meetings=2 audioSeconds=3 pieces=2 utterances=2 echoDropped=0 skippedChunks=0"
-        + " pausedSeconds=0 tookSeconds=0 model=largeV3Turbo")
+        + " tookSeconds=0 model=largeV3Turbo")
   }
 
   @Test func aRemoveFailureStillCountsAsTranscribed() async throws {

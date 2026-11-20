@@ -19,8 +19,6 @@ final class Meetings {
   private var signals: StreamFanout<DictationSignal>?
   private let parts: MeetingTranscriptionParts
   private var schedule = MeetingPassSchedule()
-  private var hold: MeetingHoldGate?
-  private var holdFollower: Task<Void, Never>?
   private(set) var pass: Task<Void, Never>?
   private(set) var refreshing: Task<Void, Never>?
 
@@ -58,14 +56,9 @@ final class Meetings {
       dependencies.publish = { [weak self] in await self?.apply($0, of: meeting) }
       dependencies.ended = { [weak self] in await self?.ended(meeting) }
       status.clearTranscriptionOutcome()
-      if schedule.recordingStarted() == .cancel { pass?.cancel() }
-      if hold == nil { hold = parts.makeHold() }
       let recorder = MeetingRecorder(dependencies)
       self.recorder = recorder
-      if let signals {
-        follow(signals)
-        if holdFollower == nil { listen(signals) }
-      }
+      if let signals { follow(signals) }
       return Task { await recorder.start() }
     }
   }
@@ -108,7 +101,6 @@ final class Meetings {
   func pipelineStarted(_ signals: StreamFanout<DictationSignal>) {
     self.signals = signals
     follow(signals)
-    if hold != nil { listen(signals) }
   }
 
   func stopForTermination() async {
@@ -185,15 +177,12 @@ final class Meetings {
     {
       await startPass()
     }
-    await dropHoldIfIdle()
   }
 
   private func startPass() async {
-    let hold = self.hold ?? parts.makeHold()
-    self.hold = hold
     guard
       let transcriber = parts.makeTranscriber(
-        diagnosticLog(), hold, { [weak self] in await self?.status.update(transcription: $0) })
+        diagnosticLog(), { [weak self] in await self?.status.update(transcription: $0) })
     else {
       await passEnded()
       return
@@ -209,27 +198,6 @@ final class Meetings {
     refreshListing()
     if schedule.passEnded(recording: recorder != nil) == .start {
       await startPass()
-    } else {
-      await dropHoldIfIdle()
-    }
-  }
-
-  private func dropHoldIfIdle() async {
-    guard recorder == nil, pass == nil, schedule.isIdle else { return }
-    hold = nil
-    guard let follower = holdFollower else { return }
-    holdFollower = nil
-    follower.cancel()
-    await follower.value
-  }
-
-  private func listen(_ signals: StreamFanout<DictationSignal>) {
-    holdFollower?.cancel()
-    guard let hold else { return }
-    let stream = signals.subscribe()
-    holdFollower = Task {
-      for await signal in stream { await hold.received(signal) }
-      if !Task.isCancelled { await hold.streamEnded() }
     }
   }
 

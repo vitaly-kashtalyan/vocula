@@ -28,18 +28,12 @@ import Testing
     #expect(schedule.requested(recording: false) == .start)
   }
 
-  @Test func recordingCancelsARunningPassAndWantsAnother() {
+  @Test func aPassWantedDuringARecordingWaitsForItsEnd() {
     var schedule = MeetingPassSchedule()
     _ = schedule.requested(recording: false)
-    #expect(schedule.recordingStarted() == .cancel)
+    #expect(schedule.requested(recording: true) == .none)
     #expect(schedule.passEnded(recording: true) == .none)
     #expect(schedule.requested(recording: false) == .start)
-  }
-
-  @Test func recordingWithNoPassCancelsNothing() {
-    var schedule = MeetingPassSchedule()
-    #expect(schedule.recordingStarted() == .none)
-    #expect(schedule.isIdle)
   }
 
   @Test func noPassAfterTerminate() {
