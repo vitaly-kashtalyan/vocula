@@ -771,7 +771,7 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
     await h.recorder.stop(.stopped)
     let meeting = try #require(h.meetingDirectories.first)
     let id = try #require(UUID(uuidString: meeting.lastPathComponent))
-    let timeline = await h.store.timeline(of: id, track: .mic, cipher: marking)
+    let timeline = try await trackSamples(of: id, track: .mic, store: h.store, cipher: marking)
     #expect(Array(timeline.prefix(160)) == Array(repeating: 400, count: 160))
     #expect(h.micsMade == 2)
     for mic in mics {

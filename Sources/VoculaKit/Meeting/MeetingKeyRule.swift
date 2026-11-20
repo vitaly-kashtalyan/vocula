@@ -10,10 +10,12 @@ public enum MeetingKeyRule {
     case refuse(code: Int32)
   }
 
-  public static func step(afterLookup status: Int32, keyByteCount: Int?) -> Step {
+  public static func step(afterLookup status: Int32, keyByteCount: Int?, mayMint: Bool)
+    -> Step
+  {
     if status == 0 {
       return keyByteCount == Self.keyByteCount ? .use : .refuse(code: 0)
     }
-    return status == itemNotFound ? .mint : .refuse(code: status)
+    return status == itemNotFound && mayMint ? .mint : .refuse(code: status)
   }
 }

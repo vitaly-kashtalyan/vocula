@@ -1098,11 +1098,13 @@ struct SlowPassTests {
     }
   }
 
-  private func run(delay: Duration) async -> [(String, String)] {
+  private func run(delay: Duration, audioSeconds: Int = 1) async -> [(String, String)] {
     let recorded = EventBox()
+    let audio = FakeAudio()
+    await audio.setSamples([Float](repeating: 0.2, count: 16_000 * audioSeconds))
     let controller = DictationController(
       dependencies: .init(
-        audio: FakeAudio(), detector: FakeDetector(), engine: TimedEngine(delay: delay),
+        audio: audio, detector: FakeDetector(), engine: TimedEngine(delay: delay),
         probe: FakeProbe(),
         inserter: TextInserter(
           clipboard: FakeClipboard(), paste: FakePaste(),
@@ -1127,7 +1129,7 @@ struct SlowPassTests {
 
   @Test("an ordinary pass is not reported at all")
   func fast() async {
-    #expect(await run(delay: .zero).isEmpty)
+    #expect(await run(delay: .zero, audioSeconds: 10).isEmpty)
   }
 }
 

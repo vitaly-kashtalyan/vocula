@@ -90,6 +90,10 @@ public struct MeetingHeader: Codable, Equatable, Sendable {
     endedBy = end
   }
 
+  public var endHost: UInt64? {
+    end.map { HostTime.adding(anchor, HostTime.nanos($0.timeIntervalSince(startedAt))) }
+  }
+
   public func date(atHost host: UInt64) -> Date {
     let nanos = HostTime.elapsed(from: anchor, to: host)
     return startedAt.addingTimeInterval(Double(nanos) / 1_000_000_000)

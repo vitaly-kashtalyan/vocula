@@ -9,7 +9,7 @@ removed=0
 gone() { printf '  removed  %s\n' "$*"; removed=$((removed + 1)); }
 absent() { printf '  absent   %s\n' "$*"; }
 
-echo "This deletes $APP, every dictation in its history, every recorded meeting,"
+echo "This deletes $APP, every dictation in its history, every recorded meeting and its transcript,"
 echo "both encryption keys, its settings, and the downloaded models."
 printf 'Type "yes" to continue: '
 read -r answer

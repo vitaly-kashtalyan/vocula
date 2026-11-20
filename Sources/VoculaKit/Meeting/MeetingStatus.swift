@@ -28,9 +28,9 @@ public enum MeetingAnnouncement: Equatable, Sendable {
 }
 
 public enum MeetingStatusRules {
-  public static let recordingSymbol = "record.circle.fill"
+  static let recordingSymbol = "record.circle.fill"
   public static let warningSymbol = "exclamationmark.circle.fill"
-  public static let endedSymbol = "record.circle"
+  static let endedSymbol = "record.circle"
 
   public static func symbol(for status: MeetingStatus) -> String {
     guard status.warnings.isEmpty else { return warningSymbol }
@@ -122,5 +122,52 @@ public struct MeetingSwitch: Sendable {
     case .idle: false
     case .starting(let current), .recording(let current): current == meeting
     }
+  }
+}
+
+extension MeetingStatusRules {
+  public static let transcribingSymbol = "text.bubble"
+
+  public enum Label: Equatable, Sendable { case recording, transcribing, idle }
+
+  public static func symbol(
+    for status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool
+  ) -> String {
+    if status.isRecording || !status.warnings.isEmpty { return symbol(for: status) }
+    if case .running = transcription { return transcribingSymbol }
+    if status.notice != nil { return symbol(for: status) }
+    if copyFailed { return warningSymbol }
+    if case .finished(_, let failed) = transcription {
+      return failed > 0 ? warningSymbol : endedSymbol
+    }
+    return symbol(for: status)
+  }
+
+  public static func showsItem(
+    _ status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool
+  ) -> Bool {
+    showsItem(status) || transcription != nil || copyFailed
+  }
+
+  public static func label(for status: MeetingStatus, transcription: MeetingTranscription?)
+    -> Label
+  {
+    if status.isRecording { return .recording }
+    if case .running = transcription { return .transcribing }
+    return .idle
+  }
+
+  public static func announcements(
+    from old: MeetingTranscription?, to new: MeetingTranscription?
+  ) -> MeetingTranscription? {
+    guard let new, case .finished = new, new != old else { return nil }
+    return new
+  }
+
+  public static func removal(of status: MeetingStatus, transcription: MeetingTranscription?)
+    -> Removal
+  {
+    if case .running = transcription { return .putBack }
+    return removal(of: status)
   }
 }

@@ -58,7 +58,7 @@ struct MeetingKeyTests {
   @Test func aSecondCopyTouchesNoKeychain() {
     let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
     #expect(throws: MeetingFailure.secondCopy) {
-      try MeetingKey.cipher(keychain: recording.keychain)
+      try MeetingKey.cipher(keychain: recording.keychain, mayMint: true)
     }
     #expect(recording.calls == [])
   }
@@ -67,7 +67,8 @@ struct MeetingKeyTests {
     let key = SymmetricKey(size: .bits256)
     let recording = RecordingKeychain(
       lookupStatus: errSecSuccess, lookupData: key.withUnsafeBytes { Data($0) })
-    let cipher = try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+    let cipher = try MeetingKey.cipher(
+      keychain: recording.keychain, isSecondCopy: false, mayMint: true)
     #expect(recording.calls == [.copy])
     let plaintext = Data("meeting".utf8)
     #expect(try MeetingSeal(key: key).open(try cipher.seal(plaintext)) == plaintext)
@@ -75,7 +76,8 @@ struct MeetingKeyTests {
 
   @Test func aMissingKeyIsMintedWithoutADelete() throws {
     let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
-    let cipher = try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+    let cipher = try MeetingKey.cipher(
+      keychain: recording.keychain, isSecondCopy: false, mayMint: true)
     #expect(recording.calls == [.copy, .add])
     #expect(recording.added[kSecAttrService as String] as? String == "app.vocula.mac")
     #expect(recording.added[kSecAttrAccount as String] as? String == "meetings")
@@ -93,7 +95,7 @@ struct MeetingKeyTests {
   @Test func aRefusedAddFailsTheKey() {
     let recording = RecordingKeychain(lookupStatus: errSecItemNotFound, addStatus: -25299)
     #expect(throws: MeetingFailure.failed(step: "key", code: -25299)) {
-      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false, mayMint: true)
     }
     #expect(recording.calls == [.copy, .add])
   }
@@ -101,9 +103,25 @@ struct MeetingKeyTests {
   @Test func aLockedKeychainMintsNothing() {
     let recording = RecordingKeychain(lookupStatus: -25308)
     #expect(throws: MeetingFailure.failed(step: "key", code: -25308)) {
-      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false)
+      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false, mayMint: true)
     }
     #expect(recording.calls == [.copy])
+  }
+
+  @Test func theExistingKeyLookupNeverAdds() {
+    let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
+    #expect(throws: MeetingFailure.failed(step: "key", code: errSecItemNotFound)) {
+      try MeetingKey.cipher(keychain: recording.keychain, isSecondCopy: false, mayMint: false)
+    }
+    #expect(recording.calls == [.copy])
+  }
+
+  @Test func theExistingKeyLookupRefusesASecondCopy() {
+    let recording = RecordingKeychain(lookupStatus: errSecItemNotFound)
+    #expect(throws: MeetingFailure.secondCopy) {
+      try MeetingKey.cipher(keychain: recording.keychain, mayMint: false)
+    }
+    #expect(recording.calls == [])
   }
 
   @Test func aSealOpensOnlyWithItsKey() throws {

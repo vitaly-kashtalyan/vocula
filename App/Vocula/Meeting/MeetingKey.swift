@@ -42,7 +42,8 @@ enum MeetingKey {
 
   static func cipher(
     keychain: MeetingKeychain = .system,
-    isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy
+    isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy,
+    mayMint: Bool
   ) throws -> MeetingSeal {
     if isSecondCopy { throw MeetingFailure.secondCopy }
     var lookup = query()
@@ -50,7 +51,9 @@ enum MeetingKey {
     var item: CFTypeRef?
     let status = keychain.copyMatching(lookup as CFDictionary, &item)
     let existing = status == errSecSuccess ? item as? Data : nil
-    switch MeetingKeyRule.step(afterLookup: status, keyByteCount: existing?.count) {
+    switch MeetingKeyRule.step(
+      afterLookup: status, keyByteCount: existing?.count, mayMint: mayMint)
+    {
     case .use:
       guard let existing else { throw MeetingFailure.failed(step: "key", code: 0) }
       return MeetingSeal(key: SymmetricKey(data: existing))

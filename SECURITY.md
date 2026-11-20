@@ -2,8 +2,8 @@
 
 Vocula installs a global event tap, holds Accessibility, pastes into whatever
 application is focused, keeps a year of dictation history encrypted under a
-key in your login keychain, and records meetings to disk, encrypted under a
-second key there. A defect in any of those is worth telling me about
+key in your login keychain, and records and transcribes meetings on disk,
+encrypted under a second key there. A defect in any of those is worth telling me about
 before it is public.
 
 **Use GitHub's private vulnerability reporting** — the *Report a vulnerability*
@@ -12,13 +12,14 @@ can read. Please do not open a public issue for anything in the list below.
 
 ## In scope
 
-- Reading, decrypting or corrupting the history files or a recorded meeting, or
+- Reading, decrypting or corrupting the history files, a recorded meeting or its
+  transcript, or
   either of their keychain keys.
 - Getting text inserted somewhere that should have been refused — a password
   field, or anything reached while secure input is up.
 - Anything that makes the app record audio outside a dictation or a meeting you
   started, keep recording after *Stop Meeting*, an automatic stop, sleep or
-  quit, or transmit audio at all.
+  quit, or transmit audio or a transcript at all.
 - Forging a licence, or making the verifier accept one it should not.
 - Code execution through a model download, a build script, or a workflow here.
 
@@ -30,7 +31,9 @@ can read. Please do not open a public issue for anything in the list below.
   threat model is stated plainly in [PRIVACY.md](PRIVACY.md) and is not
   defended against.
 - The dictated text passing through the system pasteboard for about a second.
-  It is how insertion works, and PRIVACY.md says so.
+  It is how insertion works, and PRIVACY.md says so. Likewise a meeting
+  transcript you copy yourself with *Copy Transcript*: from the clipboard on it
+  is yours.
 - A licence key that keeps working after a refund, or one forwarded to a
   friend. Verification is offline by design, so there is no server to revoke
   against; that trade is deliberate and is what keeps the app from phoning

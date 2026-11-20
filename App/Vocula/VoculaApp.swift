@@ -175,6 +175,7 @@ private struct MenuBarContentView: View {
       Button(meetings.status.isRecording ? MenuCopy.stopMeeting : MenuCopy.recordMeeting) {
         meetings.toggle()
       }
+      CopyTranscriptMenu(meetings: meetings)
       Divider()
       if let last = menu.lastTranscript {
         Button(MenuCopy.copyLastTranscript) {

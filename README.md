@@ -74,7 +74,7 @@ Nothing you say. Ever.
 
 | What | Where it happens |
 | --- | --- |
-| Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and records everything it hears, anything you dictate meanwhile included; the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until a later version transcribes them. |
+| Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and records everything it hears, anything you dictate meanwhile included; the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until Vocula transcribes them on this Mac after the meeting; then the audio is deleted and the encrypted transcript kept. |
 | Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
@@ -112,10 +112,12 @@ to draw a level meter, so you can see that it hears you before you rely on it �
 macOS shows its orange dot for as long as it does, and the samples are measured
 and dropped. *Record Meeting (Beta)* keeps the microphone open until the meeting
 stops, records the sound other apps play through macOS's System Audio Recording
-permission, and keeps both on disk, encrypted under their own key, until a later
-version transcribes them — this version cannot delete a meeting inside the app.
+permission, and keeps both on disk, encrypted under their own key, until it has
+transcribed them on this Mac — then the audio is deleted and the encrypted
+transcript kept; this version cannot delete a meeting inside the app.
 Insertion goes through the system pasteboard for about a second, which other
-applications can read. All three are in [PRIVACY.md](PRIVACY.md), at length,
+applications can read, and *Copy Transcript* puts a meeting's transcript there
+as plain Markdown. All four are in [PRIVACY.md](PRIVACY.md), at length,
 along with what none of this protects you from.
 
 ## Install
@@ -166,10 +168,12 @@ silent recording, a refusal and a dead microphone all cost nothing.
   does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
   model, downloaded when you ask for it — by switching clean-up on, or with its
-  `Load` button. A recorded meeting takes about 230 MB an hour and is kept until
-  you delete it by hand: each of its two tracks is stored whole as 16 kHz mono
-  16-bit samples, the other apps' track through its silences too, which is about
-  115 MB per track per hour — computed from that format, not measured.
+  `Load` button. A recorded meeting takes about 230 MB an hour until it is
+  transcribed — each of its two tracks is stored whole as 16 kHz mono 16-bit
+  samples, the other apps' track through its silences too, which is about 115 MB
+  per track per hour, computed from that format, not measured — and then only its
+  transcript is kept, until you delete it by hand. Transcribing holds a second
+  copy of the recognition model in memory for as long as it runs.
 - Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, **Microphone**, and **System
@@ -226,7 +230,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1425 tests: 1082 from `swift test`, 325 in the hosted app bundle, 18 driving the
+1550 tests: 1189 from `swift test`, 343 in the hosted app bundle, 18 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
@@ -302,10 +306,20 @@ Stated here rather than discovered later.
   newer version exists. Settings → Permissions says so at the top. Quit Vocula,
   drag it by itself into Applications in the Finder (if it is already there, drag
   it out and back in), and open it from there.
-- **Record Meeting is a beta that only records.** This version cannot play back,
-  export, transcribe or delete a meeting inside the app. Every meeting stays in
-  `~/Library/Application Support/app.vocula.mac/Meetings/`, about 230 MB an
-  hour, until you delete that folder by hand, which deletes them all. A
+- **Record Meeting is a beta.** After a meeting ends, Vocula transcribes it on
+  this Mac into lines labelled *Me* (your microphone) and *Others* (everything
+  other apps played) — it does not tell the other speakers apart yet — and
+  deletes the audio; speech the model misses is lost with it, and so is a reply
+  of yours that repeats, two words or more in a row, what the other side just
+  said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
+  interrupted, keeps its audio until the next meeting you record ends. *Copy
+  Transcript* copies a transcript as Markdown, with or without your own lines
+  (*Include My Lines*); after Vocula restarts the item is absent until a meeting you record next
+  starts, because the meeting key is not read before then. This version cannot
+  play back, export to a file or delete a meeting inside the app: every
+  transcript, and the audio of any meeting not yet transcribed, stays in
+  `~/Library/Application Support/app.vocula.mac/Meetings/` until you delete that
+  folder by hand, which deletes them all. A
   Bluetooth headset's or an iPhone's microphone is never recorded in a meeting:
   when dictation uses one, the meeting records other apps alone.
 - **A meeting keeps the Mac awake.** While one records, Vocula holds an
@@ -369,7 +383,7 @@ FITNESS FOR A PARTICULAR PURPOSE. The full text is in [LICENSE](LICENSE), and
 a copy travels inside every build.
 
 There are no per-file copyright headers, deliberately. The licence is stated
-here and in `LICENSE`, which is what makes it binding; 220 files of boilerplate
+here and in `LICENSE`, which is what makes it binding; over three hundred files of boilerplate
 would add nothing legally and would contradict the rule this codebase is built
 on, that a comment must earn its place.
 

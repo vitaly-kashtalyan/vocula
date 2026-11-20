@@ -125,6 +125,8 @@ public final class DiagnosticLog: @unchecked Sendable {
     "meeting.micLost",
     "meeting.micReopened",
     "meeting.systemZeros",
+    "meeting.transcribed",
+    "meeting.transcribeFailed",
   ]
 
   enum FieldShape {
@@ -155,6 +157,13 @@ public final class DiagnosticLog: @unchecked Sendable {
     "kbd": .number,
     "recording": .number,
     "count": .number,
+    "meetings": .number,
+    "audioSeconds": .number,
+    "pieces": .number,
+    "utterances": .number,
+    "echoDropped": .number,
+    "skippedChunks": .number,
+    "tookSeconds": .number,
     "attempt": .number,
     "bytes": .number,
     "rate": .number,

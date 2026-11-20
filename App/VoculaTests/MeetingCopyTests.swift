@@ -13,6 +13,13 @@ import Testing
     ]
     + MeetingWarning.allCases.map(MenuCopy.meetingWarning)
     + MeetingNotice.allCases.map(MenuCopy.meetingNotice)
+    + [
+      MenuCopy.copyTranscript, MenuCopy.copyIncludesMe, MenuCopy.meetingSpeakerMe,
+      MenuCopy.meetingSpeakerOthers,
+      MenuCopy.meetingTranscribing(40), MenuCopy.transcriptUnreadable,
+      MenuCopy.meetingItemLabel(.transcribing),
+    ]
+    + MenuCopy.meetingTranscription(.finished(transcribed: 1, failed: 1))
 
   private func text(_ resource: LocalizedStringResource, in identifier: String) -> String {
     var resource = resource

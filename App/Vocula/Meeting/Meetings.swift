@@ -17,17 +17,23 @@ final class Meetings {
   private var recorder: MeetingRecorder?
   private var follower: Task<Void, Never>?
   private var signals: StreamFanout<DictationSignal>?
+  private let parts: MeetingTranscriptionParts
+  private var schedule = MeetingPassSchedule()
+  private(set) var pass: Task<Void, Never>?
+  private(set) var refreshing: Task<Void, Never>?
 
   init(
     diagnosticLog: @escaping @MainActor () -> DiagnosticLog?,
     status: MeetingStatusModel = MeetingStatusModel(),
     makeDependencies: @escaping MakeDependencies = { Meetings.live(log: $0, recover: $1) },
-    sleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
+    sleep: @escaping @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) },
+    transcription: MeetingTranscriptionParts = .live
   ) {
     self.diagnosticLog = diagnosticLog
     self.status = status
     self.makeDependencies = makeDependencies
     self.sleep = sleep
+    parts = transcription
   }
 
   var holdsAMeeting: Bool { recorder != nil || follower != nil }
@@ -49,6 +55,7 @@ final class Meetings {
       }
       dependencies.publish = { [weak self] in await self?.apply($0, of: meeting) }
       dependencies.ended = { [weak self] in await self?.ended(meeting) }
+      status.clearTranscriptionOutcome()
       let recorder = MeetingRecorder(dependencies)
       self.recorder = recorder
       if let signals { follow(signals) }
@@ -62,8 +69,33 @@ final class Meetings {
     guard meetingSwitch.isCurrent(meeting), !(new.isRecording && concluded == meeting) else {
       return
     }
+    let started = new.isRecording && !status.isRecording
     if new.isRecording { meetingSwitch.began(meeting) } else { concluded = meeting }
     status.update(new)
+    if started { refreshListing() }
+  }
+
+  @discardableResult
+  func copyTranscript(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
+    let read = parts.transcript
+    let log = diagnosticLog()
+    return Task {
+      guard let listing = status.transcripts.first(where: { $0.id == id }),
+        let transcript = await read(id, log)
+      else {
+        status.transcriptUnreadable()
+        return
+      }
+      let labels: [MeetingSpeaker: String] = [
+        .me: String(localized: MenuCopy.meetingSpeakerMe),
+        .others: String(localized: MenuCopy.meetingSpeakerOthers),
+      ]
+      parts.paste(
+        MeetingMarkdown.render(
+          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels,
+          includeMe: includeMe))
+      status.transcriptCopied()
+    }
   }
 
   func pipelineStarted(_ signals: StreamFanout<DictationSignal>) {
@@ -72,6 +104,8 @@ final class Meetings {
   }
 
   func stopForTermination() async {
+    schedule.terminate()
+    pass?.cancel()
     guard recorder != nil || stopping != nil else { return }
     let previous = stopping
     let recorder = recorder
@@ -97,7 +131,7 @@ final class Meetings {
     guard let store = makeStore() else { return nil }
     return MeetingRecorder.Dependencies(
       store: store,
-      cipher: { try MeetingKey.cipher() },
+      cipher: { try MeetingKey.cipher(mayMint: true) },
       makeMicrophone: { MeetingMicrophone(onEnded: $0) },
       makeSystemAudio: { SystemAudioTap() },
       holdPower: { MeetingPowerGuard.hold(onWillSleep: $0) },
@@ -133,6 +167,45 @@ final class Meetings {
       await follower?.value
       await recorder?.stop(.stopped)
       await previous?.value
+      await self.meetingEnded()
+    }
+  }
+
+  private func meetingEnded() async {
+    if status.notice != .cannotStart,
+      schedule.requested(recording: recorder != nil) == .start
+    {
+      await startPass()
+    }
+  }
+
+  private func startPass() async {
+    guard
+      let transcriber = parts.makeTranscriber(
+        diagnosticLog(), { [weak self] in await self?.status.update(transcription: $0) })
+    else {
+      await passEnded()
+      return
+    }
+    pass = Task {
+      await transcriber.run()
+      await self.passEnded()
+    }
+  }
+
+  private func passEnded() async {
+    pass = nil
+    refreshListing()
+    if schedule.passEnded(recording: recorder != nil) == .start {
+      await startPass()
+    }
+  }
+
+  private func refreshListing() {
+    let listing = parts.listing
+    let log = diagnosticLog()
+    refreshing = Task {
+      if let found = await listing(log) { status.update(transcripts: found) }
     }
   }
 }
