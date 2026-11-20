@@ -9901,6 +9901,126 @@
         }
       }
     },
+    "meeting.speaker.me" : {
+      "comment" : "Label of the user's own lines in a copied meeting transcript: what the microphone heard. Pasted as text wherever the user pastes it, often into an AI chat; one short word.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ich"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Me"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Yo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moi"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Io"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eu"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Я"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Я"
+          }
+        }
+      }
+    },
+    "meeting.speaker.others" : {
+      "comment" : "Label of the other participants' lines in a copied meeting transcript: what the other apps played, the people on the call. Pasted as text wherever the user pastes it; one short word.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Andere"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Others"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otros"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Autres"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Altri"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inni"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Outros"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Собеседники"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Співрозмовники"
+          }
+        }
+      }
+    },
     "meeting.status.autoStopSoon" : {
       "comment" : "Menu line in the last minute before the silence stop; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
@@ -10321,6 +10441,66 @@
         }
       }
     },
+    "meeting.status.labelTranscribing" : {
+      "comment" : "VoiceOver label of the meeting's menu bar item while recorded meetings are being turned into text. Spoken, never drawn. \"Vocula\" is never translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula transkribiert Meetings"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vocula is transcribing meetings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula está transcribiendo reuniones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula transcrit des réunions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula sta trascrivendo le riunioni"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula transkrybuje spotkania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O Vocula está transcrevendo reuniões"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula расшифровывает встречи"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vocula розшифровує зустрічі"
+          }
+        }
+      }
+    },
     "meeting.status.microphoneNotOpened" : {
       "comment" : "Menu line for the whole meeting: why the microphone is not recorded and what still is; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
@@ -10621,6 +10801,246 @@
         }
       }
     },
+    "meeting.status.transcribing" : {
+      "comment" : "Menu line while Vocula turns recorded meetings into text; the argument is how much is done, already formatted as a percent. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meetings werden transkribiert – %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Transcribing meetings — %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcribiendo reuniones — %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcription des réunions — %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trascrizione delle riunioni — %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transkrybowanie spotkań — %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcrevendo reuniões — %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Расшифровка встреч — %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Розшифровка зустрічей — %@"
+          }
+        }
+      }
+    },
+    "meeting.status.transcriptReady" : {
+      "comment" : "Menu line after recorded meetings were turned into text, which Copy Transcript now lists; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transkript bereit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Transcript ready"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcripción lista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcription prête"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trascrizione pronta"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transkrypcja gotowa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcrição pronta"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Расшифровка готова"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Розшифровка готова"
+          }
+        }
+      }
+    },
+    "meeting.status.transcriptUnreadable" : {
+      "comment" : "Menu line after the user chose a meeting in Copy Transcript and its saved text could not be opened, so nothing was copied; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieses Transkript konnte nicht gelesen werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This transcript could not be read."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo leer esta transcripción."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de lire cette transcription."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossibile leggere questa trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się odczytać tej transkrypcji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível ler esta transcrição."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось прочитать эту расшифровку."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вдалося прочитати цю розшифровку."
+          }
+        }
+      }
+    },
+    "meeting.status.transcriptionFailed" : {
+      "comment" : "Menu line when some recorded meetings could not be turned into text; their recordings are kept and retried after the next meeting ends. Also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einige Meetings konnten nicht transkribiert werden; Vocula versucht es nach dem nächsten Meeting erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Some meetings could not be transcribed; Vocula will try again after the next meeting."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Algunas reuniones no se pudieron transcribir; Vocula lo intentará de nuevo tras la próxima reunión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Certaines réunions n’ont pas pu être transcrites ; Vocula réessaiera après la prochaine réunion."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alcune riunioni non sono state trascritte; Vocula riproverà dopo la prossima riunione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się przetranskrybować niektórych spotkań; Vocula spróbuje ponownie po następnym spotkaniu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Algumas reuniões não puderam ser transcritas; o Vocula tentará de novo após a próxima reunião."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось расшифровать некоторые встречи; Vocula попробует снова после следующей встречи."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не вдалося розшифрувати деякі зустрічі; Vocula спробує знову після наступної зустрічі."
+          }
+        }
+      }
+    },
     "meeting.status.waitingForPermission" : {
       "comment" : "Menu line while macOS's own System Audio Recording dialog is unanswered; also spoken by VoiceOver when it appears. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
@@ -10677,6 +11097,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Очікування дозволу на запис інших програм. Дайте відповідь на запит macOS; тим часом записується ваш мікрофон."
+          }
+        }
+      }
+    },
+    "meeting.transcript.row" : {
+      "comment" : "One row of the Copy Transcript submenu: when the meeting started (date and time, already formatted), then how long it lasted (already formatted). Drawn on one menu line that does not wrap; keep the separator short.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · %2$@"
           }
         }
       }
@@ -10977,6 +11457,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Скопіювати останній текст"
+          }
+        }
+      }
+    },
+    "menu.item.copyTranscript" : {
+      "comment" : "Submenu in Vocula's menu bar menu and in the meeting's own menu bar menu; lists the meetings already turned into text, and choosing one copies its transcript. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transkript kopieren"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copy Transcript"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiar transcripción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copier la transcription"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copia trascrizione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kopiuj transkrypcję"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Copiar transcrição"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Скопировать расшифровку"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Скопіювати розшифровку"
           }
         }
       }
