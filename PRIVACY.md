@@ -185,7 +185,7 @@ and nothing deletes one on a timer. Deleting the `Meetings` folder deletes every
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
 
-*Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts the
+*Copy Transcript*, in Vocula's menu under *Record Meeting*, puts the
 transcript you choose on the clipboard as Markdown — a front-matter header with
 the meeting's start in UTC, its length and who spoke, then each line with its
 time from the start; with *Include My Lines* unticked, only the *Others* lines. After Vocula

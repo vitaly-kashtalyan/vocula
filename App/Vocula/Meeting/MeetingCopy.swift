@@ -33,7 +33,7 @@ extension MenuCopy {
   static let copyTranscript = LocalizedStringResource(
     "menu.item.copyTranscript", defaultValue: "Copy Transcript",
     comment:
-      "Submenu in Vocula's menu bar menu and in the meeting's own menu bar menu; lists the meetings already turned into text, and choosing one copies its transcript. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Submenu in Vocula's menu bar menu, under the item that records a meeting; lists the meetings already turned into text, and choosing one copies its transcript. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
   static let copyIncludesMe = LocalizedStringResource(
@@ -87,7 +87,7 @@ extension MenuCopy {
   static let transcriptUnreadable = LocalizedStringResource(
     "meeting.status.transcriptUnreadable", defaultValue: "This transcript could not be read.",
     comment:
-      "Menu line after the user chose a meeting in Copy Transcript and its saved text could not be opened, so nothing was copied; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Line in the meeting's own menu bar menu after the user chose a meeting in Copy Transcript, in Vocula's menu bar menu, and its saved text could not be opened, so nothing was copied; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
   private static let transcribingLabel = LocalizedStringResource(
@@ -99,7 +99,7 @@ extension MenuCopy {
   private static let transcriptReady = LocalizedStringResource(
     "meeting.status.transcriptReady", defaultValue: "Meeting transcript ready",
     comment:
-      "Menu line after recorded meetings were turned into text, which Copy Transcript now lists; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Line in the meeting's own menu bar menu after recorded meetings were turned into text, which Copy Transcript in Vocula's menu bar menu now lists; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
   private static let transcriptionFailed = LocalizedStringResource(

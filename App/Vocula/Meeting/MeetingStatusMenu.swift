@@ -35,7 +35,6 @@ struct MeetingStatusMenu: View {
     if meetings.status.canDismiss {
       Button(MenuCopy.dismissMeetingNotice) { meetings.dismiss() }
     }
-    CopyTranscriptMenu(meetings: meetings)
   }
 }
 
