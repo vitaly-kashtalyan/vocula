@@ -11,12 +11,8 @@ enum MeetingPieces {
     let carryFrom: Int?
   }
 
-  public static func lift(_ raw: [Int16]) -> [Float] {
-    PCMSamples.boostedIfQuiet(raw.map { Float($0) / 32767 })
-  }
-
   public static func buffer(carry: [Float], window: [Int16]) -> [Float] {
-    carry + lift(window)
+    carry + PCMSamples.boostedIfQuiet(window.map { Float($0) / 32767 })
   }
 
   public static func plan(segments: [SpeechSegment], count: Int, isLast: Bool) -> Plan {

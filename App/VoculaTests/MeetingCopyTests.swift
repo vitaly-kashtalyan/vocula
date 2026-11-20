@@ -8,7 +8,7 @@ import Testing
   static let lines: [LocalizedStringResource] =
     [
       MenuCopy.recordMeeting, MenuCopy.stopMeeting, MenuCopy.dismissMeetingNotice,
-      MenuCopy.meetingStatusLabel(recording: true), MenuCopy.meetingStatusLabel(recording: false),
+      MenuCopy.meetingItemLabel(.recording), MenuCopy.meetingItemLabel(.idle),
       MenuCopy.meetingSince(Date(timeIntervalSince1970: 1_000)),
     ]
     + MeetingWarning.allCases.map(MenuCopy.meetingWarning)

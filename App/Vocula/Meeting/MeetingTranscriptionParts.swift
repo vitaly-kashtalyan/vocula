@@ -5,7 +5,7 @@ import VoculaParakeet
 import VoculaWhisper
 
 struct MeetingTranscriptionParts {
-  typealias Publish = @Sendable (MeetingTranscription?) async -> Void
+  typealias Publish = @Sendable (MeetingTranscription) async -> Void
 
   var makeTranscriber:
     @MainActor (_ log: DiagnosticLog?, _ publish: @escaping Publish) -> MeetingTranscriber?

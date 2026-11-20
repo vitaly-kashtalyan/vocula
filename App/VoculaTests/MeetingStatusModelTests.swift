@@ -80,8 +80,8 @@ struct MeetingStatusModelTests {
     model.update(MeetingStatus())
     #expect(
       spoken.lines == [
-        String(localized: MenuCopy.meetingStatusLabel(recording: true)),
-        String(localized: MenuCopy.meetingStatusLabel(recording: false)),
+        String(localized: MenuCopy.meetingItemLabel(.recording)),
+        String(localized: MenuCopy.meetingItemLabel(.idle)),
       ])
   }
 
@@ -98,7 +98,7 @@ struct MeetingStatusModelTests {
       MeetingStatus(isRecording: true, startedAt: Date(), warnings: [.waitingForPermission]))
     #expect(
       spoken.lines == [
-        String(localized: MenuCopy.meetingStatusLabel(recording: true)) + "\n"
+        String(localized: MenuCopy.meetingItemLabel(.recording)) + "\n"
           + String(localized: MenuCopy.meetingWarning(.waitingForPermission))
       ])
   }
@@ -155,8 +155,8 @@ struct MeetingStatusModelTests {
   }
 
   @Test func theNoticeLabelDoesNotSayRecording() {
-    let recording = english(MenuCopy.meetingStatusLabel(recording: true))
-    let notice = english(MenuCopy.meetingStatusLabel(recording: false))
+    let recording = english(MenuCopy.meetingItemLabel(.recording))
+    let notice = english(MenuCopy.meetingItemLabel(.idle))
     #expect(recording == "Vocula is recording a meeting")
     #expect(notice != recording)
   }

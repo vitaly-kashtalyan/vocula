@@ -41,19 +41,26 @@ enum MeetingTranscriptBuilder {
   private static func withoutEcho(_ mine: [TimedText], of theirs: [TimedText])
     -> (kept: [TimedText], dropped: Int)
   {
+    let texts = theirs.map { normalized($0.text) }
     var used = Set<Int>()
+    var low = 0
     let echo = mine.map { word -> Bool in
       let text = normalized(word.text)
-      guard !text.isEmpty else { return false }
       let reach = (word.start - echoReach)...(word.end + echoReach)
-      guard
-        let match = theirs.indices.first(where: {
-          !used.contains($0) && reach.contains((theirs[$0].start + theirs[$0].end) / 2)
-            && normalized(theirs[$0].text) == text
-        })
-      else { return false }
-      used.insert(match)
-      return true
+      while low < theirs.count && theirs[low].end < reach.lowerBound { low += 1 }
+      guard !text.isEmpty else { return false }
+      var index = low
+      while index < theirs.count && theirs[index].start <= reach.upperBound {
+        let other = theirs[index]
+        if !used.contains(index), texts[index] == text,
+          reach.contains((other.start + other.end) / 2)
+        {
+          used.insert(index)
+          return true
+        }
+        index += 1
+      }
+      return false
     }
     var kept: [TimedText] = []
     var index = 0

@@ -69,6 +69,21 @@ import Testing
     #expect(result.echoDropped == 0)
   }
 
+  @Test func echoIsFoundLateInALongMeetingAndOnlyNearItsTime() {
+    let others = (0..<200).map { i in
+      TimedText(start: Double(i) * 0.5, end: Double(i) * 0.5 + 0.4, text: "w\(i)")
+    }
+    let me = [
+      TimedText(start: 75.1, end: 75.3, text: "w150"),
+      TimedText(start: 75.6, end: 75.8, text: "w151"),
+      TimedText(start: 80, end: 80.2, text: "w10"),
+      TimedText(start: 80.3, end: 80.5, text: "w11"),
+    ]
+    let result = build(me: me, others: others)
+    #expect(result.echoDropped == 2)
+    #expect(result.utterances.first { $0.speaker == .me }?.text == "w10 w11")
+  }
+
   @Test func oneOthersWordMatchesOnce() {
     let result = build(me: words("yes yes yes", from: 5.1), others: words("yes", from: 5))
     #expect(result.echoDropped == 0)

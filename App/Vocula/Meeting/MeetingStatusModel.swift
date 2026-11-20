@@ -51,8 +51,8 @@ final class MeetingStatusModel {
     tick(from: new.isRecording ? new.startedAt : nil)
     let spoken = MeetingStatusRules.announcements(from: old, to: new).map { announcement in
       switch announcement {
-      case .started: String(localized: MenuCopy.meetingStatusLabel(recording: true))
-      case .stopped: String(localized: MenuCopy.meetingStatusLabel(recording: false))
+      case .started: String(localized: MenuCopy.meetingItemLabel(.recording))
+      case .stopped: String(localized: MenuCopy.meetingItemLabel(.idle))
       case .warning(let warning): String(localized: MenuCopy.meetingWarning(warning))
       case .notice(let notice): String(localized: MenuCopy.meetingNotice(notice))
       }
@@ -75,7 +75,7 @@ final class MeetingStatusModel {
     }
   }
 
-  func update(transcription new: MeetingTranscription?) {
+  func update(transcription new: MeetingTranscription) {
     let old = transcription
     if transcription != new { transcription = new }
     refreshShown()

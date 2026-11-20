@@ -3,11 +3,6 @@ import Foundation
 struct MeetingWindow: Equatable, Sendable {
   public let start: Int
   public let samples: [Int16]
-
-  init(start: Int, samples: [Int16]) {
-    self.start = start
-    self.samples = samples
-  }
 }
 
 struct MeetingTrackWindows: Sendable {

@@ -68,12 +68,6 @@ import Testing
     #expect(MeetingPieces.padded([Float](repeating: 0.1, count: 9_000)).count == 9_000)
   }
 
-  @Test func aQuietWindowIsLifted() {
-    let quiet = (0..<16_000).map { Int16($0 % 2 == 0 ? 328 : -328) }
-    let lifted = MeetingPieces.lift(quiet)
-    #expect((lifted.map(abs).max() ?? 0) >= 0.29)
-  }
-
   @Test func aQuietWindowIsLiftedAfterALoudCarry() {
     let carry = [Float](repeating: 0.9, count: 100)
     let quiet = (0..<16_000).map { Int16($0 % 2 == 0 ? 328 : -328) }
@@ -84,6 +78,8 @@ import Testing
   }
 
   @Test func zerosAreNotLifted() {
-    #expect(MeetingPieces.lift([Int16](repeating: 0, count: 1_000)).allSatisfy { $0 == 0 })
+    #expect(
+      MeetingPieces.buffer(carry: [], window: [Int16](repeating: 0, count: 1_000))
+        .allSatisfy { $0 == 0 })
   }
 }

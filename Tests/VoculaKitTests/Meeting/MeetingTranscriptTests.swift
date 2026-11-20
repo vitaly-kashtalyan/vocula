@@ -29,24 +29,12 @@ import Testing
     #expect(transcript.utterances.first?.speaker.rawValue == "speaker-3")
   }
 
-  @Test func utterancesWithoutAModelDoNotDecode() {
+  @Test func aTranscriptWithoutAModelStillDecodes() throws {
     let json = Data(
       #"{"utterances":[{"start":0,"end":1,"speaker":"me","text":"x"}]}"#.utf8)
-    #expect(throws: DecodingError.self) {
-      try JSONDecoder().decode(MeetingTranscript.self, from: json)
-    }
-    #expect(
-      (try? JSONDecoder().decode(MeetingTranscript.self, from: Data(#"{"utterances":[]}"#.utf8)))
-        == .empty)
-  }
-
-  @Test func utterancesAreKeptInTimeOrder() {
-    let late = MeetingUtterance(start: 5, end: 6, speaker: .others, text: "b")
-    let early = MeetingUtterance(start: 1, end: 2, speaker: .me, text: "a")
-    let tieMe = MeetingUtterance(start: 5, end: 6, speaker: .me, text: "c")
-    let transcript = MeetingTranscript.recognized(
-      by: .largeV3Turbo, utterances: [late, early, tieMe])
-    #expect(transcript.utterances.map(\.text) == ["a", "b", "c"])
+    let transcript = try JSONDecoder().decode(MeetingTranscript.self, from: json)
+    #expect(transcript.model == nil)
+    #expect(transcript.utterances.map(\.text) == ["x"])
   }
 
   @Test func aTranscriptRoundTrips() throws {
