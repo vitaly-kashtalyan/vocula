@@ -36,6 +36,8 @@ public actor ParakeetMeetingRecognizer: MeetingRecognizing {
     let words = buildWordTimings(from: result.tokenTimings ?? []).map {
       TimedText(start: $0.startTime, end: $0.endTime, text: $0.word)
     }
+    guard !words.isEmpty || result.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    else { throw MeetingFailure.failed(step: "parakeet", code: 0) }
     return (words, result.text)
   }
 

@@ -8,12 +8,16 @@ final class RecognizerLog: @unchecked Sendable {
   private var madeCount = 0
   private var releasedCount = 0
   private var sizes: [Int] = []
+  private var moments: [UInt64] = []
   var failures: [Int: any Error] = [:]
   var stall: TestClock?
+  var clock: TestClock?
+  var onCall: (@Sendable (Int) async -> Void)?
 
   var made: Int { lock.withLock { madeCount } }
   var released: Int { lock.withLock { releasedCount } }
   var calls: [Int] { lock.withLock { sizes } }
+  var times: [UInt64] { lock.withLock { moments } }
 
   func didMake() { lock.withLock { madeCount += 1 } }
   func didRelease() { lock.withLock { releasedCount += 1 } }
@@ -21,6 +25,7 @@ final class RecognizerLog: @unchecked Sendable {
   func called(_ size: Int) throws -> Int {
     try lock.withLock {
       sizes.append(size)
+      moments.append(clock?.now() ?? 0)
       if let failure = failures[sizes.count] { throw failure }
       return sizes.count
     }
@@ -39,6 +44,7 @@ final class PassRecognizer: MeetingRecognizing, @unchecked Sendable {
 
   func recognize(_ samples: [Float], languages: LanguageSelection) async throws -> [TimedText] {
     let call = try log.called(samples.count)
+    await log.onCall?(call)
     if let clock = log.stall { try await clock.sleep(for: .seconds(3_600)) }
     return [TimedText(start: 0.1, end: 0.3, text: "w\(call)")]
   }
@@ -49,11 +55,14 @@ final class DetectorLog: @unchecked Sendable {
   private var madeCount = 0
   private var releasedCount = 0
   private var callCount = 0
+  private var moments: [UInt64] = []
   var failures: [Int: any Error] = [:]
   var always: (any Error)?
+  var clock: TestClock?
 
   var made: Int { lock.withLock { madeCount } }
   var released: Int { lock.withLock { releasedCount } }
+  var times: [UInt64] { lock.withLock { moments } }
 
   func didMake() { lock.withLock { madeCount += 1 } }
   func didRelease() { lock.withLock { releasedCount += 1 } }
@@ -61,6 +70,7 @@ final class DetectorLog: @unchecked Sendable {
   func called() throws {
     try lock.withLock {
       callCount += 1
+      moments.append(clock?.now() ?? 0)
       if let always { throw always }
       if let failure = failures[callCount] { throw failure }
     }
@@ -79,15 +89,21 @@ final class PassDetector: SpeechDetecting, @unchecked Sendable {
 
   func markup(_ samples: [Float]) async throws -> SpeechMarkup {
     try log.called()
-    let total = Duration.milliseconds(samples.count / 16)
-    guard let first = samples.firstIndex(where: { $0 != 0 }),
-      let last = samples.lastIndex(where: { $0 != 0 })
-    else { return SpeechMarkup(segments: [], totalDuration: total) }
-    return SpeechMarkup(
-      segments: [
-        SpeechSegment(
-          start: .milliseconds(first / 16), end: .milliseconds((last + 1) / 16), probability: 0.9)
-      ], totalDuration: total)
+    var segments: [SpeechSegment] = []
+    var start: Int?
+    for (index, sample) in samples.enumerated() {
+      if sample != 0, start == nil { start = index }
+      if sample == 0, let from = start {
+        segments.append(segment(from, index))
+        start = nil
+      }
+    }
+    if let from = start { segments.append(segment(from, samples.count)) }
+    return SpeechMarkup(segments: segments, totalDuration: .milliseconds(samples.count / 16))
+  }
+
+  private func segment(_ from: Int, _ to: Int) -> SpeechSegment {
+    SpeechSegment(start: .milliseconds(from / 16), end: .milliseconds(to / 16), probability: 0.9)
   }
 }
 
@@ -147,6 +163,18 @@ final class TranscriberRig: @unchecked Sendable {
   }
 
   func run() async { await transcriber().run() }
+
+  func drive(_ pass: Task<Void, Never>) async {
+    let done = Published()
+    Task {
+      await pass.value
+      done.add(nil)
+    }
+    while done.all.isEmpty {
+      if clock.parked > 0 { clock.advance(by: .seconds(1)) }
+      await Task.yield()
+    }
+  }
 
   func speech(at seconds: Double, for length: Double, value: Int16 = 1_000) -> MeetingRun {
     MeetingRun(
@@ -369,13 +397,45 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
   }
 
-  @Test func aCorruptChunkIsSkippedAndCounted() async throws {
+  @Test("ACCEPTED COST: a chunk that will not open is lost with the audio")
+  func aCorruptChunkIsSkippedAndCounted() async throws {
     let rig = TranscriberRig()
     let header = try rig.meeting(
       mic: [rig.speech(at: 0.5, for: 1)], raw: ["audio/mic-000001.sealed": Data("junk".utf8)])
     await rig.run()
     #expect(await rig.transcript(of: header) != nil)
+    #expect(!rig.hasAudio(header))
     #expect(rig.lines("meeting.transcribed").first?.contains("skippedChunks=1") == true)
+  }
+
+  @Test func aDictationBetweenPiecesHoldsTheNextPiece() async throws {
+    let rig = TranscriberRig()
+    rig.recognizers.clock = rig.clock
+    try rig.meeting(lasting: 8, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 4, for: 1)])
+    let hold = rig.hold
+    rig.recognizers.onCall = { call in
+      guard call == 1 else { return }
+      await hold.received(.start(session: 1))
+      await hold.received(.stop(session: 1, reason: .releasedHold))
+    }
+    await rig.drive(Task { await rig.run() })
+    #expect(rig.recognizers.times.count == 2)
+    #expect((rig.recognizers.times.last ?? 0) >= 30 * rig.s)
+  }
+
+  @Test func aDictationBetweenWindowsHoldsTheNextWindow() async throws {
+    let rig = TranscriberRig()
+    rig.detectors.clock = rig.clock
+    try rig.meeting(lasting: 70, mic: [rig.speech(at: 0.5, for: 1), rig.speech(at: 62, for: 1)])
+    let hold = rig.hold
+    rig.recognizers.onCall = { call in
+      guard call == 1 else { return }
+      await hold.received(.start(session: 1))
+      await hold.received(.stop(session: 1, reason: .releasedHold))
+    }
+    await rig.drive(Task { await rig.run() })
+    #expect(rig.detectors.times.count == 2)
+    #expect((rig.detectors.times.last ?? 0) >= 30 * rig.s)
   }
 
   @Test func aWholeCorruptTrackFailsTheMeeting() async throws {
@@ -495,8 +555,10 @@ final class TranscriberRig: @unchecked Sendable {
     await rig.run()
     let lines = rig.lines("meeting.transcribed")
     #expect(lines.count == 1)
-    #expect(lines.first?.hasPrefix("meetings=2 ") == true)
-    #expect(lines.first?.contains("model=largeV3Turbo") == true)
+    #expect(
+      lines.first
+        == "meetings=2 audioSeconds=3 pieces=2 utterances=2 echoDropped=0 skippedChunks=0"
+        + " pausedSeconds=0 tookSeconds=0 model=largeV3Turbo")
   }
 
   @Test func aRemoveFailureStillCountsAsTranscribed() async throws {

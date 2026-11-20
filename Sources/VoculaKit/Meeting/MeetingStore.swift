@@ -79,12 +79,20 @@ public actor MeetingStore {
       guard let header = header(of: id, cipher: cipher), header.state == .recorded else {
         return nil
       }
-      guard FileManager.default.fileExists(atPath: transcriptURL(id).path) else {
-        let names = try? MeetingTrack.allCases.flatMap {
-          try Self.chunkURLs(of: $0, in: audioDirectory(id))
+      switch Self.presence(of: transcriptURL(id)) {
+      case .unknown:
+        return nil
+      case .absent:
+        do {
+          let names = try MeetingTrack.allCases.flatMap {
+            try Self.chunkURLs(of: $0, in: audioDirectory(id))
+          }
+          return MeetingWork(header: header, kind: names.isEmpty ? .emptyTranscript : .recognize)
+        } catch {
+          return MeetingWork(header: header, kind: .recognize)
         }
-        return MeetingWork(
-          header: header, kind: names?.isEmpty == true ? .emptyTranscript : .recognize)
+      case .present:
+        break
       }
       guard (try? transcript(of: id, cipher: cipher)) != nil,
         FileManager.default.fileExists(atPath: audioDirectory(id).path)
@@ -161,6 +169,19 @@ public actor MeetingStore {
     } catch CocoaError.fileNoSuchFile {
     } catch {
       throw MeetingStoreError.failed(step: "remove", code: (error as NSError).code)
+    }
+  }
+
+  private enum Presence { case absent, present, unknown }
+
+  private static func presence(of url: URL) -> Presence {
+    do {
+      _ = try FileManager.default.attributesOfItem(atPath: url.path)
+      return .present
+    } catch CocoaError.fileReadNoSuchFile {
+      return .absent
+    } catch {
+      return .unknown
     }
   }
 

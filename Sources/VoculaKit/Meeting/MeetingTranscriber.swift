@@ -8,9 +8,22 @@ public struct MeetingModel: Equatable, Sendable {
   public let model: ModelID
   public let languages: LanguageSelection
 
-  public init(model: ModelID, languages: LanguageSelection) {
+  public init?(model: ModelID, languages: LanguageSelection) {
+    guard ModelManifest.transcriptionModels.contains(model) else { return nil }
     self.model = model
     self.languages = languages
+  }
+
+  public var family: ModelFamily { ModelManifest.descriptor(for: model).family }
+
+  public static func choose(
+    selected: ModelID, languages: LanguageSelection, isReady: (ModelID) -> Bool
+  ) -> MeetingModel? {
+    guard isReady(.speechDetector),
+      let model = EngineFallback.running(
+        selected: selected, languages: languages.codes, isReady: isReady)
+    else { return nil }
+    return MeetingModel(model: model, languages: languages)
   }
 }
 

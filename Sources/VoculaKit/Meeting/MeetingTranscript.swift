@@ -27,7 +27,7 @@ public struct TimedText: Equatable, Sendable {
 
   public init(start: Double, end: Double, text: String) {
     self.start = start
-    self.end = end
+    self.end = max(start, end)
     self.text = text
   }
 }
