@@ -89,8 +89,8 @@ again once that one ends, from the beginning of the meeting it was on. Quitting
 Vocula stops it too, and a meeting that ended because you quit is not
 transcribed then: both wait, audio and all, until the next meeting you record
 ends. Once a meeting's transcript is written and read back, its audio is
-deleted, and speech the model missed or misheard — including speech in a
-language you have not ticked — is gone with it, as is any piece of the
+deleted, and speech the model missed or misheard — with Whisper, including
+speech in a language you have not ticked — is gone with it, as is any piece of the
 recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts
 are kept, under which key, and how to delete them.
 
@@ -185,8 +185,9 @@ History switch does not apply to meetings, and neither does deleting history —
 day or everything — nor the one-year retention.
 
 *Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts the
-transcript you choose on the clipboard as plain Markdown, leaving out what you
-dictated during it. After Vocula restarts it lists nothing until you next record
+transcript you choose on the clipboard as plain Markdown — the meeting's start
+in UTC and its length at the top, then each line with its time from the start —
+leaving out what you dictated during it. After Vocula restarts it lists nothing until you next record
 a meeting, because the meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
 encryption does not follow it.
 
@@ -205,7 +206,8 @@ languages is outside the 25 that Parakeet hears. A meeting writes a line when it
 starts and one when it stops, saying why it stopped and how many seconds each
 track recorded and held sound; a line when it closes an earlier meeting that was
 cut off, when it lets the Mac go to sleep, and when it loses the microphone or
-opens it again; each transcription pass that transcribed anything writes one line
+opens it again; each transcription pass that recognised any audio or wrote a
+transcript writes one line
 saying how many meetings it transcribed, how many seconds of audio and pieces it
 went through, how many lines the transcripts hold and how many of yours were
 dropped as echo, how many pieces of audio it could not open, how long it took

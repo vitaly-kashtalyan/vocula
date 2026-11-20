@@ -117,7 +117,7 @@ transcribed them on this Mac — then the audio is deleted and the encrypted
 transcript kept; this version cannot delete a meeting inside the app.
 Insertion goes through the system pasteboard for about a second, which other
 applications can read, and *Copy Transcript* puts a meeting's transcript there
-as plain Markdown. All three are in [PRIVACY.md](PRIVACY.md), at length,
+as plain Markdown. All four are in [PRIVACY.md](PRIVACY.md), at length,
 along with what none of this protects you from.
 
 ## Install
@@ -314,8 +314,8 @@ Stated here rather than discovered later.
   as echo. A meeting ended by quitting Vocula, or one whose transcription a quit
   interrupted, keeps its audio until the next meeting you record ends. *Copy
   Transcript* copies a transcript as Markdown, without what you dictated during
-  it; after Vocula restarts it lists nothing until you next choose *Record
-  Meeting*, because the meeting key is not read before then. This version cannot
+  it; after Vocula restarts it lists nothing until a meeting you record next
+  starts, because the meeting key is not read before then. This version cannot
   play back, export to a file or delete a meeting inside the app: every
   transcript, and the audio of any meeting not yet transcribed, stays in
   `~/Library/Application Support/app.vocula.mac/Meetings/` until you delete that
@@ -383,7 +383,7 @@ FITNESS FOR A PARTICULAR PURPOSE. The full text is in [LICENSE](LICENSE), and
 a copy travels inside every build.
 
 There are no per-file copyright headers, deliberately. The licence is stated
-here and in `LICENSE`, which is what makes it binding; 220 files of boilerplate
+here and in `LICENSE`, which is what makes it binding; over three hundred files of boilerplate
 would add nothing legally and would contradict the rule this codebase is built
 on, that a comment must earn its place.
 
