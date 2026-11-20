@@ -201,11 +201,12 @@ struct MeetingStatusModelTests {
     #expect(model.statusItemShown)
   }
 
-  @Test func anUnreadableCopyIsShownAndAnnouncedOnce() {
+  @Test func everyUnreadableCopyIsAnnounced() {
     let (model, spoken) = make()
     model.transcriptUnreadable()
     model.transcriptUnreadable()
-    #expect(spoken.lines == [String(localized: MenuCopy.transcriptUnreadable)])
+    #expect(
+      spoken.lines == Array(repeating: String(localized: MenuCopy.transcriptUnreadable), count: 2))
     #expect(model.statusItemShown)
     #expect(model.symbol == MeetingStatusRules.warningSymbol)
     model.dismiss()

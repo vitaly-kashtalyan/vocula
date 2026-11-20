@@ -86,9 +86,10 @@ final class Meetings {
   @discardableResult
   func copyTranscript(_ id: UUID) -> Task<Void, Never> {
     let read = parts.transcript
+    let log = diagnosticLog()
     return Task {
       guard let listing = status.transcripts.first(where: { $0.id == id }),
-        let transcript = await read(id)
+        let transcript = await read(id, log)
       else {
         status.transcriptUnreadable()
         return
@@ -100,6 +101,7 @@ final class Meetings {
       parts.paste(
         MeetingMarkdown.render(
           transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels))
+      status.transcriptCopied()
     }
   }
 
@@ -138,7 +140,7 @@ final class Meetings {
     guard let store = makeStore() else { return nil }
     return MeetingRecorder.Dependencies(
       store: store,
-      cipher: { try MeetingKey.cipher() },
+      cipher: { try MeetingKey.cipher(mayMint: true) },
       makeMicrophone: { MeetingMicrophone(onEnded: $0) },
       makeSystemAudio: { SystemAudioTap() },
       holdPower: { MeetingPowerGuard.hold(onWillSleep: $0) },
@@ -214,9 +216,10 @@ final class Meetings {
   }
 
   private func dropHoldIfIdle() async {
-    guard recorder == nil, pass == nil, schedule.isIdle, let follower = holdFollower else { return }
-    holdFollower = nil
+    guard recorder == nil, pass == nil, schedule.isIdle else { return }
     hold = nil
+    guard let follower = holdFollower else { return }
+    holdFollower = nil
     follower.cancel()
     await follower.value
   }

@@ -82,6 +82,8 @@ public actor MeetingHoldGate {
     hold.streamEnded(at: now())
   }
 
+  var isHeld: Bool { hold.clearsAt(now()) != nil }
+
   public func waitUntilClear() async -> Duration {
     let began = now()
     while let until = hold.clearsAt(now()) {

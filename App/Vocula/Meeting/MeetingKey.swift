@@ -43,7 +43,7 @@ enum MeetingKey {
   static func cipher(
     keychain: MeetingKeychain = .system,
     isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy,
-    mayMint: Bool = true
+    mayMint: Bool
   ) throws -> MeetingSeal {
     if isSecondCopy { throw MeetingFailure.secondCopy }
     var lookup = query()

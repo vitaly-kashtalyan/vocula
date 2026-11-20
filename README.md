@@ -309,9 +309,15 @@ Stated here rather than discovered later.
 - **Record Meeting is a beta.** After a meeting ends, Vocula transcribes it on
   this Mac into lines labelled *Me* (your microphone) and *Others* (everything
   other apps played) — it does not tell the other speakers apart yet — and
-  deletes the audio; speech the model misses is lost with it. *Copy Transcript*
-  copies a transcript as Markdown. This version cannot play back, export to a
-  file or delete a meeting inside the app: every transcript stays in
+  deletes the audio; speech the model misses is lost with it, and so is a reply
+  of yours that mostly repeats what the other side just said, which is dropped
+  as echo. A meeting ended by quitting Vocula, or one whose transcription a quit
+  interrupted, keeps its audio until the next meeting you record ends. *Copy
+  Transcript* copies a transcript as Markdown, without what you dictated during
+  it; after Vocula restarts it lists nothing until you next choose *Record
+  Meeting*, because the meeting key is not read before then. This version cannot
+  play back, export to a file or delete a meeting inside the app: every
+  transcript, and the audio of any meeting not yet transcribed, stays in
   `~/Library/Application Support/app.vocula.mac/Meetings/` until you delete that
   folder by hand, which deletes them all. A
   Bluetooth headset's or an iPhone's microphone is never recorded in a meeting:

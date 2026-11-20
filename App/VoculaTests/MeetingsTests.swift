@@ -212,14 +212,17 @@ private final class PassProbe {
   var listing: [MeetingListing]?
   var transcript: MeetingTranscript?
   var pasted: [String] = []
+  var holds: [MeetingHoldGate] = []
   let cipherGate = Latch()
 
   func parts(store: MeetingStore) -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeHold: {
-        MeetingHoldGate(
+      makeHold: { [self] in
+        let hold = MeetingHoldGate(
           hold: DictationHold(passDeadline: { _ in .zero }, refineWait: { nil }),
           now: { 0 }, sleep: { try await Task.sleep(for: $0) })
+        holds.append(hold)
+        return hold
       },
       makeTranscriber: { [self] log, hold, publish in
         made += 1
@@ -237,7 +240,7 @@ private final class PassProbe {
             sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))
       },
       listing: { [self] _ in await self.listing },
-      transcript: { [self] _ in await self.transcript },
+      transcript: { [self] _, _ in await self.transcript },
       paste: { [self] in pasted.append($0) })
   }
 }
@@ -454,9 +457,33 @@ struct MeetingsTests {
     #expect(rig.meetings.status.transcripts == [listing])
   }
 
+  @Test func dictationSignalsReachTheHold() async throws {
+    let rig = Rig()
+    rig.meetings.pipelineStarted(rig.fanout)
+    try await rig.record()
+    let hold = try #require(rig.passes.holds.last)
+    rig.fanout.emit(.start(session: 1))
+    var waited = 0
+    while await !hold.isHeld, waited < 200 {
+      try await Task.sleep(for: .milliseconds(5))
+      waited += 1
+    }
+    #expect(await hold.isHeld)
+    rig.fanout.emit(.stop(session: 1, reason: .releasedHold))
+    waited = 0
+    while await hold.isHeld, waited < 200 {
+      try await Task.sleep(for: .milliseconds(5))
+      waited += 1
+    }
+    #expect(await !hold.isHeld)
+    await finishes(rig.meetings.toggle())
+    #expect(rig.fanout.subscriberCount == 0)
+  }
+
   @Test func copyPutsMarkdownOnThePasteboard() async {
     let rig = Rig()
     let id = UUID()
+    rig.meetings.status.transcriptUnreadable()
     rig.meetings.status.update(transcripts: [
       MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
     ])
@@ -471,6 +498,7 @@ struct MeetingsTests {
     #expect(rig.passes.pasted.first?.hasPrefix("---\ndate: 1970-01-01T00:00:00Z\n") == true)
     #expect(rig.passes.pasted.first?.contains("**\(me)** [00:00:01]: hello") == true)
     #expect(!rig.meetings.status.copyFailed)
+    #expect(!rig.meetings.status.statusItemShown)
   }
 
   @Test func anUnreadableCopyIsShown() async {
@@ -510,6 +538,7 @@ struct MeetingsTests {
     await finishes(rig.meetings.stopping)
     #expect(!rig.meetings.holdsAMeeting)
     #expect(rig.meetings.status.statusItemShown)
+    #expect(rig.passes.made == 0)
   }
 
   @Test func aStatusTrailingTheFinalOneIsDropped() async throws {
@@ -559,7 +588,7 @@ struct MeetingsTests {
 
   @Test func aSecondCopyListsNoTranscripts() async {
     #expect(await MeetingTranscriptionParts.liveListing(log: nil) == nil)
-    #expect(await MeetingTranscriptionParts.liveTranscript(UUID()) == nil)
+    #expect(await MeetingTranscriptionParts.liveTranscript(UUID(), log: nil) == nil)
   }
 
   @Test func aSecondCopyCreatesNoStore() {

@@ -15,7 +15,7 @@ extension MenuCopy {
   static let dismissMeetingNotice = LocalizedStringResource(
     "menu.item.dismissMeetingNotice", defaultValue: "Dismiss",
     comment:
-      "Item in the meeting's menu bar menu after the meeting ended; hides that menu bar item. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Item in the meeting's menu bar menu after a meeting ended, after recorded meetings were turned into text, or after a transcript could not be read; clears those lines, and hides that menu bar item unless meetings are still being turned into text. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
   static func meetingStatusLabel(recording: Bool) -> LocalizedStringResource {
@@ -91,7 +91,7 @@ extension MenuCopy {
   )
 
   private static let transcriptReady = LocalizedStringResource(
-    "meeting.status.transcriptReady", defaultValue: "Transcript ready",
+    "meeting.status.transcriptReady", defaultValue: "Meeting transcript ready",
     comment:
       "Menu line after recorded meetings were turned into text, which Copy Transcript now lists; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
@@ -141,7 +141,7 @@ extension MenuCopy {
   private static let meetingLabelNotice = LocalizedStringResource(
     "meeting.status.labelNotice", defaultValue: "Vocula is not recording a meeting",
     comment:
-      "VoiceOver label of the meeting's menu bar item after a meeting ended or failed to start, while the item still says why; also announced by VoiceOver when the user stops a meeting. Spoken, never drawn. \"Vocula\" is never translated."
+      "VoiceOver label of the meeting's menu bar item when no meeting records and none is being turned into text, while the item still says why it is there: a meeting ended or failed to start, a transcript is ready, or one could not be made or read. Also announced by VoiceOver when the user stops a meeting. Spoken, never drawn. \"Vocula\" is never translated."
   )
   private static let waitingForPermission = LocalizedStringResource(
     "meeting.status.waitingForPermission",

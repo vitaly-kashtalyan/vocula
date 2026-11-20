@@ -81,10 +81,17 @@ everything this Mac plays, from every app, except Vocula's own sounds.
 earlier meeting still waiting, using its own copy of the recognition model
 dictation uses — loaded only while it transcribes, and nothing is sent anywhere.
 What your microphone heard becomes lines labelled *Me*, what other apps played
-lines labelled *Others*. It waits while you dictate, stops when you record
-another meeting, and carries on after that one. Once a meeting's transcript is
-written and read back, its audio is deleted, and speech the model missed or
-misheard is gone with it. *Recorded meetings*, below, says where the transcripts
+lines labelled *Others*. A line of yours whose words mostly repeat what other
+apps played within a second and a half is left out, as the call heard back
+through your speakers — so a short reply that echoes the other side can be lost.
+It waits while you dictate. It stops when you record another meeting and starts
+again once that one ends, from the beginning of the meeting it was on. Quitting
+Vocula stops it too, and a meeting that ended because you quit is not
+transcribed then: both wait, audio and all, until the next meeting you record
+ends. Once a meeting's transcript is written and read back, its audio is
+deleted, and speech the model missed or misheard — including speech in a
+language you have not ticked — is gone with it, as is any piece of the
+recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts
 are kept, under which key, and how to delete them.
 
 ## Putting the text in place
@@ -177,9 +184,10 @@ and nothing deletes one on a timer. Deleting the `Meetings` folder deletes every
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
 
-*Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts a
-meeting's transcript on the clipboard as plain Markdown, leaving out what you
-dictated during it. From there it is yours, like anything you copy: Vocula's
+*Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts the
+transcript you choose on the clipboard as plain Markdown, leaving out what you
+dictated during it. After Vocula restarts it lists nothing until you next record
+a meeting, because the meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
 encryption does not follow it.
 
 **A diagnostic log**, `diagnostics.json`, is **not** encrypted, and this is
@@ -197,10 +205,12 @@ languages is outside the 25 that Parakeet hears. A meeting writes a line when it
 starts and one when it stops, saying why it stopped and how many seconds each
 track recorded and held sound; a line when it closes an earlier meeting that was
 cut off, when it lets the Mac go to sleep, and when it loses the microphone or
-opens it again; each transcription pass writes one line saying how many meetings
-it transcribed, how many seconds of audio and pieces it went through, how long it
-took and waited for dictation, and which model it used — never the text; and a
-line for each other problem it ran into. It holds the last 2,000 events.
+opens it again; each transcription pass that transcribed anything writes one line
+saying how many meetings it transcribed, how many seconds of audio and pieces it
+went through, how many lines the transcripts hold and how many of yours were
+dropped as echo, how many pieces of audio it could not open, how long it took
+and waited for dictation, and which model it used — never the text; and a line
+for each other problem it ran into. It holds the last 2,000 events.
 "Reveal the Diagnostic Log in Finder" in the menu takes you to it.
 
 ## What leaves this Mac
@@ -262,7 +272,8 @@ advertising:
 
 - **Someone using your unlocked Mac.** The key is available to the app while you
   are logged in, so anyone sitting at your machine can read your history in the
-  app, exactly as you can.
+  app, and copy any listed meeting transcript from the menu bar, exactly as you
+  can.
 - **Software running as you with sufficient privilege.** The encryption raises
   the cost considerably, but a program that can drive the Keychain prompt or
   read this app's memory is a different class of problem.
@@ -276,7 +287,8 @@ off; the measures here protect one that is running.
 
 Delete the app, then delete
 `~/Library/Application Support/app.vocula.mac/` — that folder holds the
-history, the recorded meetings, the diagnostic log and the downloaded models —
+history, the recorded meetings and their transcripts, the diagnostic log and the
+downloaded models —
 and `~/Library/Caches/app.vocula.mac/`, where an update is unpacked before it is
 installed. The Keychain holds two keys under `app.vocula.mac`, accounts
 `history` and `meetings`; both can be removed in Keychain Access, and without

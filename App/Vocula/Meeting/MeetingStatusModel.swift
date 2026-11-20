@@ -90,10 +90,15 @@ final class MeetingStatusModel {
   }
 
   func transcriptUnreadable() {
-    guard !copyFailed else { return }
-    copyFailed = true
+    if !copyFailed { copyFailed = true }
     refreshShown()
     announce(String(localized: MenuCopy.transcriptUnreadable))
+  }
+
+  func transcriptCopied() {
+    guard copyFailed else { return }
+    copyFailed = false
+    refreshShown()
   }
 
   func clearTranscriptionOutcome() {

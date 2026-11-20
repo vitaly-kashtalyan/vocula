@@ -91,6 +91,16 @@ struct MeetingTranscriptionSlowTests {
     #expect(transcript.utterances.allSatisfy { !$0.text.isEmpty })
     #expect(transcript.utterances.first.map { $0.start >= 1 && $0.start < 3 } == true)
     #expect(transcript.utterances.last.map { $0.start >= 6 && $0.start < 8 } == true)
+    #expect(transcript.utterances.first.map { latin($0.text) } == true)
+    #expect(transcript.utterances.last.map { cyrillic($0.text) } == true)
+  }
+
+  private func latin(_ text: String) -> Bool {
+    text.unicodeScalars.contains { ("a"..."z").contains($0) || ("A"..."Z").contains($0) }
+  }
+
+  private func cyrillic(_ text: String) -> Bool {
+    text.unicodeScalars.contains { (0x0400...0x04FF).contains($0.value) }
   }
 
   @Test func parakeetTurnsItIntoMeThenOthers() async throws {
@@ -99,6 +109,8 @@ struct MeetingTranscriptionSlowTests {
     }
     #expect(transcript.utterances.map(\.speaker) == [.me, .others])
     #expect(transcript.utterances.allSatisfy { !$0.text.isEmpty })
+    #expect(transcript.utterances.first.map { latin($0.text) } == true)
+    #expect(transcript.utterances.last.map { cyrillic($0.text) } == true)
   }
 }
 

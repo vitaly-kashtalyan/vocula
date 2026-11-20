@@ -10382,7 +10382,7 @@
       }
     },
     "meeting.status.labelNotice" : {
-      "comment" : "VoiceOver label of the meeting's menu bar item after a meeting ended or failed to start, while the item still says why; also announced by VoiceOver when the user stops a meeting. Spoken, never drawn. \"Vocula\" is never translated.",
+      "comment" : "VoiceOver label of the meeting's menu bar item when no meeting records and none is being turned into text, while the item still says why it is there: a meeting ended or failed to start, a transcript is ready, or one could not be made or read. Also announced by VoiceOver when the user stops a meeting. Spoken, never drawn. \"Vocula\" is never translated.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10868,55 +10868,55 @@
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transkript bereit"
+            "value" : "Meeting-Transkript bereit"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Transcript ready"
+            "value" : "Meeting transcript ready"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transcripción lista"
+            "value" : "Transcripción de la reunión lista"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transcription prête"
+            "value" : "Transcription de la réunion prête"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Trascrizione pronta"
+            "value" : "Trascrizione della riunione pronta"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transkrypcja gotowa"
+            "value" : "Transkrypcja spotkania gotowa"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transcrição pronta"
+            "value" : "Transcrição da reunião pronta"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Расшифровка готова"
+            "value" : "Расшифровка встречи готова"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Розшифровка готова"
+            "value" : "Розшифровка зустрічі готова"
           }
         }
       }
@@ -11582,7 +11582,7 @@
       }
     },
     "menu.item.dismissMeetingNotice" : {
-      "comment" : "Item in the meeting's menu bar menu after the meeting ended; hides that menu bar item. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "comment" : "Item in the meeting's menu bar menu after a meeting ended, after recorded meetings were turned into text, or after a transcript could not be read; clears those lines, and hides that menu bar item unless meetings are still being turned into text. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
