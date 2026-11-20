@@ -494,7 +494,7 @@ struct MeetingsTests {
       MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
     ])
     rig.passes.transcript = MeetingTranscript(
-      model: nil,
+      model: "largeV3Turbo",
       utterances: [
         MeetingUtterance(start: 1, end: 2, speaker: .me, text: "hello", dictation: false)
       ])

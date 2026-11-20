@@ -72,8 +72,23 @@ public struct MeetingTranscript: Codable, Equatable, Sendable {
     MeetingTranscript(model: model.rawValue, utterances: utterances)
   }
 
+  private enum CodingKeys: String, CodingKey { case model, utterances }
+
   init(model: String?, utterances: [MeetingUtterance]) {
     self.model = model
-    self.utterances = utterances
+    self.utterances = utterances.enumerated().sorted {
+      ($0.element.start, $0.offset) < ($1.element.start, $1.offset)
+    }.map(\.element)
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let fields = try decoder.container(keyedBy: CodingKeys.self)
+    let model = try fields.decodeIfPresent(String.self, forKey: .model)
+    let utterances = try fields.decode([MeetingUtterance].self, forKey: .utterances)
+    guard model != nil || utterances.isEmpty else {
+      throw DecodingError.dataCorruptedError(
+        forKey: .utterances, in: fields, debugDescription: "utterances without a model")
+    }
+    self.init(model: model, utterances: utterances)
   }
 }
