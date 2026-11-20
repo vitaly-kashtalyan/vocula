@@ -314,7 +314,7 @@ Stated here rather than discovered later.
   as echo. A meeting ended by quitting Vocula, or one whose transcription a quit
   interrupted, keeps its audio until the next meeting you record ends. *Copy
   Transcript* copies a transcript as Markdown, without what you dictated during
-  it; after Vocula restarts it lists nothing until a meeting you record next
+  it; after Vocula restarts the item is absent until a meeting you record next
   starts, because the meeting key is not read before then. This version cannot
   play back, export to a file or delete a meeting inside the app: every
   transcript, and the audio of any meeting not yet transcribed, stays in

@@ -483,6 +483,22 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.published.all.last == .some(nil))
   }
 
+  @Test func aCancelledPassStillLogsWhatItDid() async throws {
+    let rig = TranscriberRig()
+    try rig.meeting(startedAt: 800_000_600, mic: [rig.speech(at: 0.5, for: 1)])
+    try rig.meeting(startedAt: 800_000_000, mic: [rig.speech(at: 0.5, for: 1)])
+    let clock = rig.clock
+    rig.recognizers.onCall = { call in
+      if call == 2 { rig.recognizers.stall = clock }
+    }
+    rig.recognizers.stall = nil
+    let pass = Task { await rig.run() }
+    await rig.clock.untilSleeping(2)
+    pass.cancel()
+    await pass.value
+    #expect(rig.lines("meeting.transcribed").first?.hasPrefix("meetings=1 ") == true)
+  }
+
   @Test func cancellingWaitsForTheHoldBeforeReleasing() async throws {
     let rig = TranscriberRig()
     rig.recognizers.stall = rig.clock

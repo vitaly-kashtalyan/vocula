@@ -120,6 +120,9 @@ public actor MeetingTranscriber {
       outcome = .pass(step: "pass", code: 0)
     }
     if Task.isCancelled { outcome = .cancelled }
+    if tally.pieces > 0 || tally.transcribed > 0 {
+      summarize(took: HostTime.elapsed(from: began, to: deps.now()))
+    }
     if recognizer != nil || detector != nil {
       let hold = deps.hold
       tally.paused += await Task.detached { await hold.waitUntilClear() }.value
@@ -135,9 +138,6 @@ public actor MeetingTranscriber {
       tally.failed += max(1, remaining)
     case .meeting, nil:
       break
-    }
-    if tally.pieces > 0 || tally.transcribed > 0 {
-      summarize(took: HostTime.elapsed(from: began, to: deps.now()))
     }
     guard tally.transcribed + tally.failed > 0 else { return }
     await deps.publish(.finished(transcribed: tally.transcribed, failed: tally.failed))

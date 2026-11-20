@@ -178,17 +178,18 @@ is not small: each track is kept whole as 16 kHz mono 16-bit samples — the sou
 of other apps through its silences too — which comes to about 115 MB per track
 per hour, so about 230 MB for an hour of meeting. That is computed from the
 format, not measured. If a meeting cannot be transcribed, its audio stays, and
-Vocula tries again after the next meeting. The transcript stays until you delete
+Vocula tries again after the next meeting you record ends. The transcript stays until you delete
 it: **this version cannot delete a meeting**, there is no button for it yet,
 and nothing deletes one on a timer. Deleting the `Meetings` folder deletes every meeting in it. The
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
 
 *Copy Transcript*, in Vocula's menu and in the meeting's own icon, puts the
-transcript you choose on the clipboard as plain Markdown — the meeting's start
-in UTC and its length at the top, then each line with its time from the start —
-leaving out what you dictated during it. After Vocula restarts it lists nothing until you next record
-a meeting, because the meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
+transcript you choose on the clipboard as Markdown — a front-matter header with
+the meeting's start in UTC, its length and who spoke, then each line with its
+time from the start — leaving out what you dictated during it. After Vocula
+restarts the item is absent until a meeting you record next starts, because the
+meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
 encryption does not follow it.
 
 **A diagnostic log**, `diagnostics.json`, is **not** encrypted, and this is
@@ -210,7 +211,7 @@ opens it again; each transcription pass that recognised any audio or wrote a
 transcript writes one line
 saying how many meetings it transcribed, how many seconds of audio and pieces it
 went through, how many lines the transcripts hold and how many of yours were
-dropped as echo, how many pieces of audio it could not open, how long it took
+dropped as echo, how many of the recording's three-second pieces it could not open, how long it took
 and waited for dictation, and which model it used — never the text; and a line
 for each other problem it ran into. It holds the last 2,000 events.
 "Reveal the Diagnostic Log in Finder" in the menu takes you to it.
