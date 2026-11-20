@@ -276,7 +276,7 @@ final class TranscriberRig: @unchecked Sendable {
     rig.model = nil
     let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
     try await rig.store.writeTranscript(
-      MeetingTranscript(model: nil, utterances: []), of: header.id, cipher: MarkingCipher())
+      .empty, of: header.id, cipher: MarkingCipher())
     await rig.run()
     #expect(!rig.hasAudio(header))
     #expect(rig.recognizers.made == 0)

@@ -33,7 +33,8 @@ struct MeetingTranscriptionParts {
         passDeadline: { Timings.default.passDeadline(forAudio: $0) },
         refineWait: {
           let settings = AppSettings()
-          return settings.refineEnabled ? .seconds(settings.refineMaximumWait) : nil
+          return DictationHold.refineWait(
+            enabled: settings.refineEnabled, maximumSeconds: settings.refineMaximumWait)
         }),
       now: { Meetings.hostNanos() }, sleep: { try await Task.sleep(for: $0) })
   }

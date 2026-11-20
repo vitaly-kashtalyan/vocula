@@ -87,7 +87,9 @@ public actor MeetingStore {
           let names = try MeetingTrack.allCases.flatMap {
             try Self.chunkURLs(of: $0, in: audioDirectory(id))
           }
-          return MeetingWork(header: header, kind: names.isEmpty ? .emptyTranscript : .recognize)
+          guard names.isEmpty else { return MeetingWork(header: header, kind: .recognize) }
+          guard try Self.holdsOnlyChunks(audioDirectory(id)) else { return nil }
+          return MeetingWork(header: header, kind: .emptyTranscript)
         } catch {
           return MeetingWork(header: header, kind: .recognize)
         }
@@ -170,6 +172,16 @@ public actor MeetingStore {
     } catch {
       throw MeetingStoreError.failed(step: "remove", code: (error as NSError).code)
     }
+  }
+
+  private static func holdsOnlyChunks(_ audio: URL) throws -> Bool {
+    let names: [String]
+    do {
+      names = try FileManager.default.contentsOfDirectory(atPath: audio.path)
+    } catch CocoaError.fileReadNoSuchFile {
+      return true
+    }
+    return names.allSatisfy { $0.hasPrefix(".") || $0.hasSuffix(".partial") }
   }
 
   private enum Presence { case absent, present, unknown }

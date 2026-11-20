@@ -39,20 +39,40 @@ public struct MeetingUtterance: Codable, Equatable, Sendable {
   public let text: String
   public let dictation: Bool
 
+  private enum CodingKeys: String, CodingKey { case start, end, speaker, text, dictation }
+
   public init(start: Double, end: Double, speaker: MeetingSpeaker, text: String, dictation: Bool) {
     self.start = start
-    self.end = end
+    self.end = max(start, end)
     self.speaker = speaker
     self.text = text
     self.dictation = dictation
   }
+
+  public init(from decoder: any Decoder) throws {
+    let fields = try decoder.container(keyedBy: CodingKeys.self)
+    self.init(
+      start: try fields.decode(Double.self, forKey: .start),
+      end: try fields.decode(Double.self, forKey: .end),
+      speaker: try fields.decode(MeetingSpeaker.self, forKey: .speaker),
+      text: try fields.decode(String.self, forKey: .text),
+      dictation: try fields.decode(Bool.self, forKey: .dictation))
+  }
 }
 
 public struct MeetingTranscript: Codable, Equatable, Sendable {
+  public static let empty = MeetingTranscript(model: nil, utterances: [])
+
   public let model: String?
   public let utterances: [MeetingUtterance]
 
-  public init(model: String?, utterances: [MeetingUtterance]) {
+  public static func recognized(by model: ModelID, utterances: [MeetingUtterance])
+    -> MeetingTranscript
+  {
+    MeetingTranscript(model: model.rawValue, utterances: utterances)
+  }
+
+  init(model: String?, utterances: [MeetingUtterance]) {
     self.model = model
     self.utterances = utterances
   }

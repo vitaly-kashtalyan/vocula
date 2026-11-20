@@ -73,6 +73,17 @@ import Testing
         == [.emptyTranscript])
   }
 
+  @Test func anAudioFolderWithUnknownFilesIsLeftAlone() async throws {
+    let root = meetingTemporaryDirectory()
+    let unknown = recorded(startedAt: 800_000_000)
+    let finderOnly = recorded(startedAt: 800_000_600)
+    try plant(header: unknown, chunks: ["audio/future-000000.bin": Data("?".utf8)], in: root)
+    try plant(header: finderOnly, chunks: ["audio/.DS_Store": Data("?".utf8)], in: root)
+    let work = try await MeetingStore(directory: root).work(cipher: MarkingCipher())
+    #expect(work.map(\.header.id) == [finderOnly.id])
+    #expect(work.map(\.kind) == [.emptyTranscript])
+  }
+
   @Test func aTranscriptWithAudioOnlyRemovesAudio() async throws {
     let root = meetingTemporaryDirectory()
     let header = recorded()

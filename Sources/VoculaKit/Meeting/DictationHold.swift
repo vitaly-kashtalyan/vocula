@@ -14,6 +14,10 @@ public struct DictationHold: Sendable {
     self.refineWait = refineWait
   }
 
+  public static func refineWait(enabled: Bool, maximumSeconds: Int) -> Duration? {
+    enabled ? .seconds(maximumSeconds) : nil
+  }
+
   public mutating func received(_ signal: DictationSignal, at: UInt64) {
     switch signal {
     case .start(let session):

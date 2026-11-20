@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import VoculaKit
@@ -39,5 +40,23 @@ import Testing
 
   @Test func timedTextNeverEndsBeforeItStarts() {
     #expect(TimedText(start: 2, end: 1, text: "x").end == 2)
+  }
+
+  @Test func anUtteranceNeverEndsBeforeItStarts() throws {
+    #expect(MeetingUtterance(start: 3, end: 1, speaker: .me, text: "x", dictation: false).end == 3)
+    let stored = Data(#"{"start":5,"end":4,"speaker":"me","text":"x","dictation":false}"#.utf8)
+    #expect(try JSONDecoder().decode(MeetingUtterance.self, from: stored).end == 5)
+  }
+
+  @Test func onlyARecognisedTranscriptNamesItsModel() {
+    #expect(MeetingTranscript.empty.model == nil)
+    #expect(MeetingTranscript.empty.utterances.isEmpty)
+    #expect(
+      MeetingTranscript.recognized(by: .parakeetUltra, utterances: []).model == "parakeetUltra")
+  }
+
+  @Test(arguments: [(true, 30, Duration.seconds(30)), (false, 30, nil)])
+  func cleanUpAddsItsWaitOnlyWhenOn(enabled: Bool, seconds: Int, wait: Duration?) {
+    #expect(DictationHold.refineWait(enabled: enabled, maximumSeconds: seconds) == wait)
   }
 }

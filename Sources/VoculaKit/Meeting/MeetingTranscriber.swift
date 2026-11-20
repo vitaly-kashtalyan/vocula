@@ -158,7 +158,7 @@ public actor MeetingTranscriber {
     remaining = empty.count + pending.count
     for item in empty {
       try checkCancelled()
-      await keep(MeetingTranscript(model: nil, utterances: []), of: item.header.id, cipher: cipher)
+      await keep(.empty, of: item.header.id, cipher: cipher)
     }
     guard !pending.isEmpty else { return }
     total = pending.reduce(0) { sum, item in
@@ -202,7 +202,7 @@ public actor MeetingTranscriber {
       dictations: MeetingTranscriptBuilder.dictationRanges(
         header.dictations, anchor: header.anchor))
     tally.echoDropped += built.echoDropped
-    return MeetingTranscript(model: model.model.rawValue, utterances: built.utterances)
+    return .recognized(by: model.model, utterances: built.utterances)
   }
 
   private func words(

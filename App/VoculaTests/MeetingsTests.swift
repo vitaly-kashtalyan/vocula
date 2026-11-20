@@ -171,11 +171,17 @@ private final class StubTrack: MeetingTrackSource, @unchecked Sendable {
 private final class KeySource: @unchecked Sendable {
   let called = Latch()
   private let gate: DispatchSemaphore?
-  private let failure: MeetingFailure?
+  private let lock = NSLock()
+  private var failing: MeetingFailure?
+
+  var failure: MeetingFailure? {
+    get { lock.withLock { failing } }
+    set { lock.withLock { failing = newValue } }
+  }
 
   init(gated: Bool = false, failure: MeetingFailure? = nil) {
     gate = gated ? DispatchSemaphore(value: 0) : nil
-    self.failure = failure
+    failing = failure
   }
 
   func open() { gate?.signal() }
@@ -539,6 +545,17 @@ struct MeetingsTests {
     #expect(!rig.meetings.holdsAMeeting)
     #expect(rig.meetings.status.statusItemShown)
     #expect(rig.passes.made == 0)
+  }
+
+  @Test func aRefusedStartDoesNotSuppressTheNextMeetingsPass() async throws {
+    let rig = Rig(key: KeySource(failure: .failed(step: "key", code: -25308)))
+    await finishes(rig.meetings.toggle())
+    await finishes(rig.meetings.stopping)
+    #expect(rig.passes.made == 0)
+    rig.key.failure = nil
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 1)
   }
 
   @Test func aStatusTrailingTheFinalOneIsDropped() async throws {
