@@ -94,6 +94,21 @@ public enum MeetingListingOutcome: Equatable, Sendable {
   }
 }
 
+public enum MeetingActionResult: Equatable, Sendable {
+  case done
+  case refused
+  case failed(step: String, code: Int)
+
+  public static func from(_ error: any Error) -> MeetingActionResult {
+    switch error {
+    case MeetingStoreError.refused: .refused
+    case MeetingStoreError.failed(let step, let code): .failed(step: step, code: code)
+    case MeetingFailure.failed(let step, let code): .failed(step: step, code: Int(code))
+    default: .failed(step: "unknown", code: 0)
+    }
+  }
+}
+
 public enum MeetingSectionContent: Equatable, Sendable {
   case reading
   case empty

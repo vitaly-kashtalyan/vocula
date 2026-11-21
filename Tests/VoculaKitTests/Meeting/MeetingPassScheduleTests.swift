@@ -35,4 +35,48 @@ import Testing
     let rerun = schedule.passEnded()
     #expect(!rerun)
   }
+
+  @Test func aDeleteIsRefusedDuringAPass() {
+    var schedule = MeetingPassSchedule()
+    _ = schedule.requested()
+    let began = schedule.deleteBegan()
+    #expect(!began)
+  }
+
+  @Test func aPassRequestedDuringADeleteStartsWhenItEnds() {
+    var schedule = MeetingPassSchedule()
+    let began = schedule.deleteBegan()
+    let requested = schedule.requested()
+    let ended = schedule.deleteEnded()
+    #expect(began)
+    #expect(!requested)
+    #expect(ended)
+  }
+
+  @Test func twoDeletesHoldThePassUntilBothEnd() {
+    var schedule = MeetingPassSchedule()
+    let first = schedule.deleteBegan()
+    let second = schedule.deleteBegan()
+    let requested = schedule.requested()
+    let firstEnd = schedule.deleteEnded()
+    let secondEnd = schedule.deleteEnded()
+    #expect(first && second)
+    #expect(!requested)
+    #expect(!firstEnd)
+    #expect(secondEnd)
+  }
+
+  @Test func aDeleteAfterTerminateIsRefused() {
+    var schedule = MeetingPassSchedule()
+    schedule.terminate()
+    let began = schedule.deleteBegan()
+    #expect(!began)
+  }
+
+  @Test func aDeleteWithNoPassWantedStartsNone() {
+    var schedule = MeetingPassSchedule()
+    _ = schedule.deleteBegan()
+    let ended = schedule.deleteEnded()
+    #expect(!ended)
+  }
 }

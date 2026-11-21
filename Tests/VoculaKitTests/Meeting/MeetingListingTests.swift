@@ -93,4 +93,15 @@ import Testing
     #expect(
       MeetingSectionContent.decide(loaded: true, meetings: [listing()], unreadable: true) == .list)
   }
+
+  @Test func actionResultsMapStoreErrors() {
+    #expect(MeetingActionResult.from(MeetingStoreError.refused) == .refused)
+    #expect(
+      MeetingActionResult.from(MeetingStoreError.failed(step: "write", code: 28))
+        == .failed(step: "write", code: 28))
+    #expect(
+      MeetingActionResult.from(MeetingFailure.failed(step: "key", code: -25308))
+        == .failed(step: "key", code: -25308))
+    #expect(MeetingActionResult.from(CancellationError()) == .failed(step: "unknown", code: 0))
+  }
 }

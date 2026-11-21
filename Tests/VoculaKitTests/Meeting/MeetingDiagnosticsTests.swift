@@ -56,4 +56,12 @@ import Testing
     log.record(kind, "")
     #expect(log.recent(1).first?.kind == kind)
   }
+
+  @Test func storeFailureKindAndActionAreKept() {
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    log.record("meeting.storeFailed", "action=delete step=rename code=2")
+    #expect(log.recent(1).map(\.kind) == ["meeting.storeFailed"])
+    #expect(log.recent(1).map(\.detail) == ["action=delete step=rename code=2"])
+  }
 }
