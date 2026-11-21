@@ -35,14 +35,33 @@ extension MenuCopy {
   static let copyIncludesMe = LocalizedStringResource(
     "menu.item.copyIncludesMe", defaultValue: "Include My Lines",
     comment:
-      "Checkable item at the top of the Copy Transcript submenu. When checked, a copied transcript includes the user's own lines (what their microphone heard); when unchecked, only the other participants' lines, for someone who only listened. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Checkable item at the top of the Copy Transcript submenu, and a toggle in the sheet that shows a meeting's transcript in the Meetings section. When checked, a copied transcript includes the user's own lines (what their microphone heard); when unchecked, only the other participants' lines, for someone who only listened. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
-  static func transcriptRow(startedAt: Date, duration: TimeInterval) -> LocalizedStringResource {
-    let when = startedAt.formatted(
-      Date.FormatStyle(date: .abbreviated, time: .shortened).locale(.interface))
-    let length = Duration.seconds(max(0, duration.rounded())).formatted(
+  static func meetingStart(_ date: Date) -> String {
+    date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(.interface))
+  }
+
+  static func meetingLength(_ duration: TimeInterval) -> String {
+    Duration.seconds(max(0, duration.rounded())).formatted(
       .units(allowed: [.hours, .minutes, .seconds], width: .abbreviated).locale(.interface))
+  }
+
+  static func transcriptRow(for listing: MeetingListing) -> LocalizedStringResource {
+    guard let name = listing.title else {
+      return transcriptRow(startedAt: listing.startedAt, duration: listing.duration)
+    }
+    let length = meetingLength(listing.duration)
+    return LocalizedStringResource(
+      "meeting.transcript.namedRow", defaultValue: "\(name) · \(length)",
+      comment:
+        "One row of the Copy Transcript submenu for a meeting the user named: the name the user typed, then how long it lasted (already formatted). Drawn on one menu line that does not wrap; keep the separator short."
+    )
+  }
+
+  static func transcriptRow(startedAt: Date, duration: TimeInterval) -> LocalizedStringResource {
+    let when = meetingStart(startedAt)
+    let length = meetingLength(duration)
     return LocalizedStringResource(
       "meeting.transcript.row", defaultValue: "\(when) · \(length)",
       comment:
@@ -53,13 +72,13 @@ extension MenuCopy {
   static let meetingSpeakerMe = LocalizedStringResource(
     "meeting.speaker.me", defaultValue: "Me",
     comment:
-      "Label of the user's own lines in a copied meeting transcript: what the microphone heard. Pasted as text wherever the user pastes it, often into an AI chat; one short word."
+      "Label of the user's own lines in a meeting transcript: what the microphone heard. Shown in the Meetings section's transcript sheet, and pasted or exported as text wherever the user puts it, often into an AI chat; one short word."
   )
 
   static let meetingSpeakerOthers = LocalizedStringResource(
     "meeting.speaker.others", defaultValue: "Others",
     comment:
-      "Label of the other participants' lines in a copied meeting transcript: what the other apps played, the people on the call. Pasted as text wherever the user pastes it; one short word."
+      "Label of the other participants' lines in a meeting transcript: what the other apps played, the people on the call. Shown in the Meetings section's transcript sheet, and pasted or exported as text; one short word."
   )
 
   static func meetingTranscribing(_ percent: Int) -> LocalizedStringResource {
@@ -83,7 +102,7 @@ extension MenuCopy {
   static let transcriptUnreadable = LocalizedStringResource(
     "meeting.status.transcriptUnreadable", defaultValue: "This transcript could not be read.",
     comment:
-      "Line in the meeting's own menu bar menu after the user chose a meeting in Copy Transcript, in Vocula's menu bar menu, and its saved text could not be opened, so nothing was copied; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+      "Line shown after a meeting's saved text could not be opened, so nothing was copied, opened or exported: in the meeting's own menu bar menu after Copy Transcript, or in the Meetings section of the Vocula window; also spoken by VoiceOver. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
   private static let transcribingLabel = LocalizedStringResource(
@@ -229,4 +248,140 @@ extension MenuCopy {
     comment:
       "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when exporting a meeting's transcript to the file the user chose failed. Shown on one line above the list; a long translation wraps."
   )
+
+  static let meetingsSection = LocalizedStringResource(
+    "settings.section.meetings", defaultValue: "Meetings (Beta)",
+    comment:
+      "Sidebar section and the window's title while it shows: the list of recorded meetings. The feature is in beta; use the language's usual word for beta. Drawn in the sidebar, which clips a long title."
+  )
+
+  static let meetingsReading = LocalizedStringResource(
+    "meetings.reading", defaultValue: "Reading meetings…",
+    comment:
+      "Line in the Meetings section of the Vocula window while the encrypted list of meetings is being read, before it first appears."
+  )
+
+  static let meetingsEmpty = LocalizedStringResource(
+    "meetings.empty", defaultValue: "No meetings yet",
+    comment:
+      "Line in the Meetings section of the Vocula window when no meeting has been recorded."
+  )
+
+  static let meetingStatusTranscribed = LocalizedStringResource(
+    "meetings.status.transcribed", defaultValue: "Transcribed",
+    comment:
+      "Status of one meeting in the list of the Meetings section of the Vocula window: its transcript is ready. Short; drawn on the row's second line beside the date and length."
+  )
+
+  static let meetingStatusWaiting = LocalizedStringResource(
+    "meetings.status.waiting", defaultValue: "Waiting for transcription",
+    comment:
+      "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. Drawn on the row's second line beside the date and length."
+  )
+
+  static let meetingStatusRecording = LocalizedStringResource(
+    "meetings.status.recording", defaultValue: "Recording",
+    comment:
+      "Status of one meeting in the list of the Meetings section of the Vocula window: it is being recorded right now. Short; drawn on the row's second line."
+  )
+
+  static let meetingPinned = LocalizedStringResource(
+    "meetings.pinned", defaultValue: "Pinned",
+    comment:
+      "Spoken by VoiceOver for the pin symbol on a pinned meeting's row in the Meetings section of the Vocula window: a pinned meeting is kept and cannot be deleted. Never drawn."
+  )
+
+  static let meetingOpen = LocalizedStringResource(
+    "meetings.action.open", defaultValue: "Open",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: show its transcript."
+  )
+
+  static let meetingRename = LocalizedStringResource(
+    "meetings.action.rename", defaultValue: "Rename…",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: give the meeting a name. The ellipsis means a field follows."
+  )
+
+  static let meetingPin = LocalizedStringResource(
+    "meetings.action.pin", defaultValue: "Pin",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: keep the meeting at the top and protect it from deletion."
+  )
+
+  static let meetingUnpin = LocalizedStringResource(
+    "meetings.action.unpin", defaultValue: "Unpin",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: undo Pin, so the meeting can be deleted again."
+  )
+
+  static let meetingExport = LocalizedStringResource(
+    "meetings.action.export", defaultValue: "Export…",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window, and a button in its transcript sheet: save the transcript as a Markdown file. The ellipsis means a save panel follows."
+  )
+
+  static let meetingCopy = LocalizedStringResource(
+    "meetings.action.copy", defaultValue: "Copy",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: put the transcript on the clipboard as Markdown."
+  )
+
+  static let meetingDelete = LocalizedStringResource(
+    "meetings.action.delete", defaultValue: "Delete…",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: remove the meeting. The ellipsis means a confirmation follows."
+  )
+
+  static let meetingRenameTitle = LocalizedStringResource(
+    "meetings.rename.title", defaultValue: "Rename Meeting",
+    comment:
+      "Title of the alert that names a meeting in the Meetings section of the Vocula window."
+  )
+
+  static let meetingRenameSave = LocalizedStringResource(
+    "meetings.rename.save", defaultValue: "Save",
+    comment:
+      "Button in the alert that names a meeting: keep the name typed."
+  )
+
+  static let meetingRenameField = LocalizedStringResource(
+    "meetings.rename.field", defaultValue: "Name",
+    comment:
+      "Label of the text field in the alert that names a meeting; spoken by VoiceOver. One short word."
+  )
+
+  static let meetingDeleteTitle = LocalizedStringResource(
+    "meetings.delete.title", defaultValue: "Delete this meeting?",
+    comment:
+      "Title of the confirmation before deleting a meeting in the Meetings section of the Vocula window."
+  )
+
+  static let meetingDeleteMessage = LocalizedStringResource(
+    "meetings.delete.message",
+    defaultValue: "Its transcript and any audio are removed. This cannot be undone.",
+    comment:
+      "Message of the confirmation before deleting a meeting: what is lost, and that it is permanent."
+  )
+
+  static let meetingsDeleteWaits = LocalizedStringResource(
+    "meetings.deleteWaits",
+    defaultValue: "Deleting is unavailable until meetings finish transcribing.",
+    comment:
+      "Footer in the Meetings section of the Vocula window while recorded meetings are being turned into text: Delete is disabled until that ends."
+  )
+
+  static let meetingSheetClose = LocalizedStringResource(
+    "meetings.sheet.close", defaultValue: "Close",
+    comment:
+      "Button that closes the sheet showing a meeting's transcript."
+  )
+
+  static func meetingActions(for title: String) -> LocalizedStringResource {
+    LocalizedStringResource(
+      "meetings.actionsFor", defaultValue: "Actions for \(title)",
+      comment:
+        "Spoken by VoiceOver for the menu button at the end of a meeting's row in the Meetings section; the argument is the meeting's name or its date. Never drawn."
+    )
+  }
 }
