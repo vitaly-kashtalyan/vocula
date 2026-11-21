@@ -141,25 +141,107 @@ final class Meetings {
 
   @discardableResult
   func copyTranscript(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
-    let read = parts.transcript
     let log = diagnosticLog()
     return Task {
-      guard let listing = status.transcripts.first(where: { $0.id == id }),
-        let transcript = await read(id, log)
-      else {
+      switch await markdown(id, includeMe: includeMe) {
+      case .transcript(let text):
+        parts.paste(text)
+        status.transcriptCopied()
+      case .failed(let step, let code):
+        log?.record("meeting.transcribeFailed", "step=\(step) code=\(code)")
         status.transcriptUnreadable()
-        return
+      case .unavailable:
+        status.transcriptUnreadable()
       }
+    }
+  }
+
+  @discardableResult
+  func copyFromSection(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
+    let log = diagnosticLog()
+    return Task {
+      guard let text = sectionText(await markdown(id, includeMe: includeMe), action: "copy", log)
+      else { return }
+      parts.paste(text)
+      status.actionSucceeded()
+    }
+  }
+
+  func open(_ id: UUID) async -> MeetingTranscript? {
+    let log = diagnosticLog()
+    switch await parts.transcript(id) {
+    case .transcript(let transcript):
+      status.actionSucceeded()
+      return transcript
+    case .failed(let step, let code):
+      unreadable(action: "open", step: step, code: code, log)
+    case .unavailable:
+      status.sectionFailed(.transcriptUnreadable)
+    }
+    return nil
+  }
+
+  func exportData(_ id: UUID, includeMe: Bool) async -> Data? {
+    let log = diagnosticLog()
+    return sectionText(await markdown(id, includeMe: includeMe), action: "export", log)
+      .map { Data($0.utf8) }
+  }
+
+  @discardableResult
+  func write(_ data: Data, to url: URL) -> Task<Void, Never> {
+    let write = parts.write
+    let log = diagnosticLog()
+    return Task {
+      switch await write(data, url) {
+      case .done, .refused:
+        status.actionSucceeded()
+      case .failed(let step, let code):
+        log?.record("meeting.storeFailed", "action=export step=\(step) code=\(code)")
+        status.sectionFailed(.exportNotWritten)
+      }
+    }
+  }
+
+  private enum Rendered {
+    case transcript(String)
+    case failed(step: String, code: Int)
+    case unavailable
+  }
+
+  private func markdown(_ id: UUID, includeMe: Bool) async -> Rendered {
+    guard let listing = status.meetings.first(where: { $0.id == id }) else { return .unavailable }
+    switch await parts.transcript(id) {
+    case .transcript(let transcript):
       let labels: [MeetingSpeaker: String] = [
         .me: String(localized: MenuCopy.meetingSpeakerMe),
         .others: String(localized: MenuCopy.meetingSpeakerOthers),
       ]
-      parts.paste(
+      return .transcript(
         MeetingMarkdown.render(
-          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels,
-          includeMe: includeMe))
-      status.transcriptCopied()
+          transcript, title: listing.title, startedAt: listing.startedAt,
+          duration: listing.duration, labels: labels, includeMe: includeMe))
+    case .failed(let step, let code):
+      return .failed(step: step, code: code)
+    case .unavailable:
+      return .unavailable
     }
+  }
+
+  private func sectionText(_ rendered: Rendered, action: String, _ log: DiagnosticLog?) -> String? {
+    switch rendered {
+    case .transcript(let text):
+      return text
+    case .failed(let step, let code):
+      unreadable(action: action, step: step, code: code, log)
+    case .unavailable:
+      status.sectionFailed(.transcriptUnreadable)
+    }
+    return nil
+  }
+
+  private func unreadable(action: String, step: String, code: Int, _ log: DiagnosticLog?) {
+    log?.record("meeting.storeFailed", "action=\(action) step=\(step) code=\(code)")
+    status.sectionFailed(.transcriptUnreadable)
   }
 
   func pipelineStarted(_ signals: StreamFanout<DictationSignal>) {

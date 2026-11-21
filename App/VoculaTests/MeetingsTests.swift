@@ -224,6 +224,8 @@ private final class PassProbe {
   var deleteResult: MeetingActionResult = .done
   var deletes = 0
   var deleteGate: Latch?
+  var writeResult: MeetingActionResult = .done
+  var written: [(Data, URL)] = []
   var pasted: [String] = []
   let cipherGate = Latch()
 
@@ -252,7 +254,9 @@ private final class PassProbe {
         await gate?.wait()
         return await self.outcome
       },
-      transcript: { [self] _, _ in await self.transcript },
+      transcript: { [self] _ in
+        await self.transcript.map(MeetingReadResult.transcript) ?? .failed(step: "read", code: 5)
+      },
       updateHeader: { [self] id, _, change in
         await MainActor.run {
           var header = MeetingHeader(id: id, startedAt: Date(timeIntervalSince1970: 0), anchor: 0)
@@ -268,6 +272,12 @@ private final class PassProbe {
         }
         await gate?.wait()
         return await deleteResult
+      },
+      write: { [self] data, url in
+        await MainActor.run {
+          written.append((data, url))
+          return writeResult
+        }
       },
       paste: { [self] in pasted.append($0) })
   }
@@ -589,6 +599,74 @@ struct MeetingsTests {
     #expect(rig.passes.deletes == 0)
   }
 
+  private func named(_ rig: Rig, _ title: String?) -> UUID {
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(
+          id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3, title: title)
+      ]))
+    rig.passes.transcript = MeetingTranscript(
+      model: "m", utterances: [MeetingUtterance(start: 1, end: 2, speaker: .others, text: "hi")])
+    return id
+  }
+
+  @Test func aNamedMeetingCopiesWithItsTitle() async {
+    let rig = Rig()
+    let id = named(rig, "Sync")
+    await rig.meetings.copyTranscript(id, includeMe: true).value
+    await rig.meetings.copyFromSection(id, includeMe: true).value
+    #expect(rig.passes.pasted.count == 2)
+    #expect(rig.passes.pasted.allSatisfy { $0.hasPrefix("---\ntitle: \"Sync\"\ndate: ") })
+  }
+
+  @Test func anUnnamedMeetingCopiesWithoutATitle() async {
+    let rig = Rig()
+    await rig.meetings.copyFromSection(named(rig, nil), includeMe: true).value
+    #expect(rig.passes.pasted.first?.hasPrefix("---\ndate: ") == true)
+  }
+
+  @Test func exportDataIsTheCopyMarkdown() async {
+    let rig = Rig()
+    let id = named(rig, "Sync")
+    await rig.meetings.copyFromSection(id, includeMe: false).value
+    let data = await rig.meetings.exportData(id, includeMe: false)
+    #expect(data.map { String(decoding: $0, as: UTF8.self) } == rig.passes.pasted.first)
+  }
+
+  @Test func anExportThatCannotBeWrittenShowsTheLine() async {
+    let rig = Rig()
+    rig.passes.writeResult = .failed(step: "write", code: 13)
+    await rig.meetings.write(Data("x".utf8), to: URL(fileURLWithPath: "/tmp/x.md")).value
+    #expect(rig.meetings.status.sectionFailure == .exportNotWritten)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+        == ["action=export step=write code=13"])
+  }
+
+  @Test func aTranscriptThatWillNotOpenShowsTheLine() async {
+    let rig = Rig()
+    let id = named(rig, nil)
+    rig.passes.transcript = nil
+    #expect(await rig.meetings.open(id) == nil)
+    #expect(rig.meetings.status.sectionFailure == .transcriptUnreadable)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+        == ["action=open step=read code=5"])
+  }
+
+  @Test func theMenuCopyStillLogsTranscribeFailed() async {
+    let rig = Rig()
+    let id = named(rig, nil)
+    rig.passes.transcript = nil
+    await rig.meetings.copyTranscript(id, includeMe: true).value
+    #expect(rig.meetings.status.copyFailed)
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.transcribeFailed" }.map(\.detail)
+        == ["step=read code=5"])
+  }
+
   @Test func theSectionAppearingLists() async {
     let rig = Rig()
     let listing = MeetingListing(
@@ -837,7 +915,10 @@ struct MeetingsTests {
 
   @Test func aSecondCopyListsNoTranscripts() async {
     #expect(await MeetingTranscriptionParts.liveListing(log: nil) == .meetings([]))
-    #expect(await MeetingTranscriptionParts.liveTranscript(UUID(), log: nil) == nil)
+    #expect(await MeetingTranscriptionParts.liveRead(UUID()) == .unavailable)
+    #expect(
+      await MeetingTranscriptionParts.liveUpdateHeader(UUID(), busy: false) { _ in } == .refused)
+    #expect(await MeetingTranscriptionParts.liveDelete(UUID(), busy: false) == .refused)
   }
 
   @Test func aSecondCopyCreatesNoStore() {
