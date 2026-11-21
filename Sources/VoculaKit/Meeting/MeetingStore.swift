@@ -1,6 +1,9 @@
 import Foundation
 
-public enum MeetingStoreError: Error, Equatable, Sendable { case failed(step: String, code: Int) }
+public enum MeetingStoreError: Error, Equatable, Sendable {
+  case failed(step: String, code: Int)
+  case refused
+}
 
 struct MeetingWork: Equatable, Sendable {
   public enum Kind: Equatable, Sendable { case recognize, emptyTranscript, removeAudio }
@@ -89,16 +92,59 @@ public actor MeetingStore {
 
   public func listing(cipher: any HistoryCipher) throws -> [MeetingListing] {
     try meetingIDs().compactMap { id -> MeetingListing? in
-      guard FileManager.default.fileExists(atPath: transcriptURL(id).path),
-        let header = header(of: id, cipher: cipher)
-      else { return nil }
+      guard let header = header(of: id, cipher: cipher) else { return nil }
       return MeetingListing(
         id: id, startedAt: header.startedAt,
         duration: max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0),
         hasEnd: header.end != nil, title: header.title, isPinned: header.isPinned,
-        isRecordingState: header.state == .recording, hasTranscript: true)
+        isRecordingState: header.state == .recording,
+        hasTranscript: FileManager.default.fileExists(atPath: transcriptURL(id).path))
     }
-    .sorted { $0.startedAt > $1.startedAt }
+  }
+
+  public nonisolated func holdsMeetings() -> Bool {
+    names().contains { UUID(uuidString: $0) != nil }
+  }
+
+  public nonisolated func tombstones() -> [URL] {
+    names().filter { $0.hasSuffix(Self.tombstoneSuffix) }.map {
+      directory.appendingPathComponent($0, isDirectory: true)
+    }
+  }
+
+  public nonisolated static func removeTombstone(_ url: URL) throws {
+    do { try FileManager.default.removeItem(at: url) } catch CocoaError.fileNoSuchFile {
+      return
+    } catch {
+      throw MeetingStoreError.failed(step: "remove", code: (error as NSError).code)
+    }
+  }
+
+  public func updateHeader(
+    of meeting: UUID, cipher: any HistoryCipher, busy: Bool,
+    _ change: @Sendable (inout MeetingHeader) -> Void
+  ) throws {
+    guard var header = header(of: meeting, cipher: cipher), !(busy && header.state == .recording)
+    else { throw MeetingStoreError.refused }
+    change(&header)
+    try update(header, cipher: cipher)
+  }
+
+  public func delete(_ meeting: UUID, cipher: any HistoryCipher, busy: Bool) throws {
+    guard let header = header(of: meeting, cipher: cipher), !header.isPinned,
+      !(busy && header.state == .recording)
+    else { throw MeetingStoreError.refused }
+    let tombstone = directory.appendingPathComponent(
+      meeting.uuidString + Self.tombstoneSuffix, isDirectory: true)
+    do { try FileManager.default.moveItem(at: meetingDirectory(meeting), to: tombstone) } catch {
+      throw MeetingStoreError.failed(step: "delete", code: (error as NSError).code)
+    }
+  }
+
+  private static let tombstoneSuffix = ".deleting"
+
+  private nonisolated func names() -> [String] {
+    (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
   }
 
   func chunkNames(of meeting: UUID, track: MeetingTrack) throws -> [String] {

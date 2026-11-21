@@ -205,7 +205,9 @@ final class Meetings {
     let listing = parts.listing
     let log = diagnosticLog()
     refreshing = Task {
-      if let found = await listing(log) { status.update(transcripts: found) }
+      if let found = await listing(log) {
+        status.update(transcripts: MeetingListing.transcribed(found))
+      }
     }
   }
 }
