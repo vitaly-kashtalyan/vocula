@@ -9,18 +9,6 @@ struct MeetingWork: Equatable, Sendable {
   public let kind: Kind
 }
 
-public struct MeetingListing: Equatable, Sendable, Identifiable {
-  public let id: UUID
-  public let startedAt: Date
-  public let duration: TimeInterval
-
-  public init(id: UUID, startedAt: Date, duration: TimeInterval) {
-    self.id = id
-    self.startedAt = startedAt
-    self.duration = duration
-  }
-}
-
 public actor MeetingStore {
   private let directory: URL
   private let queue = DispatchSerialQueue(label: "vocula.meeting.store", qos: .utility)
@@ -106,7 +94,9 @@ public actor MeetingStore {
       else { return nil }
       return MeetingListing(
         id: id, startedAt: header.startedAt,
-        duration: max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0))
+        duration: max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0),
+        hasEnd: header.end != nil, title: header.title, isPinned: header.isPinned,
+        isRecordingState: header.state == .recording, hasTranscript: true)
     }
     .sorted { $0.startedAt > $1.startedAt }
   }
