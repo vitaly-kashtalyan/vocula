@@ -221,6 +221,9 @@ private final class PassProbe {
   var transcript: MeetingTranscript?
   var headerResult: MeetingActionResult = .done
   var editedHeaders: [MeetingHeader] = []
+  var deleteResult: MeetingActionResult = .done
+  var deletes = 0
+  var deleteGate: Latch?
   var pasted: [String] = []
   let cipherGate = Latch()
 
@@ -257,6 +260,14 @@ private final class PassProbe {
           editedHeaders.append(header)
           return headerResult
         }
+      },
+      delete: { [self] _, _ in
+        let gate = await MainActor.run {
+          deletes += 1
+          return deleteGate
+        }
+        await gate?.wait()
+        return await deleteResult
       },
       paste: { [self] in pasted.append($0) })
   }
@@ -517,6 +528,65 @@ struct MeetingsTests {
     #expect(rig.meetings.status.sectionFailure == nil)
     #expect(rig.spoken.isEmpty)
     #expect(rig.passes.listings == 1)
+  }
+
+  private func listed(_ rig: Rig) -> UUID {
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+      ]))
+    return id
+  }
+
+  @Test func deleteIsRefusedDuringAPass() async throws {
+    let rig = Rig()
+    rig.passes.blocking = true
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    let id = listed(rig)
+    await rig.meetings.delete(id).value
+    #expect(rig.passes.deletes == 0)
+    rig.passes.cipherGate.open()
+    await rig.meetings.pass?.value
+  }
+
+  @Test func aPassWaitsForADeleteInFlight() async throws {
+    let rig = Rig()
+    let gate = Latch()
+    rig.passes.deleteGate = gate
+    try await rig.record()
+    let id = listed(rig)
+    let deleting = rig.meetings.delete(id)
+    for _ in 0..<50 where rig.passes.deletes == 0 { await Task.yield() }
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 0)
+    gate.open()
+    await deleting.value
+    #expect(rig.passes.made == 1)
+  }
+
+  @Test func aRefusedDeleteShowsNothingAndRelists() async {
+    let rig = Rig()
+    rig.passes.deleteResult = .refused
+    await rig.meetings.delete(listed(rig)).value
+    await rig.meetings.refreshing?.value
+    #expect(rig.passes.deletes == 1)
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(rig.spoken.isEmpty)
+    #expect(rig.passes.listings == 1)
+  }
+
+  @Test func aPinnedMeetingIsNeverSentToTheStore() async {
+    let rig = Rig()
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(
+          id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 60, isPinned: true)
+      ]))
+    await rig.meetings.delete(id).value
+    #expect(rig.passes.deletes == 0)
   }
 
   @Test func theSectionAppearingLists() async {

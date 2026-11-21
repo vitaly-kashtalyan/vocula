@@ -16,6 +16,7 @@ struct MeetingTranscriptionParts {
       _ id: UUID, _ busy: Bool, _ change: @escaping @Sendable (inout MeetingHeader) -> Void
     )
       async -> MeetingActionResult
+  var delete: @Sendable (_ id: UUID, _ busy: Bool) async -> MeetingActionResult
   var paste: @MainActor (String) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
@@ -24,6 +25,7 @@ struct MeetingTranscriptionParts {
       listing: { await liveListing(log: $0) },
       transcript: { await liveTranscript($0, log: $1) },
       updateHeader: { await liveUpdateHeader($0, busy: $1, $2) },
+      delete: { await liveDelete($0, busy: $1) },
       paste: { text in
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
@@ -76,6 +78,16 @@ struct MeetingTranscriptionParts {
     guard let store = Meetings.makeStore() else { return .refused }
     do {
       try await store.updateHeader(of: id, cipher: existingKey(), busy: busy, change)
+      return .done
+    } catch {
+      return .from(error)
+    }
+  }
+
+  nonisolated static func liveDelete(_ id: UUID, busy: Bool) async -> MeetingActionResult {
+    guard let store = Meetings.makeStore() else { return .refused }
+    do {
+      try await store.delete(id, cipher: existingKey(), busy: busy)
       return .done
     } catch {
       return .from(error)

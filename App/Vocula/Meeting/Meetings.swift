@@ -85,6 +85,23 @@ final class Meetings {
     change(id, action: "pin") { $0.pinned = pinned }
   }
 
+  @discardableResult
+  func delete(_ id: UUID) -> Task<Void, Never> {
+    let busy = status.busy
+    guard
+      status.meetings.first(where: { $0.id == id })?
+        .allows(.delete, busy: busy, passRunning: pass != nil) == true,
+      schedule.deleteBegan()
+    else { return Task {} }
+    let delete = parts.delete
+    let log = diagnosticLog()
+    return Task {
+      let result = await delete(id, busy)
+      if schedule.deleteEnded() { await startPass() }
+      finished(result, action: "delete", failure: .notSaved, log: log)
+    }
+  }
+
   private func change(
     _ id: UUID, action: String, _ edit: @escaping @Sendable (inout MeetingHeader) -> Void
   ) -> Task<Void, Never> {
