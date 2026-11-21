@@ -160,7 +160,7 @@ final class Meetings {
   func copyFromSection(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
     let log = diagnosticLog()
     return Task {
-      guard let text = sectionText(await markdown(id, includeMe: includeMe), action: "copy", log)
+      guard let text = forSection(await markdown(id, includeMe: includeMe), action: "copy", log)
       else { return }
       parts.paste(text)
       status.actionSucceeded()
@@ -183,7 +183,7 @@ final class Meetings {
 
   func exportData(_ id: UUID, includeMe: Bool) async -> Data? {
     let log = diagnosticLog()
-    return sectionText(await markdown(id, includeMe: includeMe), action: "export", log)
+    return forSection(await markdown(id, includeMe: includeMe), action: "export", log)
       .map { Data($0.utf8) }
   }
 
@@ -227,7 +227,7 @@ final class Meetings {
     }
   }
 
-  private func sectionText(_ rendered: Rendered, action: String, _ log: DiagnosticLog?) -> String? {
+  private func forSection(_ rendered: Rendered, action: String, _ log: DiagnosticLog?) -> String? {
     switch rendered {
     case .transcript(let text):
       return text

@@ -55,6 +55,7 @@ struct VoculaApp: App {
           downloader: appDelegate.downloader,
           coordinator: appDelegate.coordinator,
           historyModel: appDelegate.historyModel,
+          meetings: appDelegate.coordinator.meetings,
           onModelsReady: {
             await appDelegate.coordinator.modelsDidBecomeReady()
           }
