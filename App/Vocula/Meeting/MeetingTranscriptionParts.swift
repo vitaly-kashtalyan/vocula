@@ -11,6 +11,11 @@ struct MeetingTranscriptionParts {
     @MainActor (_ log: DiagnosticLog?, _ publish: @escaping Publish) -> MeetingTranscriber?
   var listing: @Sendable (_ log: DiagnosticLog?) async -> MeetingListingOutcome
   var transcript: @Sendable (_ id: UUID, _ log: DiagnosticLog?) async -> MeetingTranscript?
+  var updateHeader:
+    @Sendable (
+      _ id: UUID, _ busy: Bool, _ change: @escaping @Sendable (inout MeetingHeader) -> Void
+    )
+      async -> MeetingActionResult
   var paste: @MainActor (String) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
@@ -18,6 +23,7 @@ struct MeetingTranscriptionParts {
       makeTranscriber: { liveTranscriber(log: $0, publish: $1) },
       listing: { await liveListing(log: $0) },
       transcript: { await liveTranscript($0, log: $1) },
+      updateHeader: { await liveUpdateHeader($0, busy: $1, $2) },
       paste: { text in
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
@@ -62,6 +68,18 @@ struct MeetingTranscriptionParts {
         }
       }
     }.value
+  }
+
+  nonisolated static func liveUpdateHeader(
+    _ id: UUID, busy: Bool, _ change: @escaping @Sendable (inout MeetingHeader) -> Void
+  ) async -> MeetingActionResult {
+    guard let store = Meetings.makeStore() else { return .refused }
+    do {
+      try await store.updateHeader(of: id, cipher: existingKey(), busy: busy, change)
+      return .done
+    } catch {
+      return .from(error)
+    }
   }
 
   nonisolated static func liveTranscript(_ id: UUID, log: DiagnosticLog?) async

@@ -219,6 +219,8 @@ private final class PassProbe {
   var listings = 0
   var listingGate: Latch?
   var transcript: MeetingTranscript?
+  var headerResult: MeetingActionResult = .done
+  var editedHeaders: [MeetingHeader] = []
   var pasted: [String] = []
   let cipherGate = Latch()
 
@@ -248,6 +250,14 @@ private final class PassProbe {
         return await self.outcome
       },
       transcript: { [self] _, _ in await self.transcript },
+      updateHeader: { [self] id, _, change in
+        await MainActor.run {
+          var header = MeetingHeader(id: id, startedAt: Date(timeIntervalSince1970: 0), anchor: 0)
+          change(&header)
+          editedHeaders.append(header)
+          return headerResult
+        }
+      },
       paste: { [self] in pasted.append($0) })
   }
 }
@@ -272,6 +282,7 @@ private final class Rig {
   let ticks = ManualSleeper()
   let fanout = StreamFanout<DictationSignal>(bufferingPolicy: .unbounded)
   let passes = PassProbe()
+  var spoken: [String] = []
   let root: URL
   let store: MeetingStore
   let log: DiagnosticLog
@@ -286,7 +297,7 @@ private final class Rig {
 
   lazy var meetings = Meetings(
     diagnosticLog: { [log] in log },
-    status: MeetingStatusModel(announce: { _ in }),
+    status: MeetingStatusModel(announce: { [weak self] in self?.spoken.append($0) }),
     makeDependencies: { [weak self] log, recover in
       self?.dependencies(log: log, recover: recover)
     },
@@ -461,6 +472,51 @@ struct MeetingsTests {
     await finishes(rig.meetings.toggle())
     await rig.meetings.refreshing?.value
     #expect(rig.meetings.status.transcripts == [listing])
+  }
+
+  @Test func renameStoresTheRuledName() async {
+    let rig = Rig()
+    await rig.meetings.rename(UUID(), to: "  Sync\n").value
+    #expect(rig.passes.editedHeaders.map(\.title) == ["Sync"])
+    await rig.meetings.rename(UUID(), to: " ").value
+    #expect(rig.passes.editedHeaders.last?.title == nil)
+  }
+
+  @Test func pinIsStored() async {
+    let rig = Rig()
+    await rig.meetings.setPinned(UUID(), true).value
+    await rig.meetings.setPinned(UUID(), false).value
+    #expect(rig.passes.editedHeaders.map(\.isPinned) == [true, false])
+  }
+
+  @Test func aFailedRenameShowsTheLineAndClearsOnTheNextSuccess() async {
+    let rig = Rig()
+    rig.passes.headerResult = .failed(step: "write", code: 28)
+    await rig.meetings.rename(UUID(), to: "Sync").value
+    #expect(rig.meetings.status.sectionFailure == .notSaved)
+    #expect(rig.spoken.count == 1)
+    rig.passes.headerResult = .done
+    await rig.meetings.setPinned(UUID(), true).value
+    #expect(rig.meetings.status.sectionFailure == nil)
+  }
+
+  @Test func aFailedRenameLogsItsStepButNeverTheName() async {
+    let rig = Rig()
+    rig.passes.headerResult = .failed(step: "write", code: 28)
+    await rig.meetings.rename(UUID(), to: "Quarterly review").value
+    let lines = rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+    #expect(lines == ["action=rename step=write code=28"])
+    #expect(rig.log.recent(10).allSatisfy { !$0.detail.contains("Quarterly") })
+  }
+
+  @Test func aRefusedRenameShowsNothingAndRelists() async {
+    let rig = Rig()
+    rig.passes.headerResult = .refused
+    await rig.meetings.rename(UUID(), to: "Sync").value
+    await rig.meetings.refreshing?.value
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(rig.spoken.isEmpty)
+    #expect(rig.passes.listings == 1)
   }
 
   @Test func theSectionAppearingLists() async {

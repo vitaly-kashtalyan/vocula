@@ -74,6 +74,44 @@ final class Meetings {
 
   func sectionAppeared() { requestListing() }
 
+  @discardableResult
+  func rename(_ id: UUID, to raw: String) -> Task<Void, Never> {
+    let title = MeetingHeader.name(from: raw)
+    return change(id, action: "rename") { $0.title = title }
+  }
+
+  @discardableResult
+  func setPinned(_ id: UUID, _ pinned: Bool) -> Task<Void, Never> {
+    change(id, action: "pin") { $0.pinned = pinned }
+  }
+
+  private func change(
+    _ id: UUID, action: String, _ edit: @escaping @Sendable (inout MeetingHeader) -> Void
+  ) -> Task<Void, Never> {
+    let update = parts.updateHeader
+    let busy = status.busy
+    let log = diagnosticLog()
+    return Task {
+      finished(await update(id, busy, edit), action: action, failure: .notSaved, log: log)
+    }
+  }
+
+  private func finished(
+    _ result: MeetingActionResult, action: String, failure: MeetingSectionFailure,
+    log: DiagnosticLog?
+  ) {
+    switch result {
+    case .done:
+      status.actionSucceeded()
+    case .refused:
+      break
+    case .failed(let step, let code):
+      log?.record("meeting.storeFailed", "action=\(action) step=\(step) code=\(code)")
+      status.sectionFailed(failure)
+    }
+    requestListing()
+  }
+
   func apply(_ new: MeetingStatus, of meeting: Int) {
     guard meetingSwitch.isCurrent(meeting), !(new.isRecording && concluded == meeting) else {
       return

@@ -217,4 +217,16 @@ extension MenuCopy {
     comment:
       "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when the encrypted meetings could not be opened (for example the keychain refused the key). Shown on one line above the list; a long translation wraps."
   )
+
+  static let meetingNotSaved = LocalizedStringResource(
+    "meetings.failure.notSaved", defaultValue: "The change could not be saved.",
+    comment:
+      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when renaming, pinning or deleting a meeting could not be written to disk. Shown on one line above the list; a long translation wraps."
+  )
+
+  static let meetingExportFailed = LocalizedStringResource(
+    "meetings.failure.export", defaultValue: "The file could not be written.",
+    comment:
+      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when exporting a meeting's transcript to the file the user chose failed. Shown on one line above the list; a long translation wraps."
+  )
 }

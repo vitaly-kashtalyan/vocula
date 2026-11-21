@@ -2,6 +2,12 @@ import Foundation
 import Observation
 import VoculaKit
 
+enum MeetingSectionFailure: Equatable {
+  case notSaved
+  case exportNotWritten
+  case transcriptUnreadable
+}
+
 @MainActor @Observable
 final class MeetingStatusModel {
   private(set) var isRecording = false
@@ -17,6 +23,7 @@ final class MeetingStatusModel {
   private(set) var listUnreadable = false
   private(set) var busy = false
   private(set) var passRunning = false
+  private(set) var sectionFailure: MeetingSectionFailure?
 
   var transcripts: [MeetingListing] { MeetingListing.transcribed(meetings) }
 
@@ -108,6 +115,21 @@ final class MeetingStatusModel {
       listUnreadable = true
       announce(String(localized: MenuCopy.meetingsListFailed))
     }
+  }
+
+  func sectionFailed(_ failure: MeetingSectionFailure) {
+    sectionFailure = failure
+    let line: LocalizedStringResource =
+      switch failure {
+      case .notSaved: MenuCopy.meetingNotSaved
+      case .exportNotWritten: MenuCopy.meetingExportFailed
+      case .transcriptUnreadable: MenuCopy.transcriptUnreadable
+      }
+    announce(String(localized: line))
+  }
+
+  func actionSucceeded() {
+    if sectionFailure != nil { sectionFailure = nil }
   }
 
   func update(busy: Bool, passRunning: Bool) {
