@@ -103,7 +103,7 @@ public actor MeetingStore {
   }
 
   public nonisolated func holdsMeetings() -> Bool {
-    names().contains { UUID(uuidString: $0) != nil }
+    (try? meetingIDs()).map { !$0.isEmpty } ?? true
   }
 
   public nonisolated func tombstones() -> [URL] {
@@ -225,7 +225,7 @@ public actor MeetingStore {
     }
   }
 
-  private func meetingIDs() throws -> [UUID] {
+  private nonisolated func meetingIDs() throws -> [UUID] {
     do {
       return try FileManager.default.contentsOfDirectory(atPath: directory.path).compactMap(
         UUID.init(uuidString:))

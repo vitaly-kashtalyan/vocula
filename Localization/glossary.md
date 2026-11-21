@@ -80,6 +80,7 @@ translation must pick one word per row and use it in prose too.
 | `Microphone` | `settings.section.microphone` |
 | `Models` | `settings.section.models` |
 | `Clean-up` | `settings.section.refinement` |
+| `Meetings (Beta)` | `settings.section.meetings` |
 | `History` | `settings.section.history` |
 | `Diagnostics` | `settings.section.diagnostics` |
 | `Licence` | `settings.section.licence` |

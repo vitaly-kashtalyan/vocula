@@ -11942,7 +11942,7 @@
       }
     },
     "meetings.failure.export" : {
-      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when exporting a meeting's transcript to the file the user chose failed. Shown on one line above the list; a long translation wraps.",
+      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when exporting a meeting's transcript to the file the user chose failed. Shown as a row of its own, above the list when there is one; a long translation wraps.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12002,7 +12002,7 @@
       }
     },
     "meetings.failure.list" : {
-      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when the encrypted meetings could not be opened (for example the keychain refused the key). Shown on one line above the list; a long translation wraps.",
+      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when the encrypted meetings could not be opened (for example the keychain refused the key). Shown as a row of its own, above the list when there is one; a long translation wraps.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12062,7 +12062,7 @@
       }
     },
     "meetings.failure.notSaved" : {
-      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when renaming, pinning or deleting a meeting could not be written to disk. Shown on one line above the list; a long translation wraps.",
+      "comment" : "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when renaming, pinning or deleting a meeting could not be written to disk. Shown as a row of its own, above the list when there is one; a long translation wraps.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12242,7 +12242,7 @@
       }
     },
     "meetings.rename.field" : {
-      "comment" : "Label of the text field in the alert that names a meeting; spoken by VoiceOver. One short word.",
+      "comment" : "Label of the text field in the alert that names a meeting: spoken by VoiceOver, usually not drawn (the field shows the meeting's date as its placeholder). One short word.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12482,7 +12482,7 @@
       }
     },
     "meetings.status.recording" : {
-      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: it is being recorded right now. Short; drawn on the row's second line.",
+      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: it is being recorded right now. Short; drawn at the end of the row's last line.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12542,7 +12542,7 @@
       }
     },
     "meetings.status.transcribed" : {
-      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: its transcript is ready. Short; drawn on the row's second line beside the date and length.",
+      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: its transcript is ready. Short; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known).",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12602,7 +12602,7 @@
       }
     },
     "meetings.status.waiting" : {
-      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. Drawn on the row's second line beside the date and length.",
+      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. The longest of the three statuses; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {

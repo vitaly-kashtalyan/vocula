@@ -36,7 +36,7 @@ public enum MeetingMarkdown {
 
   public static func fileName(for title: String) -> String {
     var stem = ""
-    for character in title.trimmingCharacters(in: .whitespacesAndNewlines) {
+    for character in title {
       let next = character == "/" || character == ":" ? "-" : String(character)
       guard stem.utf8.count + next.utf8.count <= 200 else { break }
       stem += next

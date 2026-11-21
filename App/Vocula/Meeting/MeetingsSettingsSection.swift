@@ -45,15 +45,13 @@ struct MeetingsSettingsSection: View {
     .refreshOnActivate { meetings.sectionAppeared() }
     .alert(
       Text(MenuCopy.meetingRenameTitle),
-      isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })
-    ) {
+      isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } }),
+      presenting: renaming
+    ) { listing in
       TextField(
-        text: $renameText,
-        prompt: Text(verbatim: renaming.map { MenuCopy.meetingStart($0.startedAt) } ?? "")
+        text: $renameText, prompt: Text(verbatim: MenuCopy.meetingStart(listing.startedAt))
       ) { Text(MenuCopy.meetingRenameField) }
-      Button(MenuCopy.meetingRenameSave) {
-        if let listing = renaming { meetings.rename(listing.id, to: renameText) }
-      }
+      Button(MenuCopy.meetingRenameSave) { meetings.rename(listing.id, to: renameText) }
       Button(CommonCopy.cancel, role: .cancel) {}
     }
     .confirmationDialog(
@@ -130,14 +128,15 @@ struct MeetingRow: View {
   var body: some View {
     LabeledContent {
       Menu {
-        ForEach([MeetingAction.open, .rename, .pin, .export, .copy], id: \.self) { item($0) }
+        Button(MenuCopy.meetingOpen) { perform(.open) }.disabled(!allows(.open))
+        Button(MenuCopy.meetingRename) { perform(.rename) }.disabled(!allows(.rename))
+        Button(listing.isPinned ? MenuCopy.meetingUnpin : MenuCopy.meetingPin) { perform(.pin) }
+          .disabled(!allows(.pin))
+        Button(MenuCopy.meetingExport) { perform(.export) }.disabled(!allows(.export))
+        Button(MenuCopy.meetingCopy) { perform(.copy) }.disabled(!allows(.copy))
         Divider()
-        Button(role: .destructive) {
-          perform(.delete)
-        } label: {
-          label(for: .delete)
-        }
-        .disabled(!allows(.delete))
+        Button(MenuCopy.meetingDelete, role: .destructive) { perform(.delete) }
+          .disabled(!allows(.delete))
       } label: {
         Image(systemName: "ellipsis.circle")
       }
@@ -145,6 +144,7 @@ struct MeetingRow: View {
       .menuIndicator(.hidden)
       .fixedSize()
       .accessibilityLabel(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
+      .help(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
     } label: {
       VStack(alignment: .leading, spacing: 2) {
         HStack(spacing: 4) {
@@ -166,26 +166,6 @@ struct MeetingRow: View {
     }
   }
 
-  private func item(_ action: MeetingAction) -> some View {
-    Button {
-      perform(action)
-    } label: {
-      label(for: action)
-    }.disabled(!allows(action))
-  }
-
-  @ViewBuilder
-  private func label(for action: MeetingAction) -> some View {
-    switch action {
-    case .open: Text(MenuCopy.meetingOpen)
-    case .rename: Text(MenuCopy.meetingRename)
-    case .pin: Text(listing.isPinned ? MenuCopy.meetingUnpin : MenuCopy.meetingPin)
-    case .export: Text(MenuCopy.meetingExport)
-    case .copy: Text(MenuCopy.meetingCopy)
-    case .delete: Text(MenuCopy.meetingDelete)
-    }
-  }
-
   @ViewBuilder
   private var statusText: some View {
     switch status {
@@ -204,16 +184,13 @@ struct MeetingTranscriptSheet: View {
 
   private var lines: [String] {
     MeetingMarkdown.lines(
-      item.transcript,
-      labels: [
-        .me: String(localized: MenuCopy.meetingSpeakerMe),
-        .others: String(localized: MenuCopy.meetingSpeakerOthers),
-      ], includeMe: includeMe)
+      item.transcript, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe)
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text(verbatim: MeetingRow.title(of: item.listing)).font(.headline)
+        .accessibilityAddTraits(.isHeader)
       HStack(spacing: 6) {
         Text(verbatim: MenuCopy.meetingStart(item.listing.startedAt))
         Text(verbatim: MenuCopy.meetingLength(item.listing.duration))

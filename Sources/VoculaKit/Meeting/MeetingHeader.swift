@@ -81,8 +81,9 @@ public struct MeetingHeader: Codable, Equatable, Sendable {
   public static func name(from raw: String) -> String? {
     let flattened = String(
       raw.map { character in
-        character.unicodeScalars.allSatisfy { $0.properties.generalCategory == .control }
-          ? " " : character
+        character.unicodeScalars.allSatisfy {
+          [.control, .lineSeparator, .paragraphSeparator].contains($0.properties.generalCategory)
+        } ? " " : character
       })
     let trimmed = flattened.trimmingCharacters(in: .whitespacesAndNewlines)
     return trimmed.isEmpty ? nil : String(trimmed.prefix(100))

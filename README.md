@@ -172,7 +172,7 @@ silent recording, a refusal and a dead microphone all cost nothing.
   transcribed — each of its two tracks is stored whole as 16 kHz mono 16-bit
   samples, the other apps' track through its silences too, which is about 115 MB
   per track per hour, computed from that format, not measured — and then only its
-  transcript is kept, until you delete it by hand. Transcribing holds a second
+  transcript is kept, until you delete it in *Meetings (Beta)*. Transcribing holds a second
   copy of the recognition model in memory for as long as it runs.
 - Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
@@ -234,7 +234,7 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
-the 18 check English copy and skip whenever a language is set, so a run without
+the 19 check English copy and skip whenever a language is set, so a run without
 one is the only run that executes them.
 
 `swift test` never compiles `App/`, so a green run says nothing about whether the
@@ -313,7 +313,8 @@ Stated here rather than discovered later.
   of yours that repeats, two words or more in a row, what the other side just
   said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
   interrupted, keeps its audio until the next meeting you record ends.
-  *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting and
+  *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting it can
+  open and
   opens, renames, pins, exports as Markdown, copies and deletes one; a pinned
   meeting cannot be deleted. *Copy Transcript* in the menu copies a transcript
   as Markdown, with or without your own lines (*Include My Lines*); after Vocula

@@ -36,6 +36,7 @@ import Testing
     #expect(MeetingHeader.name(from: "  Weekly\tsync \n") == "Weekly sync")
     #expect(MeetingHeader.name(from: "a\u{7}b") == "a b")
     #expect(MeetingHeader.name(from: "a\u{200B}b") == "a\u{200B}b")
+    #expect(MeetingHeader.name(from: "a\u{2028}b\u{2029}c") == "a b c")
   }
 
   @Test func nameOfOnlyBlanksIsNoName() {

@@ -212,14 +212,10 @@ final class Meetings {
     guard let listing = status.meetings.first(where: { $0.id == id }) else { return .unavailable }
     switch await parts.transcript(id) {
     case .transcript(let transcript):
-      let labels: [MeetingSpeaker: String] = [
-        .me: String(localized: MenuCopy.meetingSpeakerMe),
-        .others: String(localized: MenuCopy.meetingSpeakerOthers),
-      ]
       return .transcript(
         MeetingMarkdown.render(
           transcript, title: listing.title, startedAt: listing.startedAt,
-          duration: listing.duration, labels: labels, includeMe: includeMe))
+          duration: listing.duration, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe))
     case .failed(let step, let code):
       return .failed(step: step, code: code)
     case .unavailable:
@@ -269,9 +265,11 @@ final class Meetings {
   nonisolated static func makeStore(isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy)
     -> MeetingStore?
   {
-    guard !isSecondCopy else { return nil }
-    return MeetingStore(directory: ApplicationSupport.directory.appendingPathComponent("Meetings"))
+    isSecondCopy ? nil : sharedStore
   }
+
+  private nonisolated static let sharedStore = MeetingStore(
+    directory: ApplicationSupport.directory.appendingPathComponent("Meetings"))
 
   static func live(log: DiagnosticLog?, recover: Bool) -> MeetingRecorder.Dependencies? {
     guard let store = makeStore() else { return nil }
