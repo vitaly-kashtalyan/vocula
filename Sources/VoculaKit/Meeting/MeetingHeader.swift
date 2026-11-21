@@ -73,6 +73,20 @@ public struct MeetingHeader: Codable, Equatable, Sendable {
   public private(set) var state: MeetingState
   public private(set) var endedBy: MeetingEnd?
   public var dictations: [DictationSpan]
+  public var title: String?
+  public var pinned: Bool?
+
+  public var isPinned: Bool { pinned == true }
+
+  public static func name(from raw: String) -> String? {
+    let flattened = String(
+      raw.map { character in
+        character.unicodeScalars.allSatisfy { $0.properties.generalCategory == .control }
+          ? " " : character
+      })
+    let trimmed = flattened.trimmingCharacters(in: .whitespacesAndNewlines)
+    return trimmed.isEmpty ? nil : String(trimmed.prefix(100))
+  }
 
   public init(id: UUID, startedAt: Date, anchor: UInt64) {
     self.id = id
