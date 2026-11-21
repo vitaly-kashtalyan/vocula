@@ -211,4 +211,10 @@ extension MenuCopy {
     comment:
       "Menu line after Record failed, shown until Dismiss or the next recording; also spoken by VoiceOver when it appears. \"login keychain\" is Apple's name: write it as a Mac set to this language shows it (see Localization/glossary.md). Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
+
+  static let meetingsListFailed = LocalizedStringResource(
+    "meetings.failure.list", defaultValue: "Meetings could not be read.",
+    comment:
+      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when the encrypted meetings could not be opened (for example the keychain refused the key). Shown on one line above the list; a long translation wraps."
+  )
 }

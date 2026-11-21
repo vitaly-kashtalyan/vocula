@@ -19,7 +19,13 @@ final class Meetings {
   private var signals: StreamFanout<DictationSignal>?
   private let parts: MeetingTranscriptionParts
   private var schedule = MeetingPassSchedule()
-  private(set) var pass: Task<Void, Never>?
+  private var listings = MeetingPassSchedule()
+  private var stopsInFlight = 0
+  private var loggedNoKey = false
+  private var lastListingFailure: MeetingListingOutcome?
+  private(set) var pass: Task<Void, Never>? {
+    didSet { publishBusy() }
+  }
   private(set) var refreshing: Task<Void, Never>?
 
   init(
@@ -58,12 +64,15 @@ final class Meetings {
       status.clearTranscriptionOutcome()
       let recorder = MeetingRecorder(dependencies)
       self.recorder = recorder
+      publishBusy()
       if let signals { follow(signals) }
       return Task { await recorder.start() }
     }
   }
 
   func dismiss() { status.dismiss() }
+
+  func sectionAppeared() { requestListing() }
 
   func apply(_ new: MeetingStatus, of meeting: Int) {
     guard meetingSwitch.isCurrent(meeting), !(new.isRecording && concluded == meeting) else {
@@ -72,7 +81,7 @@ final class Meetings {
     let started = new.isRecording && !status.isRecording
     if new.isRecording { meetingSwitch.began(meeting) } else { concluded = meeting }
     status.update(new)
-    if started { refreshListing() }
+    if started { requestListing() }
   }
 
   @discardableResult
@@ -163,15 +172,20 @@ final class Meetings {
     self.recorder = nil
     self.follower = nil
     follower?.cancel()
+    stopsInFlight += 1
+    publishBusy()
     stopping = Task {
       await follower?.value
       await recorder?.stop(.stopped)
       await previous?.value
+      self.stopsInFlight -= 1
+      self.publishBusy()
       await self.meetingEnded()
     }
   }
 
   private func meetingEnded() async {
+    requestListing()
     if status.notice != .cannotStart,
       schedule.requested()
     {
@@ -195,19 +209,38 @@ final class Meetings {
 
   private func passEnded() async {
     pass = nil
-    refreshListing()
+    requestListing()
     if schedule.passEnded() {
       await startPass()
     }
   }
 
-  private func refreshListing() {
+  private func publishBusy() {
+    status.update(busy: recorder != nil || stopsInFlight > 0, passRunning: pass != nil)
+  }
+
+  private func requestListing() {
+    guard listings.requested() else { return }
     let listing = parts.listing
     let log = diagnosticLog()
     refreshing = Task {
-      if let found = await listing(log) {
-        status.update(transcripts: MeetingListing.transcribed(found))
-      }
+      repeat {
+        received(await listing(log), log: log)
+      } while listings.passEnded()
     }
+  }
+
+  private func received(_ outcome: MeetingListingOutcome, log: DiagnosticLog?) {
+    switch outcome {
+    case .noKey(holdsMeetings: true) where !loggedNoKey:
+      loggedNoKey = true
+      log?.record("meeting.transcribeFailed", "step=key code=\(MeetingKeyRule.itemNotFound)")
+    case .unreadable(let step, let code) where lastListingFailure != outcome:
+      log?.record("meeting.transcribeFailed", "step=\(step) code=\(code)")
+    default:
+      break
+    }
+    lastListingFailure = outcome.isUnreadable ? outcome : nil
+    status.update(listing: outcome)
   }
 }

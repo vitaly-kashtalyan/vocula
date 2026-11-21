@@ -9,7 +9,7 @@ struct MeetingTranscriptionParts {
 
   var makeTranscriber:
     @MainActor (_ log: DiagnosticLog?, _ publish: @escaping Publish) -> MeetingTranscriber?
-  var listing: @Sendable (_ log: DiagnosticLog?) async -> [MeetingListing]?
+  var listing: @Sendable (_ log: DiagnosticLog?) async -> MeetingListingOutcome
   var transcript: @Sendable (_ id: UUID, _ log: DiagnosticLog?) async -> MeetingTranscript?
   var paste: @MainActor (String) -> Void
 
@@ -41,14 +41,27 @@ struct MeetingTranscriptionParts {
         log: log))
   }
 
-  nonisolated static func liveListing(log: DiagnosticLog?) async -> [MeetingListing]? {
-    guard let store = Meetings.makeStore() else { return nil }
+  nonisolated static func liveListing(log: DiagnosticLog?) async -> MeetingListingOutcome {
+    guard let store = Meetings.makeStore() else { return .meetings([]) }
     do {
-      return try await store.listing(cipher: existingKey())
+      let found = try await store.listing(cipher: existingKey())
+      await sweep(store.tombstones(), log: log)
+      return .meetings(found)
     } catch {
-      record(error, otherwise: "list", in: log)
-      return nil
+      return .failed(error) { store.holdsMeetings() }
     }
+  }
+
+  private nonisolated static func sweep(_ tombstones: [URL], log: DiagnosticLog?) async {
+    guard !tombstones.isEmpty else { return }
+    await Task.detached(priority: .utility) {
+      for tombstone in tombstones {
+        do { try MeetingStore.removeTombstone(tombstone) } catch {
+          guard case MeetingStoreError.failed(let step, let code) = error else { continue }
+          log?.record("meeting.storeFailed", "action=delete step=\(step) code=\(code)")
+        }
+      }
+    }.value
   }
 
   nonisolated static func liveTranscript(_ id: UUID, log: DiagnosticLog?) async
