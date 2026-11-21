@@ -49,6 +49,13 @@ final class SettingsWindowUITests: XCTestCase {
     waitForTitle("History", of: window)
   }
 
+  func testTheMeetingsSectionOpensToItsEmptyState() throws {
+    let window = try openSection("meetings")
+    XCTAssertTrue(
+      window.staticTexts["meetings.empty"].waitForExistence(timeout: 5),
+      "the Meetings section of a second copy should show its empty line")
+  }
+
   func testTheStatusItemOpensTheAppsOwnMenu() throws {
     try XCTSkipUnless(
       ProcessInfo.processInfo.environment["VOCULA_UI_LANG"] == nil,
