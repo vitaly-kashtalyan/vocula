@@ -116,7 +116,7 @@ struct HotkeyMonitorTests {
     #expect(harness.send(modifier(Code.fn, 0)) == false)
   }
 
-  @Test("a foreign key while the record key is held cancels the session")
+  @Test("a foreign key in the first second of a hold cancels the session")
   func foreignKeyCancels() {
     let harness = Harness()
     harness.at(0)
@@ -137,6 +137,16 @@ struct HotkeyMonitorTests {
     harness.at(2_000)
     harness.send(modifier(Code.fn, 0))
     #expect(harness.emitted.count == 2)
+  }
+
+  @Test("a stray modifier after the first second stops the session too")
+  func aLateStrayModifierStops() {
+    let harness = Harness()
+    harness.at(0)
+    harness.send(modifier(Code.fn, Bit.fn))
+    harness.at(1_500)
+    #expect(harness.send(modifier(Code.shift, flags(Bit.fn, Bit.shift, Bit.leftShift))) == false)
+    #expect(harness.emitted.last == .stop(session: 1, reason: .collision))
   }
 
   @Test("ordinary typing is passed through and starts nothing")
