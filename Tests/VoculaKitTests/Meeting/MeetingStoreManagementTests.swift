@@ -80,6 +80,14 @@ import Testing
     #expect(try await store.listing(cipher: cipher).count == 1)
   }
 
+  @Test func meetingsNoneOfWhichOpenFailRatherThanListNothing() async throws {
+    let store = MeetingStore(directory: meetingTemporaryDirectory())
+    _ = try await meeting(in: store, at: 100)
+    await #expect(throws: MeetingStoreError.failed(step: "open", code: 0)) {
+      try await store.listing(cipher: Refusing())
+    }
+  }
+
   @Test func deletingWhileItRecordsIsRefused() async throws {
     let store = MeetingStore(directory: meetingTemporaryDirectory())
     let header = try await meeting(in: store, at: 100, recorded: false)

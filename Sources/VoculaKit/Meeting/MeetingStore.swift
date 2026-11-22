@@ -91,7 +91,8 @@ public actor MeetingStore {
   }
 
   public func listing(cipher: any HistoryCipher) throws -> [MeetingListing] {
-    try meetingIDs().compactMap { id -> MeetingListing? in
+    let ids = try meetingIDs()
+    let found = ids.compactMap { id -> MeetingListing? in
       guard let header = header(of: id, cipher: cipher) else { return nil }
       return MeetingListing(
         id: id, startedAt: header.startedAt,
@@ -100,6 +101,8 @@ public actor MeetingStore {
         isRecordingState: header.state == .recording,
         hasTranscript: FileManager.default.fileExists(atPath: transcriptURL(id).path))
     }
+    if found.isEmpty, !ids.isEmpty { throw MeetingStoreError.failed(step: "open", code: 0) }
+    return found
   }
 
   public nonisolated func holdsMeetings() -> Bool {
