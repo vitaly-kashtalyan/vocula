@@ -40,15 +40,36 @@ struct GestureEdgeTests {
   }
 
   @Test(
-    "a foreign key cancels a held bare modifier however late it arrives",
+    "a foreign key after the cancel window stops the session and keeps what was said",
     arguments: [KeyBinding.fn, pairBinding])
-  func collisionDoesNotExpireWhileTheModifierIsHeld(binding: KeyBinding) {
+  func aLateCollisionStopsInsteadOfCancelling(binding: KeyBinding) {
     var sm = machine(binding)
     _ = sm.handle(.bindingDown(ms(0)))
     _ = sm.handle(.tick(ms(250)))
     let out = sm.handle(.foreignKey(ms(3_000)))
-    #expect(out.signals == [.cancel(session: 1, reason: .collision)])
+    #expect(out.signals == [.stop(session: 1, reason: .collision)])
     #expect(sm.isRecording == false)
+  }
+
+  @Test("the cancel window ends at exactly one second")
+  func theCancelWindowEndsAtOneSecond() {
+    var early = machine(.fn)
+    _ = early.handle(.bindingDown(ms(0)))
+    #expect(
+      early.handle(.foreignKey(ms(999))).signals == [.cancel(session: 1, reason: .collision)])
+    var late = machine(.fn)
+    _ = late.handle(.bindingDown(ms(0)))
+    #expect(late.handle(.foreignKey(ms(1_000))).signals == [.stop(session: 1, reason: .collision)])
+  }
+
+  @Test("after a late collision the held key is spent until it is pressed again")
+  func aLateCollisionSpendsTheHold() {
+    var sm = machine(.fn)
+    _ = sm.handle(.bindingDown(ms(0)))
+    _ = sm.handle(.foreignKey(ms(2_000)))
+    #expect(sm.handle(.foreignKey(ms(2_100))).signals.isEmpty)
+    #expect(sm.handle(.bindingUp(ms(2_500))).signals.isEmpty)
+    #expect(sm.handle(.bindingDown(ms(3_000))).signals == [.start(session: 2)])
   }
 
   @Test(

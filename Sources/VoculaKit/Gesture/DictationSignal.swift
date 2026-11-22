@@ -3,6 +3,7 @@ import Foundation
 public enum StopReason: String, Sendable, Equatable {
   case releasedHold
   case durationLimit
+  case collision
 }
 
 public enum CancelReason: String, Sendable, Equatable {

@@ -6,6 +6,7 @@ public struct Timings: Sendable, Equatable {
   public static let implausibleHold: Duration = .seconds(30)
   public static let implausibleRetap: Duration = .milliseconds(400)
   public var maxRecording: Duration
+  public var collisionCancelWindow: Duration
   public var whisperPass: Duration
   public var queueWait: Duration
   public var maxPending: Int
@@ -15,6 +16,7 @@ public struct Timings: Sendable, Equatable {
   public init(
     minRecording: Duration = .milliseconds(300),
     maxRecording: Duration = .seconds(180),
+    collisionCancelWindow: Duration = .seconds(1),
     whisperPass: Duration = .seconds(30),
     queueWait: Duration = .seconds(120),
     maxPending: Int = 8,
@@ -23,6 +25,7 @@ public struct Timings: Sendable, Equatable {
   ) {
     self.minRecording = minRecording
     self.maxRecording = maxRecording
+    self.collisionCancelWindow = collisionCancelWindow
     self.whisperPass = whisperPass
     self.queueWait = queueWait
     self.maxPending = maxPending
