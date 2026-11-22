@@ -127,6 +127,7 @@ public final class DiagnosticLog: @unchecked Sendable {
     "meeting.systemZeros",
     "meeting.transcribed",
     "meeting.transcribeFailed",
+    "meeting.storeFailed",
   ]
 
   enum FieldShape {
@@ -172,6 +173,7 @@ public final class DiagnosticLog: @unchecked Sendable {
     "state": .identifier,
     "error": .identifier,
     "domain": .identifier,
+    "action": .identifier,
     "code": .number,
     "tls": .number,
     "step": .identifier,

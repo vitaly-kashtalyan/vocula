@@ -28,6 +28,7 @@ struct UnlocalizedProseTests {
     "ModelManifest.swift",
     "StopPhrases.swift",
     "RefinePrompt.swift",
+    "MeetingFixture.swift",
   ]
 
   private static func appSources() throws -> [(path: String, lines: [String])] {

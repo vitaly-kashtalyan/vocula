@@ -37,6 +37,63 @@ import Testing
         """)
   }
 
+  @Test func aNamedExportStartsWithItsTitle() {
+    let text = MeetingMarkdown.render(
+      MeetingTranscript(
+        model: "m",
+        utterances: [MeetingUtterance(start: 4.6, end: 6, speaker: .me, text: "Hi.")]),
+      title: #"Q3 "plan" \ review"#, startedAt: started, duration: 2832, labels: labels,
+      includeMe: true)
+    #expect(
+      text == #"""
+        ---
+        title: "Q3 \"plan\" \\ review"
+        date: 2026-11-19T09:30:00Z
+        duration: 00:47:12
+        speakers: [Me]
+        ---
+
+        **Me** [00:00:04]: Hi.
+
+        """#)
+  }
+
+  @Test func plainLinesForTheSheet() {
+    let transcript = MeetingTranscript(
+      model: "m",
+      utterances: [
+        MeetingUtterance(start: 4.6, end: 6, speaker: .me, text: "Let's start."),
+        MeetingUtterance(start: 11, end: 12, speaker: .others, text: "Green."),
+      ])
+    #expect(
+      MeetingMarkdown.lines(transcript, labels: labels, includeMe: true)
+        == ["Me [00:00:04]: Let's start.", "Others [00:00:11]: Green."])
+    #expect(
+      MeetingMarkdown.lines(transcript, labels: labels, includeMe: false)
+        == ["Others [00:00:11]: Green."])
+  }
+
+  @Test func fileNameReplacesSeparators() {
+    #expect(MeetingMarkdown.fileName(for: "Q3: plan/review") == "Q3- plan-review.md")
+  }
+
+  @Test func fileNameOfSeparatorsOnly() {
+    #expect(MeetingMarkdown.fileName(for: "/:/") == "---.md")
+  }
+
+  @Test func fileNameCutsAtACharacter() {
+    let cyrillic = MeetingMarkdown.fileName(for: String(repeating: "ж", count: 150))
+    #expect(cyrillic.hasSuffix(".md"))
+    let stem = String(cyrillic.dropLast(3))
+    #expect(stem.utf8.count <= 200)
+    #expect(stem.allSatisfy { $0 == "ж" })
+    let family = "👨‍👩‍👧"
+    let emoji = String(
+      MeetingMarkdown.fileName(for: String(repeating: family, count: 60)).dropLast(3))
+    #expect(emoji.utf8.count <= 200)
+    #expect(emoji.allSatisfy { String($0) == family })
+  }
+
   @Test func myLinesCanBeLeftOut() {
     let lines = [
       MeetingUtterance(start: 1, end: 2, speaker: .me, text: "mine"),

@@ -215,8 +215,17 @@ private struct NoSpeech: SpeechDetecting {
 private final class PassProbe {
   var made = 0
   var blocking = false
-  var listing: [MeetingListing]?
+  var outcome: MeetingListingOutcome = .meetings([])
+  var listings = 0
+  var listingGate: Latch?
   var transcript: MeetingTranscript?
+  var headerResult: MeetingActionResult = .done
+  var editedHeaders: [MeetingHeader] = []
+  var deleteResult: MeetingActionResult = .done
+  var deletes = 0
+  var deleteGate: Latch?
+  var writeResult: MeetingActionResult = .done
+  var written: [(Data, URL)] = []
   var pasted: [String] = []
   let cipherGate = Latch()
 
@@ -237,8 +246,39 @@ private final class PassProbe {
             makeDetector: { NoSpeech() }, now: { 0 },
             sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))
       },
-      listing: { [self] _ in await self.listing },
-      transcript: { [self] _, _ in await self.transcript },
+      listing: { [self] _ in
+        let gate = await MainActor.run {
+          listings += 1
+          return listingGate
+        }
+        await gate?.wait()
+        return await self.outcome
+      },
+      transcript: { [self] _ in
+        await self.transcript.map(MeetingReadResult.transcript) ?? .failed(step: "read", code: 5)
+      },
+      updateHeader: { [self] id, _, change in
+        await MainActor.run {
+          var header = MeetingHeader(id: id, startedAt: Date(timeIntervalSince1970: 0), anchor: 0)
+          change(&header)
+          editedHeaders.append(header)
+          return headerResult
+        }
+      },
+      delete: { [self] _, _ in
+        let gate = await MainActor.run {
+          deletes += 1
+          return deleteGate
+        }
+        await gate?.wait()
+        return await deleteResult
+      },
+      write: { [self] data, url in
+        await MainActor.run {
+          written.append((data, url))
+          return writeResult
+        }
+      },
       paste: { [self] in pasted.append($0) })
   }
 }
@@ -263,6 +303,7 @@ private final class Rig {
   let ticks = ManualSleeper()
   let fanout = StreamFanout<DictationSignal>(bufferingPolicy: .unbounded)
   let passes = PassProbe()
+  var spoken: [String] = []
   let root: URL
   let store: MeetingStore
   let log: DiagnosticLog
@@ -277,7 +318,7 @@ private final class Rig {
 
   lazy var meetings = Meetings(
     diagnosticLog: { [log] in log },
-    status: MeetingStatusModel(announce: { _ in }),
+    status: MeetingStatusModel(announce: { [weak self] in self?.spoken.append($0) }),
     makeDependencies: { [weak self] log, recover in
       self?.dependencies(log: log, recover: recover)
     },
@@ -444,23 +485,305 @@ struct MeetingsTests {
     let rig = Rig()
     let listing = MeetingListing(
       id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
-    rig.passes.listing = [listing]
+    rig.passes.outcome = .meetings([listing])
     try await rig.record()
     await rig.meetings.refreshing?.value
     #expect(rig.meetings.status.transcripts == [listing])
-    rig.passes.listing = nil
+    rig.passes.outcome = .unreadable(step: "key", code: -25308)
     await finishes(rig.meetings.toggle())
     await rig.meetings.refreshing?.value
     #expect(rig.meetings.status.transcripts == [listing])
+  }
+
+  @Test func renameStoresTheRuledName() async {
+    let rig = Rig()
+    await rig.meetings.rename(UUID(), to: "  Sync\n").value
+    #expect(rig.passes.editedHeaders.map(\.title) == ["Sync"])
+    await rig.meetings.rename(UUID(), to: " ").value
+    #expect(rig.passes.editedHeaders.last?.title == nil)
+  }
+
+  @Test func pinIsStored() async {
+    let rig = Rig()
+    await rig.meetings.setPinned(UUID(), true).value
+    await rig.meetings.setPinned(UUID(), false).value
+    #expect(rig.passes.editedHeaders.map(\.isPinned) == [true, false])
+  }
+
+  @Test func aFailedRenameShowsTheLineAndClearsOnTheNextSuccess() async {
+    let rig = Rig()
+    rig.passes.headerResult = .failed(step: "write", code: 28)
+    await rig.meetings.rename(UUID(), to: "Sync").value
+    #expect(rig.meetings.status.sectionFailure == .notSaved)
+    #expect(rig.spoken.count == 1)
+    rig.passes.headerResult = .done
+    await rig.meetings.setPinned(UUID(), true).value
+    #expect(rig.meetings.status.sectionFailure == nil)
+  }
+
+  @Test func aFailedRenameLogsItsStepButNeverTheName() async {
+    let rig = Rig()
+    rig.passes.headerResult = .failed(step: "write", code: 28)
+    await rig.meetings.rename(UUID(), to: "Quarterly review").value
+    let lines = rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+    #expect(lines == ["action=rename step=write code=28"])
+    #expect(rig.log.recent(10).allSatisfy { !$0.detail.contains("Quarterly") })
+  }
+
+  @Test func aRefusedRenameShowsNothingAndRelists() async {
+    let rig = Rig()
+    rig.passes.headerResult = .refused
+    await rig.meetings.rename(UUID(), to: "Sync").value
+    await rig.meetings.refreshing?.value
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(rig.spoken.isEmpty)
+    #expect(rig.passes.listings == 1)
+  }
+
+  private func listed(_ rig: Rig) -> UUID {
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+      ]))
+    return id
+  }
+
+  @Test func deleteIsRefusedDuringAPass() async throws {
+    let rig = Rig()
+    rig.passes.blocking = true
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    let id = listed(rig)
+    await rig.meetings.delete(id).value
+    #expect(rig.passes.deletes == 0)
+    rig.passes.cipherGate.open()
+    await rig.meetings.pass?.value
+  }
+
+  @Test func aPassWaitsForADeleteInFlight() async throws {
+    let rig = Rig()
+    let gate = Latch()
+    rig.passes.deleteGate = gate
+    try await rig.record()
+    let id = listed(rig)
+    let deleting = rig.meetings.delete(id)
+    for _ in 0..<50 where rig.passes.deletes == 0 { await Task.yield() }
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 0)
+    gate.open()
+    await deleting.value
+    #expect(rig.passes.made == 1)
+  }
+
+  @Test func aRefusedDeleteShowsNothingAndRelists() async {
+    let rig = Rig()
+    rig.passes.deleteResult = .refused
+    await rig.meetings.delete(listed(rig)).value
+    await rig.meetings.refreshing?.value
+    #expect(rig.passes.deletes == 1)
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(rig.spoken.isEmpty)
+    #expect(rig.passes.listings == 1)
+  }
+
+  @Test func aPinnedMeetingIsNeverSentToTheStore() async {
+    let rig = Rig()
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(
+          id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 60, isPinned: true)
+      ]))
+    await rig.meetings.delete(id).value
+    #expect(rig.passes.deletes == 0)
+  }
+
+  private func named(_ rig: Rig, _ title: String?) -> UUID {
+    let id = UUID()
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(
+          id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3, title: title)
+      ]))
+    rig.passes.transcript = MeetingTranscript(
+      model: "m", utterances: [MeetingUtterance(start: 1, end: 2, speaker: .others, text: "hi")])
+    return id
+  }
+
+  @Test func aNamedMeetingCopiesWithItsTitle() async {
+    let rig = Rig()
+    let id = named(rig, "Sync")
+    await rig.meetings.copyTranscript(id, includeMe: true).value
+    await rig.meetings.copyFromSection(id, includeMe: true).value
+    #expect(rig.passes.pasted.count == 2)
+    #expect(rig.passes.pasted.allSatisfy { $0.hasPrefix("---\ntitle: \"Sync\"\ndate: ") })
+  }
+
+  @Test func anUnnamedMeetingCopiesWithoutATitle() async {
+    let rig = Rig()
+    await rig.meetings.copyFromSection(named(rig, nil), includeMe: true).value
+    #expect(rig.passes.pasted.first?.hasPrefix("---\ndate: ") == true)
+  }
+
+  @Test func exportDataIsTheCopyMarkdown() async {
+    let rig = Rig()
+    let id = named(rig, "Sync")
+    await rig.meetings.copyFromSection(id, includeMe: false).value
+    let data = await rig.meetings.exportData(id, includeMe: false)
+    #expect(data.map { String(decoding: $0, as: UTF8.self) } == rig.passes.pasted.first)
+  }
+
+  @Test func anExportThatCannotBeWrittenShowsTheLine() async {
+    let rig = Rig()
+    rig.passes.writeResult = .failed(step: "write", code: 13)
+    await rig.meetings.write(Data("x".utf8), to: URL(fileURLWithPath: "/tmp/x.md")).value
+    #expect(rig.meetings.status.sectionFailure == .exportNotWritten)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+        == ["action=export step=write code=13"])
+  }
+
+  @Test func aTranscriptThatWillNotOpenShowsTheLine() async {
+    let rig = Rig()
+    let id = named(rig, nil)
+    rig.passes.transcript = nil
+    #expect(await rig.meetings.open(id) == nil)
+    #expect(rig.meetings.status.sectionFailure == .transcriptUnreadable)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+        == ["action=open step=read code=5"])
+  }
+
+  @Test func theMenuCopyStillLogsTranscribeFailed() async {
+    let rig = Rig()
+    let id = named(rig, nil)
+    rig.passes.transcript = nil
+    await rig.meetings.copyTranscript(id, includeMe: true).value
+    #expect(rig.meetings.status.copyFailed)
+    #expect(rig.meetings.status.sectionFailure == nil)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.transcribeFailed" }.map(\.detail)
+        == ["step=read code=5"])
+  }
+
+  @Test func theSectionAppearingLists() async {
+    let rig = Rig()
+    let listing = MeetingListing(
+      id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+    rig.passes.outcome = .meetings([listing])
+    rig.meetings.sectionAppeared()
+    await rig.meetings.refreshing?.value
+    #expect(rig.passes.listings == 1)
+    #expect(rig.meetings.status.meetings == [listing])
+    #expect(rig.meetings.status.sectionContent == .list)
+  }
+
+  @Test func listingsNeverOverlapAndRunOnceMore() async {
+    let rig = Rig()
+    let gate = Latch()
+    rig.passes.listingGate = gate
+    rig.meetings.sectionAppeared()
+    for _ in 0..<50 where rig.passes.listings == 0 { await Task.yield() }
+    rig.meetings.sectionAppeared()
+    rig.meetings.sectionAppeared()
+    #expect(rig.passes.listings == 1)
+    rig.passes.listingGate = nil
+    gate.open()
+    await rig.meetings.refreshing?.value
+    #expect(rig.passes.listings == 2)
+  }
+
+  @Test func noKeyWithAnEmptyFolderIsEmptyAndUnlogged() async {
+    let rig = Rig()
+    rig.passes.outcome = .noKey(holdsMeetings: false)
+    rig.meetings.sectionAppeared()
+    await rig.meetings.refreshing?.value
+    #expect(rig.meetings.status.sectionContent == .empty)
+    #expect(rig.log.recent(10).allSatisfy { !$0.kind.hasPrefix("meeting.") })
+  }
+
+  @Test func noKeyWithMeetingsIsLoggedOnce() async {
+    let rig = Rig()
+    rig.passes.outcome = .noKey(holdsMeetings: true)
+    for _ in 0..<2 {
+      rig.meetings.sectionAppeared()
+      await rig.meetings.refreshing?.value
+    }
+    #expect(rig.meetings.status.sectionContent == .lineAlone)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.transcribeFailed" }.map(\.detail)
+        == ["step=key code=-25300"])
+  }
+
+  @Test func anUnreadableListingLogsOnChangeOnly() async {
+    let rig = Rig()
+    rig.passes.outcome = .unreadable(step: "key", code: -25308)
+    for _ in 0..<2 {
+      rig.meetings.sectionAppeared()
+      await rig.meetings.refreshing?.value
+    }
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.transcribeFailed" }.map(\.detail)
+        == ["step=key code=-25308"])
+    rig.passes.outcome = .meetings([])
+    rig.meetings.sectionAppeared()
+    await rig.meetings.refreshing?.value
+    rig.passes.outcome = .unreadable(step: "key", code: -25308)
+    rig.meetings.sectionAppeared()
+    await rig.meetings.refreshing?.value
+    #expect(rig.log.recent(10).filter { $0.kind == "meeting.transcribeFailed" }.count == 2)
+  }
+
+  @Test func aStopFinishingLists() async throws {
+    let rig = Rig()
+    rig.passes.blocking = true
+    try await rig.record()
+    await rig.meetings.refreshing?.value
+    let before = rig.passes.listings
+    await finishes(rig.meetings.toggle())
+    await rig.meetings.refreshing?.value
+    #expect(rig.passes.listings == before + 1)
+    rig.passes.cipherGate.open()
+    await rig.meetings.pass?.value
+  }
+
+  @Test func busyCoversOverlappingStops() async throws {
+    let rig = Rig(systemFinish: .gated, .gated)
+    try await rig.record()
+    #expect(rig.meetings.status.busy)
+    rig.meetings.toggle()
+    await rig.systems[0].finishCalled.wait()
+    try await rig.record()
+    let second = rig.meetings.toggle()
+    await rig.systems[1].finishCalled.wait()
+    rig.systems[0].openFinish()
+    for _ in 0..<200 where rig.passes.made == 0 { await Task.yield() }
+    #expect(rig.meetings.status.busy)
+    rig.systems[1].openFinish()
+    await finishes(second)
+    #expect(!rig.meetings.status.busy)
+  }
+
+  @Test func passRunningIsMirrored() async throws {
+    let rig = Rig()
+    rig.passes.blocking = true
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    #expect(rig.meetings.status.passRunning)
+    rig.passes.cipherGate.open()
+    await rig.meetings.pass?.value
+    #expect(!rig.meetings.status.passRunning)
   }
 
   @Test func copyPutsMarkdownOnThePasteboard() async {
     let rig = Rig()
     let id = UUID()
     rig.meetings.status.transcriptUnreadable()
-    rig.meetings.status.update(transcripts: [
-      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
-    ])
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
+      ]))
     rig.passes.transcript = MeetingTranscript(
       model: "largeV3Turbo",
       utterances: [
@@ -478,9 +801,10 @@ struct MeetingsTests {
   @Test func aCopyCanLeaveMyLinesOut() async {
     let rig = Rig()
     let id = UUID()
-    rig.meetings.status.update(transcripts: [
-      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 9)
-    ])
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 9)
+      ]))
     rig.passes.transcript = MeetingTranscript(
       model: "largeV3Turbo",
       utterances: [
@@ -495,9 +819,10 @@ struct MeetingsTests {
   @Test func anUnreadableCopyIsShown() async {
     let rig = Rig()
     let id = UUID()
-    rig.meetings.status.update(transcripts: [
-      MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
-    ])
+    rig.meetings.status.update(
+      listing: .meetings([
+        MeetingListing(id: id, startedAt: Date(timeIntervalSince1970: 0), duration: 3)
+      ]))
     await rig.meetings.copyTranscript(id, includeMe: true).value
     #expect(rig.passes.pasted.isEmpty)
     #expect(rig.meetings.status.copyFailed)
@@ -589,8 +914,11 @@ struct MeetingsTests {
   }
 
   @Test func aSecondCopyListsNoTranscripts() async {
-    #expect(await MeetingTranscriptionParts.liveListing(log: nil) == nil)
-    #expect(await MeetingTranscriptionParts.liveTranscript(UUID(), log: nil) == nil)
+    #expect(await MeetingTranscriptionParts.liveListing(log: nil) == .meetings([]))
+    #expect(await MeetingTranscriptionParts.liveRead(UUID()) == .unavailable)
+    #expect(
+      await MeetingTranscriptionParts.liveUpdateHeader(UUID(), busy: false) { _ in } == .refused)
+    #expect(await MeetingTranscriptionParts.liveDelete(UUID(), busy: false) == .refused)
   }
 
   @Test func aSecondCopyCreatesNoStore() {

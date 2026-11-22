@@ -224,9 +224,40 @@ struct MeetingStatusModelTests {
     model.update(transcription: .running(percent: 5))
     model.update(transcription: .running(percent: 6))
     #expect(!fired.raised)
-    model.update(transcripts: [
-      MeetingListing(id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
-    ])
+    model.update(
+      listing: .meetings([
+        MeetingListing(id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 60)
+      ]))
     #expect(fired.raised)
+  }
+
+  @Test func theSubmenuSeesOnlyTranscribedMeetings() {
+    let (model, _) = make()
+    let done = MeetingListing(id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 6)
+    let waiting = MeetingListing(
+      id: UUID(), startedAt: Date(timeIntervalSince1970: 9), duration: 6, hasTranscript: false)
+    model.update(listing: .meetings([waiting, done]))
+    #expect(model.transcripts == [done])
+    #expect(model.meetings.count == 2)
+  }
+
+  @Test func readingUntilTheFirstListingThenTheLineAloneWhenItFails() {
+    let (model, spoken) = make()
+    #expect(model.sectionContent == .reading)
+    model.update(listing: .unreadable(step: "key", code: -25308))
+    #expect(model.sectionContent == .lineAlone)
+    model.update(listing: .unreadable(step: "key", code: -25308))
+    #expect(spoken.lines.count == 1)
+  }
+
+  @Test func anUnreadableListingKeepsTheLastListAndClearsOnSuccess() {
+    let (model, _) = make()
+    let done = MeetingListing(id: UUID(), startedAt: Date(timeIntervalSince1970: 0), duration: 6)
+    model.update(listing: .meetings([done]))
+    model.update(listing: .noKey(holdsMeetings: true))
+    #expect(model.meetings == [done])
+    #expect(model.listUnreadable)
+    model.update(listing: .meetings([done]))
+    #expect(!model.listUnreadable)
   }
 }

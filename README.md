@@ -114,10 +114,10 @@ and dropped. *Record Meeting (Beta)* keeps the microphone open until the meeting
 stops, records the sound other apps play through macOS's System Audio Recording
 permission, and keeps both on disk, encrypted under their own key, until it has
 transcribed them on this Mac — then the audio is deleted and the encrypted
-transcript kept; this version cannot delete a meeting inside the app.
+transcript kept, until you delete the meeting in *Meetings (Beta)*.
 Insertion goes through the system pasteboard for about a second, which other
 applications can read, and *Copy Transcript* puts a meeting's transcript there
-as plain Markdown. All four are in [PRIVACY.md](PRIVACY.md), at length,
+as plain Markdown; *Export…* writes it to a file you choose. All four are in [PRIVACY.md](PRIVACY.md), at length,
 along with what none of this protects you from.
 
 ## Install
@@ -172,7 +172,7 @@ silent recording, a refusal and a dead microphone all cost nothing.
   transcribed — each of its two tracks is stored whole as 16 kHz mono 16-bit
   samples, the other apps' track through its silences too, which is about 115 MB
   per track per hour, computed from that format, not measured — and then only its
-  transcript is kept, until you delete it by hand. Transcribing holds a second
+  transcript is kept, until you delete it in *Meetings (Beta)*. Transcribing holds a second
   copy of the recognition model in memory for as long as it runs.
 - Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
@@ -230,11 +230,11 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1547 tests: 1186 from `swift test`, 343 in the hosted app bundle, 18 driving the
+1617 tests: 1219 from `swift test`, 375 in the hosted app bundle, 23 driving the
 real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
-the 18 check English copy and skip whenever a language is set, so a run without
+the 23 check English copy and skip whenever a language is set, so a run without
 one is the only run that executes them.
 
 `swift test` never compiles `App/`, so a green run says nothing about whether the
@@ -312,14 +312,15 @@ Stated here rather than discovered later.
   deletes the audio; speech the model misses is lost with it, and so is a reply
   of yours that repeats, two words or more in a row, what the other side just
   said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
-  interrupted, keeps its audio until the next meeting you record ends. *Copy
-  Transcript* copies a transcript as Markdown, with or without your own lines
-  (*Include My Lines*); after Vocula restarts the item is absent until a meeting you record next
-  starts, because the meeting key is not read before then. This version cannot
-  play back, export to a file or delete a meeting inside the app: every
-  transcript, and the audio of any meeting not yet transcribed, stays in
-  `~/Library/Application Support/app.vocula.mac/Meetings/` until you delete that
-  folder by hand, which deletes them all. A
+  interrupted, keeps its audio until the next meeting you record ends.
+  *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting it can
+  open and
+  opens, renames, pins, exports as Markdown, copies and deletes one; a pinned
+  meeting cannot be deleted. *Copy Transcript* in the menu copies a transcript
+  as Markdown, with or without your own lines (*Include My Lines*); after Vocula
+  restarts it is absent until you open *Meetings (Beta)* or record a meeting,
+  because the meeting key is not read before then. This version cannot play a
+  meeting back. A
   Bluetooth headset's or an iPhone's microphone is never recorded in a meeting:
   when dictation uses one, the meeting records other apps alone.
 - **A meeting keeps the Mac awake.** While one records, Vocula holds an

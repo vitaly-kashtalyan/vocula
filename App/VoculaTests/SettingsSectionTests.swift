@@ -16,10 +16,10 @@ struct SettingsSectionTests {
     #expect(
       SettingsSection.groups.flatMap(\.sections) == [
         .status, .permissions, .keyboard, .languages, .microphone, .models, .refinement,
-        .history, .diagnostics, .licence, .appearance,
+        .meetings, .history, .diagnostics, .licence, .appearance,
       ])
-    #expect(SettingsSection.groups.map(\.id) == ["top", "dictation", "data", "app"])
-    #expect(SettingsSection.groups.map { $0.title == nil } == [true, false, false, false])
+    #expect(SettingsSection.groups.map(\.id) == ["top", "dictation", "meetings", "data", "app"])
+    #expect(SettingsSection.groups.map { $0.title == nil } == [true, false, true, false, false])
   }
 
   @Test("every section has a title and an icon")
@@ -42,7 +42,7 @@ struct SettingsSectionTests {
       SettingsSection.allCases.map { inEnglish($0.title) }
         == [
           "Status", "Permissions", "Keyboard", "Languages", "Microphone", "Models",
-          "Clean-up", "History", "Diagnostics", "Licence", "Appearance",
+          "Clean-up", "Meetings (Beta)", "History", "Diagnostics", "Licence", "Appearance",
         ])
     #expect(
       SettingsSection.groups.compactMap { $0.title }.map { inEnglish($0) }

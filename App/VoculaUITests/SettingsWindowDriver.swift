@@ -68,6 +68,7 @@ enum Sidebar {
   static let sections = [
     "status", "permissions",
     "keyboard", "languages", "microphone", "models", "refinement",
+    "meetings",
     "history", "diagnostics",
     "licence", "appearance",
   ]

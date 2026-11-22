@@ -50,7 +50,7 @@ struct CopyTranscriptMenu: View {
         Toggle(MenuCopy.copyIncludesMe, isOn: $includeMe)
         Divider()
         ForEach(meetings.status.transcripts) { listing in
-          Button(MenuCopy.transcriptRow(startedAt: listing.startedAt, duration: listing.duration)) {
+          Button(MenuCopy.transcriptRow(for: listing)) {
             meetings.copyTranscript(listing.id, includeMe: includeMe)
           }
         }

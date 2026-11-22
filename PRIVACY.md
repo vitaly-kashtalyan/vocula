@@ -54,8 +54,10 @@ of a call. It also stops by itself after 15 minutes in which neither track heard
 anything, when the Mac goes to sleep, and when you quit Vocula. While it records,
 and while Vocula transcribes recorded meetings afterwards, a second icon in the
 menu bar says so; after a meeting that stopped by itself, stopped at sleep, or
-could not start, after a transcript is ready, and when one could not be made or
-read, that icon stays to say so until you dismiss it.
+could not start, after a transcript is ready, when one could not be made, and
+when *Copy Transcript* in the menu could not read one, that icon stays to say so
+until you dismiss it; a transcript that cannot be read from *Meetings (Beta)* is
+reported in that window instead.
 
 **While a meeting records, the Mac does not go to sleep by itself.** Vocula
 holds an assertion against idle sleep for as long as the meeting lasts —
@@ -169,8 +171,12 @@ your login Keychain — service `app.vocula.mac`, account `meetings`, separate f
 the history's, account `history` — and what is said above about the history key
 (what protects it, and that it is not bound to this Mac) is true of this one. It
 is read when a meeting starts — if it cannot be read, the meeting does not
-start — and again when Vocula transcribes meetings, lists their transcripts or
-copies one; those later reads never create a key. The folders' dates still show when a meeting was recorded and roughly how
+start — and again when Vocula transcribes meetings, after each meeting ends, while
+*Meetings (Beta)* is showing in its window (when you open it, each time Vocula
+comes back to the front on it, and around each thing you do there: open,
+rename, pin, export, copy, delete); those later reads never create a key. A
+meeting's header also holds the name you give it and whether you pinned it,
+sealed like the rest. The folders' dates still show when a meeting was recorded and roughly how
 long it ran.
 
 A meeting's audio stays there until its transcript is written, and until then it
@@ -179,17 +185,24 @@ of other apps through its silences too — which comes to about 115 MB per track
 per hour, so about 230 MB for an hour of meeting. That is computed from the
 format, not measured. If a meeting cannot be transcribed, its audio stays, and
 Vocula tries again after the next meeting you record ends. The transcript stays until you delete
-it: **this version cannot delete a meeting**, there is no button for it yet,
-and nothing deletes one on a timer. Deleting the `Meetings` folder deletes every meeting in it. The
+the meeting in *Meetings (Beta)* — that takes it out of the list at once and
+removes its folder, transcript and any audio from disk right after (if that
+removal fails, the folder, still encrypted, waits for the next time the list is
+read); it cannot be undone, and a pinned meeting cannot be deleted until you
+unpin it — and nothing deletes one on a timer. Deleting the `Meetings` folder deletes
+every meeting in it. The
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
 
-*Copy Transcript*, in Vocula's menu under *Record Meeting*, puts the
-transcript you choose on the clipboard as Markdown — a front-matter header with
-the meeting's start in UTC, its length and who spoke, then each line with its
-time from the start; with *Include My Lines* unticked, only the *Others* lines. After Vocula
-restarts the item is absent until a meeting you record next starts, because the
-meeting key is not read before then. From there it is yours, like anything you copy: Vocula's
+*Copy Transcript*, in Vocula's menu under *Record Meeting*, and *Copy* in
+*Meetings (Beta)* put the transcript you choose on the clipboard as Markdown — a
+front-matter header with the meeting's name if you gave it one, its start in
+UTC, its length and who spoke, then each line with its time from the start; with
+*Include My Lines* unticked, only the *Others* lines. *Export…* writes the same
+Markdown to a file you choose. After Vocula restarts the menu item is absent
+until you open *Meetings (Beta)* or record a meeting, because the meeting key is
+not read before then. *Open* shows a transcript in the window without writing it
+anywhere. What you copy or export is yours, like anything you copy: Vocula's
 encryption does not follow it.
 
 **A diagnostic log**, `diagnostics.json`, is **not** encrypted, and this is
@@ -211,9 +224,11 @@ opens it again; each transcription pass that recognised any audio or wrote a
 transcript writes one line
 saying how many meetings it transcribed, how many seconds of audio and pieces it
 went through, how many lines the transcripts hold and how many of your words were
-dropped as echo, how many of the recording's three-second pieces it could not open, how long it took
-and waited for dictation, and which model it used — never the text; and a line
-for each other problem it ran into. It holds the last 2,000 events.
+dropped as echo, how many of the recording's three-second pieces it could not open, how long it took,
+and which model it used — never the text. Renaming, pinning, opening, copying,
+exporting or deleting a meeting in *Meetings (Beta)* writes a line only when it
+fails, saying which of those and the error code — never the meeting's name or
+text. There is a line for each other problem it ran into. It holds the last 2,000 events.
 "Reveal the Diagnostic Log in Finder" in the menu takes you to it.
 
 ## What leaves this Mac
@@ -275,8 +290,8 @@ advertising:
 
 - **Someone using your unlocked Mac.** The key is available to the app while you
   are logged in, so anyone sitting at your machine can read your history in the
-  app, and copy any listed meeting transcript from the menu bar, exactly as you
-  can.
+  app, and open, export, copy or delete any meeting in *Meetings (Beta)*,
+  exactly as you can.
 - **Software running as you with sufficient privilege.** The encryption raises
   the cost considerably, but a program that can drive the Keychain prompt or
   read this app's memory is a different class of problem.

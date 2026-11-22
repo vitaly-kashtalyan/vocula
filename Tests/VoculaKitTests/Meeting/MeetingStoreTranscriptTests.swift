@@ -228,22 +228,6 @@ import Testing
         atPath: meeting(header.id, in: root).appendingPathComponent("transcript.sealed").path))
   }
 
-  @Test func listingShowsTranscribedMeetingsNewestFirst() async throws {
-    let root = meetingTemporaryDirectory()
-    let older = recorded(startedAt: 800_000_000)
-    let newer = recorded(startedAt: 800_000_600)
-    let untranscribed = recorded(startedAt: 800_001_200)
-    for header in [older, newer, untranscribed] { try plant(header: header, chunks: [:], in: root) }
-    let store = MeetingStore(directory: root)
-    for header in [older, newer] {
-      try await store.writeTranscript(transcript(), of: header.id, cipher: MarkingCipher())
-    }
-    let listing = try await store.listing(cipher: MarkingCipher())
-    #expect(listing.map(\.id) == [newer.id, older.id])
-    #expect(listing.first?.startedAt == newer.startedAt)
-    #expect(listing.first?.duration == 2)
-  }
-
   @Test func removingAudioLeavesTheTranscript() async throws {
     let root = meetingTemporaryDirectory()
     let header = recorded()

@@ -19,7 +19,13 @@ final class Meetings {
   private var signals: StreamFanout<DictationSignal>?
   private let parts: MeetingTranscriptionParts
   private var schedule = MeetingPassSchedule()
-  private(set) var pass: Task<Void, Never>?
+  private var listings = MeetingPassSchedule()
+  private var stopsInFlight = 0
+  private var loggedNoKey = false
+  private var lastListingFailure: MeetingListingOutcome?
+  private(set) var pass: Task<Void, Never>? {
+    didSet { publishBusy() }
+  }
   private(set) var refreshing: Task<Void, Never>?
 
   init(
@@ -58,12 +64,70 @@ final class Meetings {
       status.clearTranscriptionOutcome()
       let recorder = MeetingRecorder(dependencies)
       self.recorder = recorder
+      publishBusy()
       if let signals { follow(signals) }
       return Task { await recorder.start() }
     }
   }
 
   func dismiss() { status.dismiss() }
+
+  func sectionAppeared() { requestListing() }
+
+  @discardableResult
+  func rename(_ id: UUID, to raw: String) -> Task<Void, Never> {
+    let title = MeetingHeader.name(from: raw)
+    return change(id, action: "rename") { $0.title = title }
+  }
+
+  @discardableResult
+  func setPinned(_ id: UUID, _ pinned: Bool) -> Task<Void, Never> {
+    change(id, action: "pin") { $0.pinned = pinned }
+  }
+
+  @discardableResult
+  func delete(_ id: UUID) -> Task<Void, Never> {
+    let busy = status.busy
+    guard
+      status.meetings.first(where: { $0.id == id })?
+        .allows(.delete, busy: busy, passRunning: pass != nil) == true,
+      schedule.deleteBegan()
+    else { return Task {} }
+    let delete = parts.delete
+    let log = diagnosticLog()
+    return Task {
+      let result = await delete(id, busy)
+      if schedule.deleteEnded() { await startPass() }
+      finished(result, action: "delete", failure: .notSaved, log: log)
+    }
+  }
+
+  private func change(
+    _ id: UUID, action: String, _ edit: @escaping @Sendable (inout MeetingHeader) -> Void
+  ) -> Task<Void, Never> {
+    let update = parts.updateHeader
+    let busy = status.busy
+    let log = diagnosticLog()
+    return Task {
+      finished(await update(id, busy, edit), action: action, failure: .notSaved, log: log)
+    }
+  }
+
+  private func finished(
+    _ result: MeetingActionResult, action: String, failure: MeetingSectionFailure,
+    log: DiagnosticLog?
+  ) {
+    switch result {
+    case .done:
+      status.actionSucceeded()
+    case .refused:
+      break
+    case .failed(let step, let code):
+      log?.record("meeting.storeFailed", "action=\(action) step=\(step) code=\(code)")
+      status.sectionFailed(failure)
+    }
+    requestListing()
+  }
 
   func apply(_ new: MeetingStatus, of meeting: Int) {
     guard meetingSwitch.isCurrent(meeting), !(new.isRecording && concluded == meeting) else {
@@ -72,30 +136,108 @@ final class Meetings {
     let started = new.isRecording && !status.isRecording
     if new.isRecording { meetingSwitch.began(meeting) } else { concluded = meeting }
     status.update(new)
-    if started { refreshListing() }
+    if started { requestListing() }
   }
 
   @discardableResult
   func copyTranscript(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
-    let read = parts.transcript
     let log = diagnosticLog()
     return Task {
-      guard let listing = status.transcripts.first(where: { $0.id == id }),
-        let transcript = await read(id, log)
-      else {
+      switch await markdown(id, includeMe: includeMe) {
+      case .transcript(let text):
+        parts.paste(text)
+        status.transcriptCopied()
+      case .failed(let step, let code):
+        log?.record("meeting.transcribeFailed", "step=\(step) code=\(code)")
         status.transcriptUnreadable()
-        return
+      case .unavailable:
+        status.transcriptUnreadable()
       }
-      let labels: [MeetingSpeaker: String] = [
-        .me: String(localized: MenuCopy.meetingSpeakerMe),
-        .others: String(localized: MenuCopy.meetingSpeakerOthers),
-      ]
-      parts.paste(
-        MeetingMarkdown.render(
-          transcript, startedAt: listing.startedAt, duration: listing.duration, labels: labels,
-          includeMe: includeMe))
-      status.transcriptCopied()
     }
+  }
+
+  @discardableResult
+  func copyFromSection(_ id: UUID, includeMe: Bool) -> Task<Void, Never> {
+    let log = diagnosticLog()
+    return Task {
+      guard let text = forSection(await markdown(id, includeMe: includeMe), action: "copy", log)
+      else { return }
+      parts.paste(text)
+      status.actionSucceeded()
+    }
+  }
+
+  func open(_ id: UUID) async -> MeetingTranscript? {
+    let log = diagnosticLog()
+    switch await parts.transcript(id) {
+    case .transcript(let transcript):
+      status.actionSucceeded()
+      return transcript
+    case .failed(let step, let code):
+      unreadable(action: "open", step: step, code: code, log)
+    case .unavailable:
+      status.sectionFailed(.transcriptUnreadable)
+    }
+    return nil
+  }
+
+  func exportData(_ id: UUID, includeMe: Bool) async -> Data? {
+    let log = diagnosticLog()
+    return forSection(await markdown(id, includeMe: includeMe), action: "export", log)
+      .map { Data($0.utf8) }
+  }
+
+  @discardableResult
+  func write(_ data: Data, to url: URL) -> Task<Void, Never> {
+    let write = parts.write
+    let log = diagnosticLog()
+    return Task {
+      switch await write(data, url) {
+      case .done, .refused:
+        status.actionSucceeded()
+      case .failed(let step, let code):
+        log?.record("meeting.storeFailed", "action=export step=\(step) code=\(code)")
+        status.sectionFailed(.exportNotWritten)
+      }
+    }
+  }
+
+  private enum Rendered {
+    case transcript(String)
+    case failed(step: String, code: Int)
+    case unavailable
+  }
+
+  private func markdown(_ id: UUID, includeMe: Bool) async -> Rendered {
+    guard let listing = status.meetings.first(where: { $0.id == id }) else { return .unavailable }
+    switch await parts.transcript(id) {
+    case .transcript(let transcript):
+      return .transcript(
+        MeetingMarkdown.render(
+          transcript, title: listing.title, startedAt: listing.startedAt,
+          duration: listing.duration, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe))
+    case .failed(let step, let code):
+      return .failed(step: step, code: code)
+    case .unavailable:
+      return .unavailable
+    }
+  }
+
+  private func forSection(_ rendered: Rendered, action: String, _ log: DiagnosticLog?) -> String? {
+    switch rendered {
+    case .transcript(let text):
+      return text
+    case .failed(let step, let code):
+      unreadable(action: action, step: step, code: code, log)
+    case .unavailable:
+      status.sectionFailed(.transcriptUnreadable)
+    }
+    return nil
+  }
+
+  private func unreadable(action: String, step: String, code: Int, _ log: DiagnosticLog?) {
+    log?.record("meeting.storeFailed", "action=\(action) step=\(step) code=\(code)")
+    status.sectionFailed(.transcriptUnreadable)
   }
 
   func pipelineStarted(_ signals: StreamFanout<DictationSignal>) {
@@ -123,9 +265,11 @@ final class Meetings {
   nonisolated static func makeStore(isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy)
     -> MeetingStore?
   {
-    guard !isSecondCopy else { return nil }
-    return MeetingStore(directory: ApplicationSupport.directory.appendingPathComponent("Meetings"))
+    isSecondCopy ? nil : sharedStore
   }
+
+  private nonisolated static let sharedStore = MeetingStore(
+    directory: ApplicationSupport.directory.appendingPathComponent("Meetings"))
 
   static func live(log: DiagnosticLog?, recover: Bool) -> MeetingRecorder.Dependencies? {
     guard let store = makeStore() else { return nil }
@@ -163,15 +307,20 @@ final class Meetings {
     self.recorder = nil
     self.follower = nil
     follower?.cancel()
+    stopsInFlight += 1
+    publishBusy()
     stopping = Task {
       await follower?.value
       await recorder?.stop(.stopped)
       await previous?.value
+      self.stopsInFlight -= 1
+      self.publishBusy()
       await self.meetingEnded()
     }
   }
 
   private func meetingEnded() async {
+    requestListing()
     if status.notice != .cannotStart,
       schedule.requested()
     {
@@ -195,17 +344,38 @@ final class Meetings {
 
   private func passEnded() async {
     pass = nil
-    refreshListing()
+    requestListing()
     if schedule.passEnded() {
       await startPass()
     }
   }
 
-  private func refreshListing() {
+  private func publishBusy() {
+    status.update(busy: recorder != nil || stopsInFlight > 0, passRunning: pass != nil)
+  }
+
+  private func requestListing() {
+    guard listings.requested() else { return }
     let listing = parts.listing
     let log = diagnosticLog()
     refreshing = Task {
-      if let found = await listing(log) { status.update(transcripts: found) }
+      repeat {
+        received(await listing(log), log: log)
+      } while listings.passEnded()
     }
+  }
+
+  private func received(_ outcome: MeetingListingOutcome, log: DiagnosticLog?) {
+    switch outcome {
+    case .noKey(holdsMeetings: true) where !loggedNoKey:
+      loggedNoKey = true
+      log?.record("meeting.transcribeFailed", "step=key code=\(MeetingKeyRule.itemNotFound)")
+    case .unreadable(let step, let code) where lastListingFailure != outcome:
+      log?.record("meeting.transcribeFailed", "step=\(step) code=\(code)")
+    default:
+      break
+    }
+    lastListingFailure = outcome.isUnreadable ? outcome : nil
+    status.update(listing: outcome)
   }
 }

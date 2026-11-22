@@ -42,4 +42,9 @@ public struct MeetingTranscript: Codable, Equatable, Sendable {
 
   public let model: String?
   public let utterances: [MeetingUtterance]
+
+  public init(model: String?, utterances: [MeetingUtterance]) {
+    self.model = model
+    self.utterances = utterances
+  }
 }

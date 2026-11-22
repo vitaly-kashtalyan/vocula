@@ -2,6 +2,12 @@ import Foundation
 import Observation
 import VoculaKit
 
+enum MeetingSectionFailure: Equatable {
+  case notSaved
+  case exportNotWritten
+  case transcriptUnreadable
+}
+
 @MainActor @Observable
 final class MeetingStatusModel {
   private(set) var isRecording = false
@@ -12,7 +18,18 @@ final class MeetingStatusModel {
   private(set) var elapsed: String?
   private(set) var transcription: MeetingTranscription?
   private(set) var copyFailed = false
-  private(set) var transcripts: [MeetingListing] = []
+  private(set) var meetings: [MeetingListing] = []
+  private(set) var listingLoaded = false
+  private(set) var listUnreadable = false
+  private(set) var busy = false
+  private(set) var passRunning = false
+  private(set) var sectionFailure: MeetingSectionFailure?
+
+  var transcripts: [MeetingListing] { MeetingListing.transcribed(meetings) }
+
+  var sectionContent: MeetingSectionContent {
+    .decide(loaded: listingLoaded, meetings: meetings, unreadable: listUnreadable)
+  }
 
   @ObservationIgnored private let announce: @MainActor (String) -> Void
   @ObservationIgnored private var ticking: Date?
@@ -84,8 +101,40 @@ final class MeetingStatusModel {
       MenuCopy.meetingTranscription(finished).map { String(localized: $0) }.joined(separator: "\n"))
   }
 
-  func update(transcripts new: [MeetingListing]) {
-    if transcripts != new { transcripts = new }
+  func update(listing: MeetingListingOutcome) {
+    if !listingLoaded { listingLoaded = true }
+    switch listing {
+    case .meetings(let found):
+      if meetings != found { meetings = found }
+      if listUnreadable { listUnreadable = false }
+    case .noKey(holdsMeetings: false):
+      if !meetings.isEmpty { meetings = [] }
+      if listUnreadable { listUnreadable = false }
+    case .noKey(holdsMeetings: true), .unreadable:
+      guard !listUnreadable else { return }
+      listUnreadable = true
+      announce(String(localized: MenuCopy.meetingsListFailed))
+    }
+  }
+
+  func sectionFailed(_ failure: MeetingSectionFailure) {
+    sectionFailure = failure
+    let line: LocalizedStringResource =
+      switch failure {
+      case .notSaved: MenuCopy.meetingNotSaved
+      case .exportNotWritten: MenuCopy.meetingExportFailed
+      case .transcriptUnreadable: MenuCopy.transcriptUnreadable
+      }
+    announce(String(localized: line))
+  }
+
+  func actionSucceeded() {
+    if sectionFailure != nil { sectionFailure = nil }
+  }
+
+  func update(busy: Bool, passRunning: Bool) {
+    if self.busy != busy { self.busy = busy }
+    if self.passRunning != passRunning { self.passRunning = passRunning }
   }
 
   func transcriptUnreadable() {

@@ -32,8 +32,8 @@ can read. Please do not open a public issue for anything in the list below.
   defended against.
 - The dictated text passing through the system pasteboard for about a second.
   It is how insertion works, and PRIVACY.md says so. Likewise a meeting
-  transcript you copy yourself with *Copy Transcript*: from the clipboard on it
-  is yours.
+  transcript you copy yourself (*Copy Transcript*, *Copy*) or export to a file
+  (*Export…*): from there it is yours.
 - A licence key that keeps working after a refund, or one forwarded to a
   friend. Verification is offline by design, so there is no server to revoke
   against; that trade is deliberate and is what keeps the app from phoning

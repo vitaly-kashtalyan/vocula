@@ -4,8 +4,8 @@ import SwiftUI
 import VoculaKit
 
 enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
-  case status, permissions, keyboard, languages, microphone, models, refinement, history,
-    diagnostics, licence, appearance
+  case status, permissions, keyboard, languages, microphone, models, refinement, meetings,
+    history, diagnostics, licence, appearance
 
   var id: Self { self }
 
@@ -31,6 +31,8 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
       return .init(
         "settings.section.refinement", defaultValue: "Clean-up",
         comment: "Sidebar section: post-processing of the recognised text.")
+    case .meetings:
+      return MenuCopy.meetingsSection
     case .languages:
       return .init(
         "settings.section.languages", defaultValue: "Languages",
@@ -73,6 +75,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
           comment: "Sidebar group heading, shown upper-cased."),
         [.keyboard, .languages, .microphone, .models, .refinement]
       ),
+      ("meetings", nil, [.meetings]),
       (
         "data",
         .init(
@@ -96,6 +99,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     case .keyboard: return "keyboard"
     case .models: return "cpu"
     case .refinement: return "wand.and.sparkles"
+    case .meetings: return "person.2.wave.2"
     case .languages: return "globe"
     case .microphone: return "mic"
     case .history: return "clock.arrow.circlepath"
@@ -120,6 +124,7 @@ struct SettingsWindowView: View {
   let downloader: ModelDownloader
   let coordinator: AppCoordinator
   let historyModel: HistoryWindowModel
+  let meetings: Meetings
   let onModelsReady: () async -> Void
 
   @ViewBuilder
@@ -225,6 +230,8 @@ struct SettingsWindowView: View {
       LanguagePickerView()
     case .keyboard:
       KeyboardSettingsSection(menu: menu, coordinator: coordinator)
+    case .meetings:
+      MeetingsSettingsSection(meetings: meetings)
     case .history:
       HistorySettingsSection(model: historyModel, menu: menu)
     case .licence:
