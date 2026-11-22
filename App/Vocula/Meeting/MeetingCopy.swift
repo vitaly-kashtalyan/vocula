@@ -388,7 +388,7 @@ extension MenuCopy {
     LocalizedStringResource(
       "meetings.actionsFor", defaultValue: "Actions for \(title)",
       comment:
-        "Spoken by VoiceOver for the menu button at the end of a meeting's row in the Meetings section; the argument is the meeting's name or its date. Never drawn."
+        "Spoken by VoiceOver for the menu button at the end of a meeting's row in the Meetings section; the argument is the meeting's name or its date. Also shown as the button's tooltip, which wraps rather than clips."
     )
   }
 }
