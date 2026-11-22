@@ -31,9 +31,10 @@ struct MeetingsSettingsSection: View {
       case .lineAlone:
         EmptyView()
       case .list:
-        ForEach(MeetingListing.ordered(status.meetings)) { listing in
+        ForEach(Array(MeetingListing.ordered(status.meetings).enumerated()), id: \.element.id) {
+          position, listing in
           MeetingRow(
-            listing: listing, status: listing.status(busy: status.busy),
+            listing: listing, position: position, status: listing.status(busy: status.busy),
             allows: { listing.allows($0, busy: status.busy, passRunning: status.passRunning) },
             perform: { perform($0, on: listing) })
         }
@@ -117,6 +118,7 @@ struct MeetingsSettingsSection: View {
 
 struct MeetingRow: View {
   let listing: MeetingListing
+  let position: Int
   let status: MeetingListingStatus
   let allows: (MeetingAction) -> Bool
   let perform: (MeetingAction) -> Void
@@ -129,14 +131,20 @@ struct MeetingRow: View {
     LabeledContent {
       Menu {
         Button(MenuCopy.meetingOpen) { perform(.open) }.disabled(!allows(.open))
+          .accessibilityIdentifier("meetings.action.open")
         Button(MenuCopy.meetingRename) { perform(.rename) }.disabled(!allows(.rename))
+          .accessibilityIdentifier("meetings.action.rename")
         Button(listing.isPinned ? MenuCopy.meetingUnpin : MenuCopy.meetingPin) { perform(.pin) }
           .disabled(!allows(.pin))
+          .accessibilityIdentifier("meetings.action.pin")
         Button(MenuCopy.meetingExport) { perform(.export) }.disabled(!allows(.export))
+          .accessibilityIdentifier("meetings.action.export")
         Button(MenuCopy.meetingCopy) { perform(.copy) }.disabled(!allows(.copy))
+          .accessibilityIdentifier("meetings.action.copy")
         Divider()
         Button(MenuCopy.meetingDelete, role: .destructive) { perform(.delete) }
           .disabled(!allows(.delete))
+          .accessibilityIdentifier("meetings.action.delete")
       } label: {
         Image(systemName: "ellipsis.circle")
       }
@@ -145,6 +153,7 @@ struct MeetingRow: View {
       .fixedSize()
       .accessibilityLabel(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
       .help(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
+      .accessibilityIdentifier("meetings.menu.\(position)")
     } label: {
       VStack(alignment: .leading, spacing: 2) {
         HStack(spacing: 4) {
@@ -200,6 +209,7 @@ struct MeetingTranscriptSheet: View {
       ScrollView {
         Text(verbatim: lines.joined(separator: "\n"))
           .textSelection(.enabled)
+          .accessibilityIdentifier("meetings.sheet.text")
           .frame(maxWidth: .infinity, alignment: .leading)
       }
       HStack {
@@ -208,6 +218,7 @@ struct MeetingTranscriptSheet: View {
         Button(MenuCopy.meetingExport) { export() }
         Button(MenuCopy.meetingSheetClose) { dismiss() }
           .keyboardShortcut(.cancelAction)
+          .accessibilityIdentifier("meetings.sheet.close")
       }
     }
     .padding()

@@ -27,6 +27,10 @@ struct MeetingTranscriptionParts {
   var paste: @MainActor (String) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
+    VoculaAppDelegate.isUITesting ? MeetingFixture().parts() : liveSystem
+  }
+
+  @MainActor private static var liveSystem: MeetingTranscriptionParts {
     MeetingTranscriptionParts(
       makeTranscriber: { liveTranscriber(log: $0, publish: $1) },
       listing: { await liveListing(log: $0) },
