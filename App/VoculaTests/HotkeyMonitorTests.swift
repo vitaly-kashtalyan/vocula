@@ -126,6 +126,19 @@ struct HotkeyMonitorTests {
     #expect(harness.emitted.last == .cancel(session: 1, reason: .collision))
   }
 
+  @Test("a stray key after the first second is passed through and stops the session")
+  func aLateForeignKeyStops() {
+    let harness = Harness()
+    harness.at(0)
+    harness.send(modifier(Code.fn, Bit.fn))
+    harness.at(1_500)
+    #expect(harness.send(down(Code.a, Bit.fn)) == false)
+    #expect(harness.emitted.last == .stop(session: 1, reason: .collision))
+    harness.at(2_000)
+    harness.send(modifier(Code.fn, 0))
+    #expect(harness.emitted.count == 2)
+  }
+
   @Test("ordinary typing is passed through and starts nothing")
   func typingIsIgnored() {
     let harness = Harness()
