@@ -146,12 +146,16 @@ struct MeetingRow: View {
           .disabled(!allows(.delete))
           .accessibilityIdentifier("meetings.action.delete")
       } label: {
-        Image(systemName: "ellipsis.circle")
+        Label {
+          Text(MenuCopy.meetingActions(for: Self.title(of: listing)))
+        } icon: {
+          Image(systemName: "ellipsis.circle")
+        }
+        .labelStyle(.iconOnly)
       }
       .menuStyle(.borderlessButton)
       .menuIndicator(.hidden)
       .fixedSize()
-      .accessibilityLabel(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
       .help(Text(MenuCopy.meetingActions(for: Self.title(of: listing))))
       .accessibilityIdentifier("meetings.menu.\(position)")
     } label: {

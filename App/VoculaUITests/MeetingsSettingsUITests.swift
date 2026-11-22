@@ -45,7 +45,7 @@ final class MeetingsSettingsUITests: XCTestCase {
     field.typeKey("a", modifierFlags: .command)
     field.typeText("Renamed\r")
     let menu = element("meetings.menu.2", in: window)
-    let renamed = NSPredicate(format: "label CONTAINS %@", "Renamed")
+    let renamed = NSPredicate(format: "title CONTAINS %@", "Renamed")
     expectation(for: renamed, evaluatedWith: menu)
     waitForExpectations(timeout: 5)
   }
@@ -66,7 +66,8 @@ final class MeetingsSettingsUITests: XCTestCase {
     choose("delete", onRow: 1, in: window)
     let dialog = window.sheets.firstMatch
     XCTAssertTrue(dialog.waitForExistence(timeout: 5), "Delete did not ask first")
-    dialog.buttons.element(boundBy: 0).click()
+    XCTAssertEqual(dialog.buttons.count, 2)
+    dialog.buttons.element(boundBy: 1).click()
     XCTAssertTrue(
       element("meetings.menu.2", in: window).waitForNonExistence(timeout: 5),
       "the deleted fixture meeting is still listed")
