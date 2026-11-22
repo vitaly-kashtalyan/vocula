@@ -89,9 +89,13 @@ public struct GestureStateMachine: Sendable {
       return GestureOutput(nextDeadline: currentDeadline())
     }
     switch state {
-    case .holding(let session, _):
-      state = .idle
-      return GestureOutput(signals: [.cancel(session: session, reason: .collision)])
+    case .holding(let session, let pressedAt):
+      guard at - pressedAt >= config.timings.collisionCancelWindow else {
+        state = .idle
+        return GestureOutput(signals: [.cancel(session: session, reason: .collision)])
+      }
+      state = .spentHoldKeyDown
+      return GestureOutput(signals: [.stop(session: session, reason: .collision)])
     case .idle, .spentHoldKeyDown:
       return GestureOutput(nextDeadline: currentDeadline())
     }
