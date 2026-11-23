@@ -42,6 +42,10 @@ import Testing
     #expect(MeetingSpeaker.others.number == nil)
   }
 
+  @Test func aSpeakerNumberStartsAtOne() async {
+    await #expect(processExitsWith: .failure) { _ = MeetingSpeaker.numbered(0) }
+  }
+
   @Test func aTranscriptWithoutAModelStillDecodes() throws {
     let json = Data(
       #"{"utterances":[{"start":0,"end":1,"speaker":"me","text":"x"}]}"#.utf8)

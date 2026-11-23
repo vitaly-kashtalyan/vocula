@@ -5,7 +5,8 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   public static let others = MeetingSpeaker(rawValue: "others")
 
   public static func numbered(_ number: Int) -> MeetingSpeaker {
-    MeetingSpeaker(rawValue: "speaker-\(number)")
+    precondition(number >= 1, "speakers are numbered from 1")
+    return MeetingSpeaker(rawValue: "speaker-\(number)")
   }
 
   public let rawValue: String

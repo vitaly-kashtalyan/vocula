@@ -261,6 +261,7 @@ final class TranscriberRig: @unchecked Sendable {
   var diarizerInstalled = true
   var diarizerLoadError: (any Error)?
   var diarizerLoadStall: TestClock?
+  var diarizerLoadGate: DeafGate?
   var maxTrackSeconds = MeetingDiarizationRules.maxDiarizedSeconds
   var wallNow = Date(timeIntervalSinceReferenceDate: 800_000_100)
 
@@ -299,6 +300,7 @@ final class TranscriberRig: @unchecked Sendable {
           load: { [self] in
             calls.add("load")
             if let diarizerLoadStall { try await diarizerLoadStall.sleep(for: .seconds(3_600)) }
+            if let diarizerLoadGate { await diarizerLoadGate.wait() }
             if let diarizerLoadError { throw diarizerLoadError }
             return FakeDiarizer(log: diarizer)
           },

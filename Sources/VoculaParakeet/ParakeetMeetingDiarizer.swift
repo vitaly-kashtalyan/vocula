@@ -87,21 +87,21 @@ public struct ParakeetMeetingDiarizer: MeetingDiarizing {
   private static func code(of error: OfflineDiarizationError) -> Int? {
     switch error {
     case .noSpeechDetected: nil
-    case .modelNotLoaded: 10
-    case .invalidConfiguration: 11
-    case .invalidBatchSize: 12
-    case .processingFailed: 13
-    case .exportFailed: 14
-    case .invalidSpan: 15
+    case .modelNotLoaded: 9010
+    case .invalidConfiguration: 9011
+    case .invalidBatchSize: 9012
+    case .processingFailed: 9013
+    case .exportFailed: 9014
+    case .invalidSpan: 9015
     }
   }
 
   private static func code(of error: ANEMemoryUtils.ANEMemoryError) -> Int {
     switch error {
-    case .allocationFailed: 30
-    case .invalidShape: 31
-    case .unsupportedDataType: 32
-    case .invalidArrayBounds: 33
+    case .allocationFailed: 9030
+    case .invalidShape: 9031
+    case .unsupportedDataType: 9032
+    case .invalidArrayBounds: 9033
     }
   }
 

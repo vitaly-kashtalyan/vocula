@@ -12,6 +12,10 @@ import Testing
     await rig.transcript(of: header)?.utterances ?? []
   }
 
+  private func untilIdle(_ state: MeetingDiarizerState) async {
+    while await state.isBusy { await Task.yield() }
+  }
+
   @Test func aSplitMeetingLabelsItsCallLines() async throws {
     let rig = TranscriberRig()
     rig.diarizer.turns = wholeCall()
@@ -205,6 +209,21 @@ import Testing
     #expect(rig.lines("meeting.diarizeFailed").isEmpty)
   }
 
+  @Test func aPassCancelledDuringALoadStartsNoSplit() async throws {
+    let rig = TranscriberRig()
+    let gate = DeafGate()
+    rig.diarizerLoadGate = gate
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.calls.until("load")
+    pass.cancel()
+    gate.open()
+    await pass.value
+    #expect(rig.diarizer.calls == 0)
+    #expect(await rig.transcript(of: header) == nil)
+    #expect(rig.lines("meeting.diarizeFailed").isEmpty)
+  }
+
   @Test func aFailedSplitGivesOthers() async throws {
     let rig = TranscriberRig()
     rig.diarizer.error = MeetingDiarizerError.failed(code: 4)
@@ -256,7 +275,7 @@ import Testing
     #expect(rig.recognizers.released == 1)
 
     gate.open()
-    await rig.state.waitUntilIdle()
+    await untilIdle(rig.state)
     let later = try rig.meeting(startedAt: 800_000_090, system: [rig.speech(at: 0.5, for: 1)])
     await rig.run()
     #expect(await lines(rig, later).map(\.speaker) == [.numbered(1)])
@@ -283,7 +302,7 @@ import Testing
     rig.recognizers.onCall = { call in
       guard call == 3 else { return }
       gate.open()
-      await state.waitUntilIdle()
+      await untilIdle(state)
     }
     let loadsBefore = rig.calls.count("load")
     await rig.run()

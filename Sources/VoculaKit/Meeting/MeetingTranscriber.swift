@@ -224,6 +224,7 @@ public actor MeetingTranscriber {
       return others
     }
     guard split == .on, let diarizer = try await loadedDiarizer() else { return others }
+    try checkCancelled()
     let state = deps.diarization.state
     guard await state.begin() else {
       diarizeFailed(step: "busy", code: 0)

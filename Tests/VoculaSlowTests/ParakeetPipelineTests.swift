@@ -265,16 +265,17 @@ struct ParakeetMeetingDiarizerTests {
       Adapter.outcome(of: NSError(domain: NSOSStatusErrorDomain, code: -50), loading: false)
         == .failure(.failed(code: -50)))
     let own: [(OfflineDiarizationError, Int)] = [
-      (.modelNotLoaded("x"), 10), (.invalidConfiguration("x"), 11), (.invalidBatchSize("x"), 12),
-      (.processingFailed("x"), 13), (.exportFailed("x"), 14), (.invalidSpan("x"), 15),
+      (.modelNotLoaded("x"), 9010), (.invalidConfiguration("x"), 9011),
+      (.invalidBatchSize("x"), 9012), (.processingFailed("x"), 9013), (.exportFailed("x"), 9014),
+      (.invalidSpan("x"), 9015),
     ]
     for (error, code) in own {
       #expect(Adapter.outcome(of: error, loading: false) == .failure(.failed(code: code)))
       #expect(Adapter.outcome(of: error, loading: true) == .failure(.model(code: code)))
     }
     let memory: [(ANEMemoryUtils.ANEMemoryError, Int)] = [
-      (.allocationFailed, 30), (.invalidShape, 31), (.unsupportedDataType, 32),
-      (.invalidArrayBounds, 33),
+      (.allocationFailed, 9030), (.invalidShape, 9031), (.unsupportedDataType, 9032),
+      (.invalidArrayBounds, 9033),
     ]
     for (error, code) in memory {
       #expect(Adapter.outcome(of: error, loading: false) == .failure(.failed(code: code)))

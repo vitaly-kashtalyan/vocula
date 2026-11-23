@@ -51,8 +51,10 @@ struct MeetingTranscriptionParts {
   @MainActor private static let fetcher = MeetingDiarizerFetcher()
 
   static func discardDiarizer(from store: ModelStore, isSecondCopy: Bool) -> Bool {
-    guard !isSecondCopy else { return false }
-    return AppCoordinator.removeInstalled(.speakerDiarizer, from: store)
+    guard !isSecondCopy, AppCoordinator.removeInstalled(.speakerDiarizer, from: store) else {
+      return false
+    }
+    return !FileManager.default.fileExists(atPath: store.url(for: .speakerDiarizer).path)
   }
 
   @MainActor static func liveTranscriber(

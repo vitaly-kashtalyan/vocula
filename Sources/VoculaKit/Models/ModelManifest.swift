@@ -171,7 +171,7 @@ public enum ModelManifest {
       displayName: String(
         localized: "models.speakerDiarizer", defaultValue: "Speaker separation", bundle: .module,
         comment:
-          "Name of the model that tells the people on a recorded call apart, as shown in the model list."
+          "Name of the model that tells the people on a recorded call apart, shown in the licence list of the Models screen. A noun phrase, not a sentence."
       ),
       unpacked: "speaker-diarizer-df2625a",
       contents: [

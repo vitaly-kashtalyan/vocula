@@ -8,6 +8,6 @@ public struct SpeakerTurn: Equatable, Sendable {
   public init(speaker: String, start: Double, end: Double) {
     self.speaker = speaker
     self.start = start
-    self.end = end
+    self.end = max(start, end)
   }
 }

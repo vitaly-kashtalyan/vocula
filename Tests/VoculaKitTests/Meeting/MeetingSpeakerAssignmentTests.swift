@@ -52,6 +52,18 @@ import Testing
     #expect(assign([(1.5, 2.5)], turns) == [.numbered(1)])
   }
 
+  @Test func exactlyOverlapCoverageIsOverlap() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 0.3), SpeakerTurn(speaker: "B", start: 0.3, end: 1),
+    ]
+    #expect(assign([(0, 1)], turns) == [.others])
+  }
+
+  @Test func aReversedTurnIsEmpty() {
+    #expect(SpeakerTurn(speaker: "A", start: 5, end: 2).end == 5)
+    #expect(assign([(2, 4)], [SpeakerTurn(speaker: "A", start: 5, end: 2)]) == [.others])
+  }
+
   @Test func aSpeakersTurnsAddUp() {
     let turns = [
       SpeakerTurn(speaker: "A", start: 0, end: 1), SpeakerTurn(speaker: "A", start: 1, end: 2),

@@ -3,7 +3,6 @@ import Foundation
 public actor MeetingDiarizerState {
   private var inFlight = false
   private var discarded = false
-  private var waiting: [CheckedContinuation<Void, Never>] = []
 
   public init() {}
 
@@ -17,9 +16,6 @@ public actor MeetingDiarizerState {
 
   func end() {
     inFlight = false
-    let resumed = waiting
-    waiting = []
-    resumed.forEach { $0.resume() }
   }
 
   func mayDiscard() -> Bool {
@@ -27,20 +23,15 @@ public actor MeetingDiarizerState {
     discarded = true
     return true
   }
-
-  func waitUntilIdle() async {
-    guard inFlight else { return }
-    await withCheckedContinuation { waiting.append($0) }
-  }
 }
 
 public struct MeetingDiarization: Sendable {
-  public var state: MeetingDiarizerState
-  public var isInstalled: @Sendable () async -> Bool
-  public var load: @Sendable () async throws -> any MeetingDiarizing
-  public var discard: @Sendable () async -> Void
-  public var wallClock: @Sendable () -> Date
-  public var maxTrackSeconds: Double
+  public let state: MeetingDiarizerState
+  public let isInstalled: @Sendable () async -> Bool
+  public let load: @Sendable () async throws -> any MeetingDiarizing
+  public let discard: @Sendable () async -> Void
+  public let wallClock: @Sendable () -> Date
+  public let maxTrackSeconds: Double
 
   public init(
     state: MeetingDiarizerState,
