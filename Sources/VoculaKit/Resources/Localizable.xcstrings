@@ -2461,6 +2461,18 @@
         }
       }
     },
+    "models.speakerDiarizer" : {
+      "comment" : "Name of the model that tells the people on a recorded call apart, as shown in the model list.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Speaker separation"
+          }
+        }
+      }
+    },
     "models.speechDetector" : {
       "comment" : "Name of the VAD model as shown in the model list.",
       "extractionState" : "extracted_with_value",

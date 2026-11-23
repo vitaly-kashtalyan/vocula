@@ -41,7 +41,7 @@ private func store(_ fs: FakeFS) -> ModelStore {
 struct ModelStoreTests {
   @Test("the manifest pins every model with a version, a checksum and a licence")
   func manifestIsComplete() {
-    #expect(ModelManifest.current.count == 4)
+    #expect(ModelManifest.current.count == 5)
     for model in ModelManifest.current {
       #expect(model.sha256.count == 64)
       #expect(model.sha256.allSatisfy { $0.isHexDigit })
