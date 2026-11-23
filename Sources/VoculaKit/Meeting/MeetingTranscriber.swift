@@ -240,6 +240,7 @@ public actor MeetingTranscriber {
       work.cancel()
     }
     guard finished else {
+      work.cancel()
       try checkCancelled()
       diarizeFailed(step: "deadline", code: 0)
       return others

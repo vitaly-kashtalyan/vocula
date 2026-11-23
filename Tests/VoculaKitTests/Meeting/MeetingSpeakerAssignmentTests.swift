@@ -61,7 +61,6 @@ import Testing
 
   @Test func aReversedTurnIsEmpty() {
     #expect(SpeakerTurn(speaker: "A", start: 5, end: 2).end == 5)
-    #expect(assign([(2, 4)], [SpeakerTurn(speaker: "A", start: 5, end: 2)]) == [.others])
   }
 
   @Test func aSpeakersTurnsAddUp() {

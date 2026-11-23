@@ -4,8 +4,8 @@ import Testing
 @testable import VoculaKit
 
 @Suite(.timeLimit(.minutes(1))) struct MeetingDiarizationTests {
-  private func wholeCall(_ speaker: String = "S0") -> [SpeakerTurn] {
-    [SpeakerTurn(speaker: speaker, start: 0, end: 60)]
+  private func wholeCall() -> [SpeakerTurn] {
+    [SpeakerTurn(speaker: "S0", start: 0, end: 60)]
   }
 
   private func lines(_ rig: TranscriberRig, _ header: MeetingHeader) async -> [MeetingUtterance] {
@@ -103,10 +103,8 @@ import Testing
     #expect(await lines(rig, header).map(\.speaker) == [.numbered(1)])
   }
 
-  private func ended(_ secondsBeforeNow: Double, _ rig: TranscriberRig, lasting: Double = 3)
-    -> TimeInterval
-  {
-    rig.wallNow.timeIntervalSinceReferenceDate - secondsBeforeNow - lasting
+  private func ended(_ secondsBeforeNow: Double, _ rig: TranscriberRig) -> TimeInterval {
+    rig.wallNow.timeIntervalSinceReferenceDate - secondsBeforeNow - 3
   }
 
   @Test func aMissingDiarizerKeepsAFreshMeetingPending() async throws {
@@ -279,6 +277,22 @@ import Testing
     let later = try rig.meeting(startedAt: 800_000_090, system: [rig.speech(at: 0.5, for: 1)])
     await rig.run()
     #expect(await lines(rig, later).map(\.speaker) == [.numbered(1)])
+  }
+
+  @Test func aSplitPastItsDeadlineIsAskedToStop() async throws {
+    let rig = TranscriberRig()
+    rig.diarizer.stall = rig.clock
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.diarizer.called.wait()
+    await rig.clock.untilSleeping(2)
+    rig.clock.advance(by: MeetingDiarizationRules.deadline(forTrackSeconds: 3) + .seconds(1))
+    await pass.value
+    #expect(await lines(rig, header).map(\.speaker) == [.others])
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=deadline code=0"])
+    rig.clock.advance(by: .seconds(3_600))
+    await untilIdle(rig.state)
+    #expect(rig.diarizer.sawCancellation)
   }
 
   @Test func busyAtThePassStartLoadsLazily() async throws {

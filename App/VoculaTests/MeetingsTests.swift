@@ -211,10 +211,6 @@ private struct NoSpeech: SpeechDetecting {
   }
 }
 
-private struct NoTurns: MeetingDiarizing {
-  func turns(in samples: [Int16]) async throws -> [SpeakerTurn] { [] }
-}
-
 @MainActor
 private final class PassProbe {
   var made = 0
@@ -252,7 +248,8 @@ private final class PassProbe {
             model: { nil }, makeRecognizer: { _ in throw CancellationError() },
             makeDetector: { NoSpeech() },
             diarization: MeetingDiarization(
-              state: MeetingDiarizerState(), isInstalled: { true }, load: { NoTurns() },
+              state: MeetingDiarizerState(), isInstalled: { true },
+              load: { throw CancellationError() },
               discard: {}, wallClock: { Date() }),
             now: { 0 },
             sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))

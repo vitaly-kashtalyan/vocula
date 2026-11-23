@@ -16,8 +16,8 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   }
 
   public var number: Int? {
-    guard rawValue.hasPrefix("speaker-"), let number = Int(rawValue.dropFirst("speaker-".count)),
-      number > 0, Self.numbered(number) == self
+    guard let number = Int(rawValue.dropFirst("speaker-".count)), number > 0,
+      Self.numbered(number) == self
     else { return nil }
     return number
   }

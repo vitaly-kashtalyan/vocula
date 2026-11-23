@@ -62,7 +62,7 @@ struct MeetingDiarizerFetcherTests {
   @Test func aSecondCopyFetchesNothing() async throws {
     let fetcher = try fetcher(secondCopy: true)
     fetcher.fetch(log: nil)
-    #expect(await fetcher.running?.value == false)
+    await fetcher.running?.value
     #expect(DiarizerStub.requests == 0)
   }
 
@@ -82,7 +82,7 @@ struct MeetingDiarizerFetcherTests {
     DiarizerStub.status = 500
     let log = DiagnosticLog(fileURL: root.appendingPathComponent("diagnostics.json"))
     fetcher.fetch(log: log)
-    #expect(await fetcher.running?.value == false)
+    await fetcher.running?.value
     let lines = log.recent(20).filter { $0.kind == "model.download" }.map(\.detail)
     #expect(!lines.isEmpty)
     #expect(lines.allSatisfy { $0.contains("model=speakerDiarizer") })

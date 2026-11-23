@@ -5,7 +5,7 @@ import VoculaKit
 final class MeetingDiarizerFetcher {
   let store: ModelStore
   private let downloader: ModelDownloader
-  private(set) var running: Task<Bool, Never>?
+  private(set) var running: Task<Void, Never>?
 
   init(
     store: ModelStore = .app(manifest: [ModelManifest.descriptor(for: .speakerDiarizer)]),
@@ -22,9 +22,8 @@ final class MeetingDiarizerFetcher {
     guard running == nil else { return }
     downloader.diagnose = { log?.record($0, $1) }
     running = Task {
-      let fetched = await downloader.downloadAutomatically()
+      _ = await downloader.downloadAutomatically()
       running = nil
-      return fetched
     }
   }
 }

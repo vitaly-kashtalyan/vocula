@@ -1,21 +1,19 @@
 import Foundation
 
 public actor MeetingDiarizerState {
-  private var inFlight = false
+  private(set) var isBusy = false
   private var discarded = false
 
   public init() {}
 
-  var isBusy: Bool { inFlight }
-
   func begin() -> Bool {
-    guard !inFlight else { return false }
-    inFlight = true
+    guard !isBusy else { return false }
+    isBusy = true
     return true
   }
 
   func end() {
-    inFlight = false
+    isBusy = false
   }
 
   func mayDiscard() -> Bool {

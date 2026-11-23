@@ -19,10 +19,10 @@ import Testing
       me: me, others: others.map { (word: $0, speaker: .others) } + said, dictations: dictations)
   }
 
-  private func said(_ text: String, by number: Int, from start: Double, step: Double = 0.25)
+  private func said(_ text: String, by number: Int, from start: Double)
     -> [(word: TimedText, speaker: MeetingSpeaker)]
   {
-    words(text, from: start, step: step).map { (word: $0, speaker: .numbered(number)) }
+    words(text, from: start).map { (word: $0, speaker: .numbered(number)) }
   }
 
   @Test func dictationIsLeftOut() {
@@ -126,14 +126,7 @@ import Testing
   }
 
   @Test func aSpeakerChangeStartsALine() {
-    let a = (word: TimedText(start: 0.0, end: 0.25, text: "a"), speaker: MeetingSpeaker.numbered(1))
-    let b = (
-      word: TimedText(start: 0.375, end: 0.5, text: "b"), speaker: MeetingSpeaker.numbered(1)
-    )
-    let c = (
-      word: TimedText(start: 0.625, end: 0.875, text: "c"), speaker: MeetingSpeaker.numbered(2)
-    )
-    let result = build(said: [a, b, c])
+    let result = build(said: said("a b", by: 1, from: 0) + said("c", by: 2, from: 0.5))
     #expect(result.utterances.map(\.speaker) == [.numbered(1), .numbered(2)])
     #expect(result.utterances.map(\.text) == ["a b", "c"])
   }
