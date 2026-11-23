@@ -215,6 +215,18 @@ struct ParakeetMeetingDiarizerTests {
       ])
   }
 
+  @Test(
+    "Segmentation and FBank run on the CPU; on the GPU segmentation held 620 MB more for the same speed"
+  )
+  func theModelsRunWhereTheyCostLeast() {
+    let names = ModelNames.OfflineDiarizer.self
+    #expect(ParakeetMeetingDiarizer.computeUnits[names.segmentationFile] == .cpuOnly)
+    #expect(ParakeetMeetingDiarizer.computeUnits[names.fbankFile] == .cpuOnly)
+    #expect(ParakeetMeetingDiarizer.computeUnits[names.embeddingFile] == .all)
+    #expect(ParakeetMeetingDiarizer.computeUnits[names.pldaRhoFile] == .all)
+    #expect(ParakeetMeetingDiarizer.computeUnits.count == 4)
+  }
+
   @Test("The split is FluidAudio's default, with runs that no cluster voted for re-embedded")
   func theConfigurationReembedsZeroVoteRuns() {
     let configuration = ParakeetMeetingDiarizer.configuration

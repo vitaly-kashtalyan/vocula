@@ -223,6 +223,11 @@ import Testing
     #expect(rig.calls.count("discard") == 1)
   }
 
+  @Test func theBoundsAreTheMeasuredOnes() {
+    #expect(MeetingDiarizationRules.maxDiarizedSeconds == 7_200)
+    #expect(MeetingDiarizationRules.diarizeDeadlineFactor == 0.2)
+  }
+
   @Test func theDeadlineGrowsWithTheTrack() {
     #expect(MeetingDiarizationRules.deadlineFloor == .seconds(60))
     #expect(MeetingDiarizationRules.deadline(forTrackSeconds: 10) == .seconds(60))

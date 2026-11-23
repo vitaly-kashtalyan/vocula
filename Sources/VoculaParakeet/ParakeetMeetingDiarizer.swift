@@ -16,6 +16,13 @@ public struct ParakeetMeetingDiarizer: MeetingDiarizing {
     return configuration
   }()
 
+  static let computeUnits: [String: MLComputeUnits] = [
+    ModelNames.OfflineDiarizer.segmentationFile: .cpuOnly,
+    ModelNames.OfflineDiarizer.fbankFile: .cpuOnly,
+    ModelNames.OfflineDiarizer.embeddingFile: .all,
+    ModelNames.OfflineDiarizer.pldaRhoFile: .all,
+  ]
+
   private static let queue = DispatchQueue(label: "vocula.meeting.diarizer", qos: .utility)
 
   private let models: OfflineDiarizerModels
@@ -101,10 +108,10 @@ public struct ParakeetMeetingDiarizer: MeetingDiarizing {
   private static func loadNow(from directory: URL) throws -> ParakeetMeetingDiarizer {
     let started = Date()
     let names = ModelNames.OfflineDiarizer.self
-    let segmentation = try model(names.segmentationFile, in: directory, units: .all)
-    let fbank = try model(names.fbankFile, in: directory, units: .cpuOnly)
-    let embedding = try model(names.embeddingFile, in: directory, units: .all)
-    let pldaRho = try model(names.pldaRhoFile, in: directory, units: .all)
+    let segmentation = try model(names.segmentationFile, in: directory)
+    let fbank = try model(names.fbankFile, in: directory)
+    let embedding = try model(names.embeddingFile, in: directory)
+    let pldaRho = try model(names.pldaRhoFile, in: directory)
     try requireWhatTheExtractorTrapsOn(fbank: fbank, embedding: embedding)
     let psi = try MeetingDiarizerParameters.psi(
       from: Data(contentsOf: directory.appendingPathComponent(names.pldaParameters)))
@@ -116,11 +123,9 @@ public struct ParakeetMeetingDiarizer: MeetingDiarizing {
         compilationDuration: Date().timeIntervalSince(started)))
   }
 
-  private static func model(_ name: String, in directory: URL, units: MLComputeUnits) throws
-    -> MLModel
-  {
+  private static func model(_ name: String, in directory: URL) throws -> MLModel {
     let configuration = MLModelConfiguration()
-    configuration.computeUnits = units
+    configuration.computeUnits = computeUnits[name] ?? .cpuOnly
     configuration.allowLowPrecisionAccumulationOnGPU = true
     return try MLModel(
       contentsOf: directory.appendingPathComponent(name), configuration: configuration)
