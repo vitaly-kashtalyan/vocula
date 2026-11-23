@@ -55,4 +55,13 @@ struct ModelManifestTests {
     )
     #expect(!ModelManifest.transcriptionModels.contains(.speakerDiarizer))
   }
+
+  @Test("the Parakeet credit says FluidAudio also separates speakers, and whose weights")
+  func theParakeetCreditNamesSpeakerSeparation() {
+    let credit = ModelFamily.parakeet.engineCredit
+    #expect(credit.contains("separates speakers"))
+    for name in ["pyannote", "WeSpeaker", "BUT Speech@FIT", "CC-BY-4.0"] {
+      #expect(credit.contains(name), "\(name)")
+    }
+  }
 }

@@ -61,7 +61,7 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
       return "whisper.cpp v1.9.5 — MIT, The ggml authors"
     case .parakeet:
       return
-        "FluidAudio — Apache-2.0; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0"
+        "FluidAudio — Apache-2.0, which also separates speakers; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0; speaker separation weights by pyannote, WeSpeaker and BUT Speech@FIT, converted by Fluid Inference, under CC-BY-4.0"
     case .refiner:
       return
         "MLX — MIT, Apple; swift-transformers — Apache-2.0, Hugging Face; Qwen3.5 weights by Alibaba under Apache-2.0, fine-tuned by Vocula"
