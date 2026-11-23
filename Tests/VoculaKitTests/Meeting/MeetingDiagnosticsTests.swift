@@ -23,6 +23,14 @@ import Testing
     #expect(log.recent(2).map(\.detail) == ["step=recognize code=-7", summary])
   }
 
+  @Test func aDiarizeFailureLineSurvivesRedaction() {
+    let log = DiagnosticLog(
+      fileURL: meetingTemporaryDirectory().appendingPathComponent("diagnostics.json"))
+    log.record("meeting.diarizeFailed", "step=waited code=0")
+    #expect(log.recent(1).map(\.kind) == ["meeting.diarizeFailed"])
+    #expect(log.recent(1).map(\.detail) == ["step=waited code=0"])
+  }
+
   @Test func aCounterTakesNoText() {
     #expect(DiagnosticLog.redact("micSeconds=abc") == "micSeconds=<dropped>")
     #expect(DiagnosticLog.redact("droppedSeconds=1.5") == "droppedSeconds=<dropped>")

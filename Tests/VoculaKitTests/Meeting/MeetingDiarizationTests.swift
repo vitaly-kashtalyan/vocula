@@ -98,4 +98,63 @@ import Testing
     await rig.run()
     #expect(await lines(rig, header).map(\.speaker) == [.numbered(1)])
   }
+
+  private func ended(_ secondsBeforeNow: Double, _ rig: TranscriberRig, lasting: Double = 3)
+    -> TimeInterval
+  {
+    rig.wallNow.timeIntervalSinceReferenceDate - secondsBeforeNow - lasting
+  }
+
+  @Test func aMissingDiarizerKeepsAFreshMeetingPending() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerInstalled = false
+    let header = try rig.meeting(
+      startedAt: ended(100, rig), system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await rig.transcript(of: header) == nil)
+    #expect(rig.hasAudio(header))
+    #expect(rig.lines("meeting.transcribeFailed") == ["step=diarizer code=0"])
+    #expect(rig.calls.all == ["isInstalled"])
+    #expect(rig.published.all == [.finished(transcribed: 0, failed: 1)])
+  }
+
+  @Test func aMeetingThatWaitedADayIsTranscribedWithoutSpeakers() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerInstalled = false
+    let waited = try rig.meeting(
+      startedAt: ended(86_400, rig), system: [rig.speech(at: 0.5, for: 1)])
+    let fresh = try rig.meeting(
+      startedAt: ended(100, rig), system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, waited).map(\.speaker) == [.others])
+    #expect(!rig.hasAudio(waited))
+    #expect(await rig.transcript(of: fresh) == nil)
+    #expect(rig.hasAudio(fresh))
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=waited code=0"])
+    #expect(rig.lines("meeting.transcribeFailed") == ["step=diarizer code=0"])
+    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
+    #expect(Array(rig.calls.all.prefix(3)) == ["isInstalled", "model", "makeRecognizer"])
+    #expect(rig.calls.count("load") == 0)
+    #expect(rig.diarizer.calls == 0)
+  }
+
+  @Test func aMicOnlyMeetingThatWaitedLogsNoSplitFailure() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerInstalled = false
+    let header = try rig.meeting(
+      startedAt: ended(90_000, rig), mic: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, header).map(\.speaker) == [.me])
+    #expect(rig.lines("meeting.diarizeFailed").isEmpty)
+    #expect(rig.lines("meeting.transcribeFailed").isEmpty)
+  }
+
+  @Test func aRecognizerThatWillNotLoadNeverLoadsTheDiarizer() async throws {
+    let rig = TranscriberRig()
+    rig.recognizerLoadError = MeetingFailure.failed(step: "load", code: 3)
+    try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(rig.calls.count("load") == 0)
+    #expect(rig.lines("meeting.transcribeFailed") == ["step=model code=3"])
+  }
 }

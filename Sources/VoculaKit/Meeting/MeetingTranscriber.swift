@@ -94,6 +94,7 @@ public actor MeetingTranscriber {
   private var recognizer: (any MeetingRecognizing)?
   private var detector: (any SpeechDetecting)?
   private var diarizer: (any MeetingDiarizing)?
+  private var splitting = true
   private var tally = Tally()
   private var remaining = 0
   private var total = 0
@@ -146,8 +147,9 @@ public actor MeetingTranscriber {
       await keep(.empty, of: item.header.id, cipher: cipher)
     }
     guard !pending.isEmpty else { return }
-    _ = await deps.diarization.isInstalled()
-    total = pending.reduce(0) { sum, item in
+    let recognizing = await waitingForTheDiarizer(pending)
+    guard !recognizing.isEmpty else { return }
+    total = recognizing.reduce(0) { sum, item in
       let seconds = max(0, item.header.end?.timeIntervalSince(item.header.startedAt) ?? 0)
       return sum + 2 * Int(seconds * AudioFormat.sampleRate)
     }
@@ -159,7 +161,7 @@ public actor MeetingTranscriber {
     }
     model = chosen.model
     detector = deps.makeDetector()
-    for item in pending {
+    for item in recognizing {
       try checkCancelled()
       do {
         let transcript = try await transcribe(item.header, model: chosen, cipher: cipher)
@@ -173,6 +175,22 @@ public actor MeetingTranscriber {
     }
   }
 
+  private func waitingForTheDiarizer(_ pending: [MeetingWork]) async -> [MeetingWork] {
+    guard !(await deps.diarization.isInstalled()) else { return pending }
+    splitting = false
+    let now = deps.diarization.wallClock()
+    let waited = pending.filter { item in
+      item.header.end.map { now.timeIntervalSince($0) >= MeetingDiarizationRules.maxWait } ?? false
+    }
+    let fresh = pending.count - waited.count
+    if fresh > 0 {
+      failed(step: "diarizer", code: 0)
+      tally.failed += fresh
+      remaining -= fresh
+    }
+    return waited
+  }
+
   private func transcribe(
     _ header: MeetingHeader, model: MeetingModel, cipher: any HistoryCipher
   ) async throws -> MeetingTranscript {
@@ -180,7 +198,7 @@ public actor MeetingTranscriber {
     let mic = try await words(
       of: .mic, in: header, end: end, model: model, cipher: cipher, gather: false)
     let system = try await words(
-      of: .system, in: header, end: end, model: model, cipher: cipher, gather: true)
+      of: .system, in: header, end: end, model: model, cipher: cipher, gather: splitting)
     let speakers = try await speakers(of: system.words, in: system.track)
     let built = MeetingTranscriptBuilder.build(
       me: mic.words,
@@ -195,6 +213,10 @@ public actor MeetingTranscriber {
     -> [MeetingSpeaker]
   {
     guard !words.isEmpty else { return [] }
+    guard splitting else {
+      diarizeFailed(step: "waited", code: 0)
+      return words.map { _ in .others }
+    }
     let diarizer = try await loadedDiarizer()
     let state = deps.diarization.state
     _ = await state.begin()
@@ -357,6 +379,10 @@ public actor MeetingTranscriber {
 
   private func failed(step: String, code: Int) {
     deps.log?.record("meeting.transcribeFailed", "step=\(step) code=\(code)")
+  }
+
+  private func diarizeFailed(step: String, code: Int) {
+    deps.log?.record("meeting.diarizeFailed", "step=\(step) code=\(code)")
   }
 
   private func summarize(took: UInt64) {
