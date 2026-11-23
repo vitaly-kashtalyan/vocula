@@ -12,9 +12,17 @@ import Testing
   }
 
   private func build(
-    me: [TimedText] = [], others: [TimedText] = [], dictations: [ClosedRange<Double>] = []
+    me: [TimedText] = [], others: [TimedText] = [],
+    said: [(word: TimedText, speaker: MeetingSpeaker)] = [], dictations: [ClosedRange<Double>] = []
   ) -> (utterances: [MeetingUtterance], echoDropped: Int) {
-    MeetingTranscriptBuilder.build(me: me, others: others, dictations: dictations)
+    MeetingTranscriptBuilder.build(
+      me: me, others: others.map { (word: $0, speaker: .others) } + said, dictations: dictations)
+  }
+
+  private func said(_ text: String, by number: Int, from start: Double, step: Double = 0.25)
+    -> [(word: TimedText, speaker: MeetingSpeaker)]
+  {
+    words(text, from: start, step: step).map { (word: $0, speaker: .numbered(number)) }
   }
 
   @Test func dictationIsLeftOut() {
@@ -115,6 +123,57 @@ import Testing
         TimedText(start: 3, end: 3.5, text: "theirs"), TimedText(start: 1, end: 1.5, text: "first"),
       ])
     #expect(result.utterances.map(\.text) == ["first", "mine", "theirs", "late"])
+  }
+
+  @Test func aSpeakerChangeStartsALine() {
+    let a = (word: TimedText(start: 0.0, end: 0.25, text: "a"), speaker: MeetingSpeaker.numbered(1))
+    let b = (
+      word: TimedText(start: 0.375, end: 0.5, text: "b"), speaker: MeetingSpeaker.numbered(1)
+    )
+    let c = (
+      word: TimedText(start: 0.625, end: 0.875, text: "c"), speaker: MeetingSpeaker.numbered(2)
+    )
+    let result = build(said: [a, b, c])
+    #expect(result.utterances.map(\.speaker) == [.numbered(1), .numbered(2)])
+    #expect(result.utterances.map(\.text) == ["a b", "c"])
+  }
+
+  @Test func sameSpeakerAcrossAShortGapIsOneLine() {
+    let result = build(said: said("one", by: 1, from: 0) + said("two", by: 1, from: 0.75))
+    #expect(result.utterances.map(\.speaker) == [.numbered(1)])
+    #expect(result.utterances.map(\.text) == ["one two"])
+  }
+
+  @Test func theLineOrderIsAStrictWeakOrdering() {
+    typealias Line = (start: Double, speaker: MeetingSpeaker, offset: Int)
+    let lines: [Line] = [
+      (start: 2, speaker: .me, offset: 0), (start: 2, speaker: .numbered(1), offset: 1),
+      (start: 2, speaker: .numbered(2), offset: 2), (start: 2, speaker: .numbered(1), offset: 3),
+      (start: 2, speaker: .me, offset: 5), (start: 4, speaker: .numbered(2), offset: 4),
+    ]
+    let less = MeetingTranscriptBuilder.precedes
+    func equivalent(_ a: Line, _ b: Line) -> Bool { !less(a, b) && !less(b, a) }
+    for a in lines {
+      #expect(!less(a, a))
+      for b in lines {
+        if less(a, b) { #expect(!less(b, a)) }
+        for c in lines {
+          if less(a, b) && less(b, c) { #expect(less(a, c)) }
+          if equivalent(a, b) && equivalent(b, c) { #expect(equivalent(a, c)) }
+        }
+      }
+    }
+    for mine in lines where mine.speaker == .me {
+      for other in lines where other.speaker != .me && other.start == mine.start {
+        #expect(less(mine, other))
+      }
+    }
+  }
+
+  @Test func echoStillMatchesNumberedWords() {
+    let result = build(me: words("yes go", from: 5.1), said: said("yes go", by: 1, from: 5))
+    #expect(result.echoDropped == 2)
+    #expect(result.utterances.map(\.speaker) == [.numbered(1)])
   }
 
   @Test func spansBecomeSecondsFromTheAnchor() {

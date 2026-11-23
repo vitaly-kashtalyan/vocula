@@ -178,7 +178,8 @@ public actor MeetingTranscriber {
         of: track, in: header, end: end, model: model, cipher: cipher)
     }
     let built = MeetingTranscriptBuilder.build(
-      me: heard[.mic] ?? [], others: heard[.system] ?? [],
+      me: heard[.mic] ?? [],
+      others: (heard[.system] ?? []).map { (word: $0, speaker: MeetingSpeaker.others) },
       dictations: MeetingTranscriptBuilder.dictationRanges(
         header.dictations, anchor: header.anchor))
     tally.echoDropped += built.echoDropped
