@@ -4,7 +4,9 @@ import Testing
 @testable import VoculaKit
 
 @Suite struct MeetingMarkdownTests {
-  private let labels: [MeetingSpeaker: String] = [.me: "Me", .others: "Others"]
+  private let label: @Sendable (MeetingSpeaker) -> String = {
+    [.me: "Me", .others: "Others"][$0] ?? $0.rawValue
+  }
   private let started = ISO8601DateFormatter().date(from: "2026-11-19T09:30:00Z")!
 
   private func render(
@@ -12,7 +14,7 @@ import Testing
   ) -> String {
     MeetingMarkdown.render(
       MeetingTranscript(model: "m", utterances: utterances), startedAt: started,
-      duration: duration, labels: labels, includeMe: includeMe)
+      duration: duration, label: label, includeMe: includeMe)
   }
 
   @Test func rendersTheExportFormat() {
@@ -42,7 +44,7 @@ import Testing
       MeetingTranscript(
         model: "m",
         utterances: [MeetingUtterance(start: 4.6, end: 6, speaker: .me, text: "Hi.")]),
-      title: #"Q3 "plan" \ review"#, startedAt: started, duration: 2832, labels: labels,
+      title: #"Q3 "plan" \ review"#, startedAt: started, duration: 2832, label: label,
       includeMe: true)
     #expect(
       text == #"""
@@ -66,11 +68,35 @@ import Testing
         MeetingUtterance(start: 11, end: 12, speaker: .others, text: "Green."),
       ])
     #expect(
-      MeetingMarkdown.lines(transcript, labels: labels, includeMe: true)
+      MeetingMarkdown.lines(transcript, label: label, includeMe: true)
         == ["Me [00:00:04]: Let's start.", "Others [00:00:11]: Green."])
     #expect(
-      MeetingMarkdown.lines(transcript, labels: labels, includeMe: false)
+      MeetingMarkdown.lines(transcript, label: label, includeMe: false)
         == ["Others [00:00:11]: Green."])
+  }
+
+  @Test func markdownLabelsNumberedSpeakers() {
+    let numbered: @Sendable (MeetingSpeaker) -> String = {
+      $0.number.map { "Speaker \($0)" } ?? ($0 == .me ? "Me" : "Others")
+    }
+    let transcript = MeetingTranscript(
+      model: "m",
+      utterances: [
+        MeetingUtterance(start: 1, end: 2, speaker: .me, text: "Ready?"),
+        MeetingUtterance(start: 3, end: 4, speaker: .numbered(1), text: "Yes."),
+        MeetingUtterance(start: 5, end: 6, speaker: .numbered(2), text: "Go."),
+      ])
+    let all = MeetingMarkdown.render(
+      transcript, startedAt: started, duration: 10, label: numbered, includeMe: true)
+    #expect(all.contains("speakers: [Me, Speaker 1, Speaker 2]"))
+    #expect(all.contains("**Speaker 2** [00:00:05]: Go."))
+    let without = MeetingMarkdown.render(
+      transcript, startedAt: started, duration: 10, label: numbered, includeMe: false)
+    #expect(without.contains("speakers: [Speaker 1, Speaker 2]"))
+    #expect(!without.contains("Ready?"))
+    #expect(
+      MeetingMarkdown.lines(transcript, label: numbered, includeMe: false)
+        == ["Speaker 1 [00:00:03]: Yes.", "Speaker 2 [00:00:05]: Go."])
   }
 
   @Test func fileNameReplacesSeparators() {

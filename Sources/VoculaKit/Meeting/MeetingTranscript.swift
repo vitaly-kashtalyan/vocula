@@ -4,10 +4,22 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   public static let me = MeetingSpeaker(rawValue: "me")
   public static let others = MeetingSpeaker(rawValue: "others")
 
+  public static func numbered(_ number: Int) -> MeetingSpeaker {
+    MeetingSpeaker(rawValue: "speaker-\(number)")
+  }
+
   public let rawValue: String
 
   public init(rawValue: String) {
     self.rawValue = rawValue
+  }
+
+  public var number: Int? {
+    guard rawValue.hasPrefix("speaker-") else { return nil }
+    let digits = rawValue.dropFirst("speaker-".count)
+    guard digits.first != "0", !digits.isEmpty, digits.allSatisfy({ ("0"..."9").contains($0) })
+    else { return nil }
+    return Int(digits)
   }
 }
 

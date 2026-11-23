@@ -215,7 +215,7 @@ final class Meetings {
       return .transcript(
         MeetingMarkdown.render(
           transcript, title: listing.title, startedAt: listing.startedAt,
-          duration: listing.duration, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe))
+          duration: listing.duration, label: MenuCopy.meetingSpeakerLabel, includeMe: includeMe))
     case .failed(let step, let code):
       return .failed(step: step, code: code)
     case .unavailable:

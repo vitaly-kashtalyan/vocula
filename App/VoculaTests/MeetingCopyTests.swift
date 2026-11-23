@@ -51,6 +51,16 @@ import Testing
     #expect((localized as? String)?.isEmpty == false)
   }
 
+  @Test func labelsFollowTheSpeaker() {
+    #expect(MenuCopy.meetingSpeakerLabel(.me) == String(localized: MenuCopy.meetingSpeakerMe))
+    #expect(
+      MenuCopy.meetingSpeakerLabel(.others) == String(localized: MenuCopy.meetingSpeakerOthers))
+    #expect(
+      MenuCopy.meetingSpeakerLabel(.numbered(3))
+        == String(localized: MenuCopy.meetingSpeakerNumbered(3)))
+    #expect(MenuCopy.meetingSpeakerLabel(MeetingSpeaker(rawValue: "x")) == "x")
+  }
+
   @Test func theCopyRowUsesTheNameWhenSet() {
     let started = Date(timeIntervalSince1970: 0)
     let plain = text(MenuCopy.transcriptRow(startedAt: started, duration: 125), in: "en")

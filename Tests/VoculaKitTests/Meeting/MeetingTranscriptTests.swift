@@ -29,6 +29,19 @@ import Testing
     #expect(transcript.utterances.first?.speaker.rawValue == "speaker-3")
   }
 
+  @Test func numberedSpeakersRoundTrip() {
+    #expect(MeetingSpeaker.numbered(3).rawValue == "speaker-3")
+    #expect(MeetingSpeaker.numbered(3).number == 3)
+    #expect(MeetingSpeaker(rawValue: "speaker-12").number == 12)
+    let unnumbered = [
+      "speaker-x", "speaker-0", "speaker-", "speaker-+1", "speaker-01", "speaker--1",
+      "speaker-1.5", "Speaker-1",
+    ]
+    for raw in unnumbered { #expect(MeetingSpeaker(rawValue: raw).number == nil, "\(raw)") }
+    #expect(MeetingSpeaker.me.number == nil)
+    #expect(MeetingSpeaker.others.number == nil)
+  }
+
   @Test func aTranscriptWithoutAModelStillDecodes() throws {
     let json = Data(
       #"{"utterances":[{"start":0,"end":1,"speaker":"me","text":"x"}]}"#.utf8)

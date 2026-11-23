@@ -9961,8 +9961,20 @@
         }
       }
     },
+    "meeting.speaker.numbered" : {
+      "comment" : "Label of one person on the call in a meeting transcript, numbered in the order they first spoke; the argument is that number, an identifier, not a count. Shown in the Meetings section's transcript sheet, and pasted or exported as text wherever the user puts it, often into an AI chat; one short word and the number.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Speaker %lld"
+          }
+        }
+      }
+    },
     "meeting.speaker.others" : {
-      "comment" : "Label of the other participants' lines in a meeting transcript: what the other apps played, the people on the call. Shown in the Meetings section's transcript sheet, and pasted or exported as text; one short word.",
+      "comment" : "Label of the other participants' lines in a meeting transcript: what the other apps played, the people on the call; also the call's lines that could not be given to one speaker. Shown in the Meetings section's transcript sheet, and pasted or exported as text; one short word.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {

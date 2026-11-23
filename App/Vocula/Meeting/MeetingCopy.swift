@@ -38,11 +38,10 @@ extension MenuCopy {
       "Checkable item at the top of the Copy Transcript submenu, and a toggle in the sheet that shows a meeting's transcript in the Meetings section. When checked, a copied transcript includes the user's own lines (what their microphone heard); when unchecked, only the other participants' lines, for someone who only listened. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
   )
 
-  static var meetingSpeakerLabels: [MeetingSpeaker: String] {
-    [
-      .me: String(localized: meetingSpeakerMe),
-      .others: String(localized: meetingSpeakerOthers),
-    ]
+  static func meetingSpeakerLabel(_ speaker: MeetingSpeaker) -> String {
+    if speaker == .me { return String(localized: meetingSpeakerMe) }
+    if speaker == .others { return String(localized: meetingSpeakerOthers) }
+    return speaker.number.map { String(localized: meetingSpeakerNumbered($0)) } ?? speaker.rawValue
   }
 
   static func meetingStart(_ date: Date) -> String {
@@ -85,8 +84,16 @@ extension MenuCopy {
   static let meetingSpeakerOthers = LocalizedStringResource(
     "meeting.speaker.others", defaultValue: "Others",
     comment:
-      "Label of the other participants' lines in a meeting transcript: what the other apps played, the people on the call. Shown in the Meetings section's transcript sheet, and pasted or exported as text; one short word."
+      "Label of the other participants' lines in a meeting transcript: what the other apps played, the people on the call; also the call's lines that could not be given to one speaker. Shown in the Meetings section's transcript sheet, and pasted or exported as text; one short word."
   )
+
+  static func meetingSpeakerNumbered(_ number: Int) -> LocalizedStringResource {
+    LocalizedStringResource(
+      "meeting.speaker.numbered", defaultValue: "Speaker \(number)",
+      comment:
+        "Label of one person on the call in a meeting transcript, numbered in the order they first spoke; the argument is that number, an identifier, not a count. Shown in the Meetings section's transcript sheet, and pasted or exported as text wherever the user puts it, often into an AI chat; one short word and the number."
+    )
+  }
 
   static func meetingTranscribing(_ percent: Int) -> LocalizedStringResource {
     let done = (Double(percent) / 100).formatted(
