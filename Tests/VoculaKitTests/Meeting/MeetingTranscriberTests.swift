@@ -110,118 +110,32 @@ final class Published: @unchecked Sendable {
 final class CallLog: @unchecked Sendable {
   private let lock = NSLock()
   private var names: [String] = []
-  private var waiters: [(id: UUID, name: String, continuation: CheckedContinuation<Void, Never>)] =
-    []
 
   var all: [String] { lock.withLock { names } }
+  func add(_ name: String) { lock.withLock { names.append(name) } }
   func count(_ name: String) -> Int { lock.withLock { names.filter { $0 == name }.count } }
-
-  func add(_ name: String) {
-    let ready = lock.withLock {
-      names.append(name)
-      let ready = waiters.filter { $0.name == name }.map(\.continuation)
-      waiters.removeAll { $0.name == name }
-      return ready
-    }
-    ready.forEach { $0.resume() }
-  }
-
-  func until(_ name: String) async {
-    let id = UUID()
-    await withTaskCancellationHandler {
-      await withCheckedContinuation { continuation in
-        let now = lock.withLock {
-          if names.contains(name) || Task.isCancelled { return true }
-          waiters.append((id, name, continuation))
-          return false
-        }
-        if now { continuation.resume() }
-      }
-    } onCancel: {
-      let waiter = lock.withLock {
-        let found = waiters.first { $0.id == id }?.continuation
-        waiters.removeAll { $0.id == id }
-        return found
-      }
-      waiter?.resume()
-    }
-  }
-}
-
-final class DeafGate: @unchecked Sendable {
-  private let lock = NSLock()
-  private var opened = false
-  private var waiting: [CheckedContinuation<Void, Never>] = []
-
-  func open() {
-    let resumed = lock.withLock {
-      opened = true
-      defer { waiting = [] }
-      return waiting
-    }
-    resumed.forEach { $0.resume() }
-  }
-
-  func wait() async {
-    await withCheckedContinuation { continuation in
-      let already = lock.withLock {
-        if opened { return true }
-        waiting.append(continuation)
-        return false
-      }
-      if already { continuation.resume() }
-    }
-  }
 }
 
 final class DiarizerLog: @unchecked Sendable {
   private let lock = NSLock()
   private var received: [[Int16]] = []
   private var cancelled = false
-  private var callWaiters:
-    [(id: UUID, count: Int, continuation: CheckedContinuation<Void, Never>)] =
-      []
+  let called = Latch()
   var turns: [SpeakerTurn] = []
   var error: (any Error)?
   var stall: TestClock?
-  var gate: DeafGate?
+  var gate: Gate?
 
   var calls: Int { lock.withLock { received.count } }
   var samples: [[Int16]] { lock.withLock { received } }
   var sawCancellation: Bool { lock.withLock { cancelled } }
 
   func called(with samples: [Int16]) {
-    let ready = lock.withLock {
-      received.append(samples)
-      let ready = callWaiters.filter { $0.count <= received.count }.map(\.continuation)
-      callWaiters.removeAll { $0.count <= received.count }
-      return ready
-    }
-    ready.forEach { $0.resume() }
+    lock.withLock { received.append(samples) }
+    called.open()
   }
 
   func didSeeCancellation() { lock.withLock { cancelled = true } }
-
-  func untilCalled(_ count: Int = 1) async {
-    let id = UUID()
-    await withTaskCancellationHandler {
-      await withCheckedContinuation { continuation in
-        let now = lock.withLock {
-          if received.count >= count || Task.isCancelled { return true }
-          callWaiters.append((id, count, continuation))
-          return false
-        }
-        if now { continuation.resume() }
-      }
-    } onCancel: {
-      let waiter = lock.withLock {
-        let found = callWaiters.first { $0.id == id }?.continuation
-        callWaiters.removeAll { $0.id == id }
-        return found
-      }
-      waiter?.resume()
-    }
-  }
 }
 
 struct FakeDiarizer: MeetingDiarizing {
@@ -257,11 +171,12 @@ final class TranscriberRig: @unchecked Sendable {
   var recognizerLoadError: (any Error)?
   let diarizer = DiarizerLog()
   let calls = CallLog()
+  let loading = Latch()
   let state = MeetingDiarizerState()
   var diarizerInstalled = true
   var diarizerLoadError: (any Error)?
   var diarizerLoadStall: TestClock?
-  var diarizerLoadGate: DeafGate?
+  var diarizerLoadGate: Gate?
   var maxTrackSeconds = MeetingDiarizationRules.maxDiarizedSeconds
   var wallNow = Date(timeIntervalSinceReferenceDate: 800_000_100)
 
@@ -299,6 +214,7 @@ final class TranscriberRig: @unchecked Sendable {
           },
           load: { [self] in
             calls.add("load")
+            loading.open()
             if let diarizerLoadStall { try await diarizerLoadStall.sleep(for: .seconds(3_600)) }
             if let diarizerLoadGate { await diarizerLoadGate.wait() }
             if let diarizerLoadError { throw diarizerLoadError }

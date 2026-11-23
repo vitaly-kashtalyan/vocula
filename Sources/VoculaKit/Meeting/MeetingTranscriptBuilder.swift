@@ -15,8 +15,6 @@ enum MeetingTranscriptBuilder {
     }
   }
 
-  typealias Line = (start: Double, speaker: MeetingSpeaker, offset: Int)
-
   static func build(
     me: [TimedText], others: [(word: TimedText, speaker: MeetingSpeaker)],
     dictations: [ClosedRange<Double>]
@@ -29,17 +27,10 @@ enum MeetingTranscriptBuilder {
     let (kept, dropped) = withoutEcho(spoken, of: theirs.map(\.word))
     let mine = merge(kept.map { (word: $0, speaker: .me) }, breaks: [])
     let all = (mine + merge(theirs, breaks: mine.map(\.start))).enumerated().sorted {
-      precedes(
-        (start: $0.element.start, speaker: $0.element.speaker, offset: $0.offset),
-        (start: $1.element.start, speaker: $1.element.speaker, offset: $1.offset))
+      ($0.element.start, $0.element.speaker == .me ? 0 : 1, $0.offset)
+        < ($1.element.start, $1.element.speaker == .me ? 0 : 1, $1.offset)
     }
     return (all.map(\.element), dropped)
-  }
-
-  static func precedes(_ a: Line, _ b: Line) -> Bool {
-    if a.start != b.start { return a.start < b.start }
-    if (a.speaker == .me) != (b.speaker == .me) { return a.speaker == .me }
-    return a.offset < b.offset
   }
 
   static func normalized(_ word: String) -> String {

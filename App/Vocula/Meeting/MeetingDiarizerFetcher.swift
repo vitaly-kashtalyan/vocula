@@ -8,7 +8,8 @@ final class MeetingDiarizerFetcher {
   private(set) var running: Task<Bool, Never>?
 
   init(
-    store: ModelStore = .meetingsDiarizer(), configuration: URLSessionConfiguration = .default,
+    store: ModelStore = .app(manifest: [ModelManifest.descriptor(for: .speakerDiarizer)]),
+    configuration: URLSessionConfiguration = .default,
     isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy
   ) {
     self.store = store

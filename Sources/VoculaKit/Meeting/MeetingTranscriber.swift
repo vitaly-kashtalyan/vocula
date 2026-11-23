@@ -230,8 +230,7 @@ public actor MeetingTranscriber {
       diarizeFailed(step: "busy", code: 0)
       return others
     }
-    let outcome = SplitOutcome()
-    let work = Self.split(track, with: diarizer, into: outcome, releasing: state)
+    let work = Self.split(track, with: diarizer, releasing: state)
     let deadline = MeetingDiarizationRules.deadline(
       forTrackSeconds: Double(track.count) / AudioFormat.sampleRate)
     let sleep = deps.sleep
@@ -240,12 +239,12 @@ public actor MeetingTranscriber {
     } onCancel: {
       work.cancel()
     }
-    guard finished, let result = outcome.result else {
+    guard finished else {
       try checkCancelled()
       diarizeFailed(step: "deadline", code: 0)
       return others
     }
-    switch result {
+    switch await work.value {
     case .success(let turns):
       return MeetingSpeakerAssignment.assign(words, turns: turns)
     case .failure(let error):
@@ -265,14 +264,15 @@ public actor MeetingTranscriber {
   }
 
   private static func split(
-    _ track: [Int16], with diarizer: any MeetingDiarizing, into outcome: SplitOutcome,
-    releasing state: MeetingDiarizerState
-  ) -> Task<Void, Never> {
+    _ track: [Int16], with diarizer: any MeetingDiarizing, releasing state: MeetingDiarizerState
+  ) -> Task<Result<[SpeakerTurn], any Error>, Never> {
     Task {
-      do { outcome.set(.success(try await diarizer.turns(in: track))) } catch {
-        outcome.set(.failure(error))
+      let result: Result<[SpeakerTurn], any Error>
+      do { result = .success(try await diarizer.turns(in: track)) } catch {
+        result = .failure(error)
       }
       await state.end()
+      return result
     }
   }
 
@@ -478,13 +478,4 @@ public actor MeetingTranscriber {
     default: 0
     }
   }
-}
-
-private final class SplitOutcome: @unchecked Sendable {
-  private let lock = NSLock()
-  private var value: Result<[SpeakerTurn], any Error>?
-
-  var result: Result<[SpeakerTurn], any Error>? { lock.withLock { value } }
-
-  func set(_ result: Result<[SpeakerTurn], any Error>) { lock.withLock { value = result } }
 }

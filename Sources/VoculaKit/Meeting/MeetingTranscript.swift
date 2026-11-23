@@ -16,11 +16,10 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   }
 
   public var number: Int? {
-    guard rawValue.hasPrefix("speaker-") else { return nil }
-    let digits = rawValue.dropFirst("speaker-".count)
-    guard digits.first != "0", !digits.isEmpty, digits.allSatisfy({ ("0"..."9").contains($0) })
+    guard rawValue.hasPrefix("speaker-"), let number = Int(rawValue.dropFirst("speaker-".count)),
+      number > 0, Self.numbered(number) == self
     else { return nil }
-    return Int(digits)
+    return number
   }
 }
 

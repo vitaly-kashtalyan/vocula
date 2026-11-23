@@ -9,7 +9,7 @@ private final class DiarizerStub: URLProtocol {
   nonisolated(unsafe) static var status = 200
   nonisolated(unsafe) static var hangs = false
   private static let seen = Mutex(0)
-  private static let waiters = Mutex<[CheckedContinuation<Void, Never>]>([])
+  nonisolated(unsafe) static var requested = Latch()
 
   static var requests: Int { seen.withLock { $0 } }
 
@@ -17,13 +17,7 @@ private final class DiarizerStub: URLProtocol {
     seen.withLock { $0 = 0 }
     status = 200
     hangs = false
-  }
-
-  static func untilRequested() async {
-    await withCheckedContinuation { continuation in
-      let now = seen.withLock { $0 > 0 }
-      if now { continuation.resume() } else { waiters.withLock { $0.append(continuation) } }
-    }
+    requested = Latch()
   }
 
   override class func canInit(with request: URLRequest) -> Bool { true }
@@ -31,10 +25,7 @@ private final class DiarizerStub: URLProtocol {
 
   override func startLoading() {
     Self.seen.withLock { $0 += 1 }
-    Self.waiters.withLock {
-      $0.forEach { $0.resume() }
-      $0 = []
-    }
+    Self.requested.open()
     if Self.hangs { return }
     let response = HTTPURLResponse(
       url: request.url!, statusCode: Self.status, httpVersion: "HTTP/1.1",
@@ -65,7 +56,7 @@ struct MeetingDiarizerFetcherTests {
   }
 
   @Test func itLooksAtTheDiarizerOnly() {
-    #expect(ModelStore.meetingsDiarizer().descriptors.map(\.id) == [.speakerDiarizer])
+    #expect(MeetingDiarizerFetcher().store.descriptors.map(\.id) == [.speakerDiarizer])
   }
 
   @Test func aSecondCopyFetchesNothing() async throws {
@@ -80,7 +71,7 @@ struct MeetingDiarizerFetcherTests {
     DiarizerStub.hangs = true
     fetcher.fetch(log: nil)
     fetcher.fetch(log: nil)
-    await DiarizerStub.untilRequested()
+    await DiarizerStub.requested.wait()
     fetcher.fetch(log: nil)
     #expect(DiarizerStub.requests == 1)
     #expect(fetcher.running != nil)

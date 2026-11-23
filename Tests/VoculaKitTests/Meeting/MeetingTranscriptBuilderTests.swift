@@ -144,30 +144,17 @@ import Testing
     #expect(result.utterances.map(\.text) == ["one two"])
   }
 
-  @Test func theLineOrderIsAStrictWeakOrdering() {
-    typealias Line = (start: Double, speaker: MeetingSpeaker, offset: Int)
-    let lines: [Line] = [
-      (start: 2, speaker: .me, offset: 0), (start: 2, speaker: .numbered(1), offset: 1),
-      (start: 2, speaker: .numbered(2), offset: 2), (start: 2, speaker: .numbered(1), offset: 3),
-      (start: 2, speaker: .me, offset: 5), (start: 4, speaker: .numbered(2), offset: 4),
-    ]
-    let less = MeetingTranscriptBuilder.precedes
-    func equivalent(_ a: Line, _ b: Line) -> Bool { !less(a, b) && !less(b, a) }
-    for a in lines {
-      #expect(!less(a, a))
-      for b in lines {
-        if less(a, b) { #expect(!less(b, a)) }
-        for c in lines {
-          if less(a, b) && less(b, c) { #expect(less(a, c)) }
-          if equivalent(a, b) && equivalent(b, c) { #expect(equivalent(a, c)) }
-        }
-      }
+  @Test func linesAtOneStartPutMeFirstThenTheirBuildOrder() {
+    let at = { (speaker: MeetingSpeaker) in
+      (word: TimedText(start: 2, end: 2.25, text: "w"), speaker: speaker)
     }
-    for mine in lines where mine.speaker == .me {
-      for other in lines where other.speaker != .me && other.start == mine.start {
-        #expect(less(mine, other))
-      }
-    }
+    let result = build(
+      me: [TimedText(start: 2, end: 2.25, text: "m")],
+      said: [
+        at(.numbered(2)), at(.numbered(1)),
+        (word: TimedText(start: 1, end: 1.25, text: "e"), speaker: .numbered(1)),
+      ])
+    #expect(result.utterances.map(\.speaker) == [.numbered(1), .me, .numbered(2), .numbered(1)])
   }
 
   @Test func echoStillMatchesNumberedWords() {

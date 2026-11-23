@@ -88,7 +88,7 @@ import Testing
     rig.diarizer.stall = rig.clock
     let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
     let pass = Task { await rig.run() }
-    await rig.diarizer.untilCalled()
+    await rig.diarizer.called.wait()
     await rig.clock.untilSleeping(1)
     pass.cancel()
     await pass.value
@@ -199,7 +199,7 @@ import Testing
     rig.diarizerLoadStall = rig.clock
     let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
     let pass = Task { await rig.run() }
-    await rig.calls.until("load")
+    await rig.loading.wait()
     await rig.clock.untilSleeping(1)
     pass.cancel()
     await pass.value
@@ -211,11 +211,11 @@ import Testing
 
   @Test func aPassCancelledDuringALoadStartsNoSplit() async throws {
     let rig = TranscriberRig()
-    let gate = DeafGate()
+    let gate = Gate()
     rig.diarizerLoadGate = gate
     let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
     let pass = Task { await rig.run() }
-    await rig.calls.until("load")
+    await rig.loading.wait()
     pass.cancel()
     gate.open()
     await pass.value
@@ -257,13 +257,13 @@ import Testing
 
   @Test func aStalledSplitStopsAtItsDeadlineWithoutJoining() async throws {
     let rig = TranscriberRig()
-    let gate = DeafGate()
+    let gate = Gate()
     rig.diarizer.gate = gate
     rig.diarizer.turns = wholeCall()
     let stalled = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
     let next = try rig.meeting(startedAt: 800_000_000, system: [rig.speech(at: 0.5, for: 1)])
     let pass = Task { await rig.run() }
-    await rig.diarizer.untilCalled()
+    await rig.diarizer.called.wait()
     await rig.clock.untilSleeping(1)
     rig.clock.advance(by: MeetingDiarizationRules.deadline(forTrackSeconds: 3) + .seconds(1))
     await pass.value
@@ -283,12 +283,12 @@ import Testing
 
   @Test func busyAtThePassStartLoadsLazily() async throws {
     let rig = TranscriberRig()
-    let gate = DeafGate()
+    let gate = Gate()
     rig.diarizer.gate = gate
     rig.diarizer.turns = wholeCall()
     try rig.meeting(startedAt: 799_999_000, system: [rig.speech(at: 0.5, for: 1)])
     let earlier = Task { await rig.run() }
-    await rig.diarizer.untilCalled()
+    await rig.diarizer.called.wait()
     await rig.clock.untilSleeping(1)
     rig.clock.advance(by: MeetingDiarizationRules.deadline(forTrackSeconds: 3) + .seconds(1))
     await earlier.value

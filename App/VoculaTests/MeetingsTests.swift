@@ -4,7 +4,7 @@ import Testing
 @testable import Vocula
 @testable import VoculaKit
 
-private final class Latch: @unchecked Sendable {
+final class Latch: @unchecked Sendable {
   private let lock = NSLock()
   private var opened = false
   private var nextWaiter = 0
