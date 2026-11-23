@@ -14,7 +14,9 @@ struct MeetingTranscriptionParts {
   typealias Publish = @Sendable (MeetingTranscription) async -> Void
 
   var makeTranscriber:
-    @MainActor (_ log: DiagnosticLog?, _ publish: @escaping Publish) -> MeetingTranscriber?
+    @MainActor (
+      _ log: DiagnosticLog?, _ state: MeetingDiarizerState, _ publish: @escaping Publish
+    ) -> MeetingTranscriber?
   var listing: @Sendable (_ log: DiagnosticLog?) async -> MeetingListingOutcome
   var transcript: @Sendable (_ id: UUID) async -> MeetingReadResult
   var updateHeader:
@@ -25,6 +27,7 @@ struct MeetingTranscriptionParts {
   var delete: @Sendable (_ id: UUID, _ busy: Bool) async -> MeetingActionResult
   var write: @Sendable (_ data: Data, _ url: URL) async -> MeetingActionResult
   var paste: @MainActor (String) -> Void
+  var fetchDiarizer: @MainActor (DiagnosticLog?) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
     VoculaAppDelegate.isUITesting ? MeetingFixture().parts() : liveSystem
@@ -32,7 +35,7 @@ struct MeetingTranscriptionParts {
 
   @MainActor private static var liveSystem: MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeTranscriber: { liveTranscriber(log: $0, publish: $1) },
+      makeTranscriber: { liveTranscriber(log: $0, state: $1, publish: $2) },
       listing: { await liveListing(log: $0) },
       transcript: { await liveRead($0) },
       updateHeader: { await liveUpdateHeader($0, busy: $1, $2) },
@@ -41,12 +44,20 @@ struct MeetingTranscriptionParts {
       paste: { text in
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-      })
+      },
+      fetchDiarizer: { fetcher.fetch(log: $0) })
   }
 
-  @MainActor static func liveTranscriber(log: DiagnosticLog?, publish: @escaping Publish)
-    -> MeetingTranscriber?
-  {
+  @MainActor private static let fetcher = MeetingDiarizerFetcher()
+
+  static func discardDiarizer(from store: ModelStore, isSecondCopy: Bool) -> Bool {
+    guard !isSecondCopy else { return false }
+    return AppCoordinator.removeInstalled(.speakerDiarizer, from: store)
+  }
+
+  @MainActor static func liveTranscriber(
+    log: DiagnosticLog?, state: MeetingDiarizerState, publish: @escaping Publish
+  ) -> MeetingTranscriber? {
     guard let store = Meetings.makeStore() else { return nil }
     return MeetingTranscriber(
       MeetingTranscriber.Dependencies(
@@ -56,13 +67,19 @@ struct MeetingTranscriptionParts {
         makeRecognizer: { try await recognizer(for: $0) },
         makeDetector: { WhisperVADDetector(modelPath: ModelStore.app().url(for: .speechDetector)) },
         diarization: MeetingDiarization(
-          state: MeetingDiarizerState(),
+          state: state,
           isInstalled: { ModelStore.app().isReady([.speakerDiarizer]) },
           load: {
             try await ParakeetMeetingDiarizer.load(
               modelDirectory: ModelStore.app().url(for: .speakerDiarizer))
           },
-          discard: {}, wallClock: { Date() }),
+          discard: {
+            let removed = await Task.detached(priority: .utility) {
+              discardDiarizer(from: .app(), isSecondCopy: VoculaAppDelegate.isSecondCopy)
+            }.value
+            if removed { log?.record("model.discarded", "model=speakerDiarizer") }
+          },
+          wallClock: { Date() }),
         now: { Meetings.hostNanos() },
         sleep: { try await Task.sleep(for: $0) },
         publish: publish,

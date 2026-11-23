@@ -13,6 +13,14 @@ extension ModelStore {
       localOverrides: developmentOverrides())
   }
 
+  static func meetingsDiarizer() -> ModelStore {
+    ModelStore(
+      directory: ApplicationSupport.modelsDirectory,
+      fileSystem: SystemModelFileSystem(),
+      manifest: [ModelManifest.descriptor(for: .speakerDiarizer)],
+      localOverrides: developmentOverrides())
+  }
+
   static func developmentOverrides(_ defaults: UserDefaults = .standard) -> [ModelID: URL] {
     #if DEBUG
       ModelID.allCases.reduce(into: [:]) { found, id in

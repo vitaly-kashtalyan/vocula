@@ -26,13 +26,14 @@ final class MeetingFixture {
 
   func parts() -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeTranscriber: { _, _ in nil },
+      makeTranscriber: { _, _, _ in nil },
       listing: { _ in await .meetings(self.meetings) },
       transcript: { id in await self.read(id) },
       updateHeader: { id, _, change in await self.update(id, change) },
       delete: { id, _ in await self.delete(id) },
       write: { _, _ in .done },
-      paste: { _ in })
+      paste: { _ in },
+      fetchDiarizer: { _ in })
   }
 
   private func read(_ id: UUID) -> MeetingReadResult {
