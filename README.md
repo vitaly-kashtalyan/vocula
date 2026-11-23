@@ -25,7 +25,8 @@ Dictation for macOS that runs entirely on your Mac, in up to 100 languages.</p>
 
 There is no account and no sign-in, and nothing you dictate ever leaves this
 Mac. The app talks to exactly two places, both on GitHub: it fetches the speech
-model by itself at launch whenever it is missing (and the clean-up model, if you ask for it), and — while you leave the
+model by itself at launch whenever it is missing (and the clean-up model, if you ask for it, and the speaker
+separation model the first time you record a meeting), and — while you leave the
 switch on — it asks once a day whether a newer version of Vocula exists. Your licence is checked here, offline.
 
 ## How it works
@@ -75,21 +76,23 @@ Nothing you say. Ever.
 | What | Where it happens |
 | --- | --- |
 | Audio capture | This Mac. The microphone opens on the record key and closes on release — except while you record a meeting, when it stays open until the meeting stops and records everything it hears, anything you dictate meanwhile included; the sound other apps play is recorded too, both kept on disk, AES-GCM encrypted, until Vocula transcribes them on this Mac after the meeting; then the audio is deleted and the encrypted transcript kept. |
-| Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. |
+| Speech detection and transcription | This Mac — detection on the CPU; transcription on the Neural Engine with Parakeet, or the GPU with Whisper. A recorded meeting's call is also split into its speakers here, through Core ML. |
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | This project's GitHub releases. The speech model is fetched by itself at launch whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. SHA-256 verified. |
+| Model download | This project's GitHub releases. The speech model is fetched by itself at launch whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. The 19 MB speaker separation model is fetched by itself when a meeting starts recording and it is missing, under the same network rule; it has no button. SHA-256 verified. |
 | Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
-place the shipping app reaches the network is named in two files, and this is
-the command that proves there is no third:
+place the shipping app reaches the network is named in the files below, and
+this is the command that proves there is no other:
 
 ```sh
 git grep -l "URLSession\|SUFeedURL" -- App/Vocula App/project.yml Sources
-# App/Vocula/Models/ModelDownloader.swift    the speech model by itself when missing, the clean-up model on request
-# App/project.yml                            SUFeedURL, the daily version check
+# App/Vocula/Meeting/MeetingDiarizerFetcher.swift  the speaker separation model when a meeting starts and it is missing
+# App/Vocula/Models/ModelDownloader.swift          the speech model by itself when missing, the clean-up model on request
+# App/Vocula/Updates/UpdaterController.swift       reads SUFeedURL; Sparkle makes the request
+# App/project.yml                                  SUFeedURL, the daily version check
 ```
 
 That covers the code in this repository. The update check itself is performed
@@ -114,7 +117,10 @@ and dropped. *Record Meeting (Beta)* keeps the microphone open until the meeting
 stops, records the sound other apps play through macOS's System Audio Recording
 permission, and keeps both on disk, encrypted under their own key, until it has
 transcribed them on this Mac — then the audio is deleted and the encrypted
-transcript kept, until you delete the meeting in *Meetings (Beta)*.
+transcript kept, until you delete the meeting in *Meetings (Beta)*. The first
+meeting you record, or any meeting started while it is missing, downloads the
+speaker separation model from the same GitHub releases, which tells GitHub, from
+your IP address, that a meeting is starting.
 Insertion goes through the system pasteboard for about a second, which other
 applications can read, and *Copy Transcript* puts a meeting's transcript there
 as plain Markdown; *Export…* writes it to a file you choose. All four are in [PRIVACY.md](PRIVACY.md), at length,
@@ -168,12 +174,16 @@ silent recording, a refusal and a dead microphone all cost nothing.
   does not list them, plus the
   voice-activity detector either way; and about 1.5 GB more for the clean-up
   model, downloaded when you ask for it — by switching clean-up on, or with its
-  `Load` button. A recorded meeting takes about 230 MB an hour until it is
+  `Load` button. Recording a meeting adds about 22 MB for the speaker separation
+  model (a 19 MB download). A recorded meeting takes about 230 MB an hour until it is
   transcribed — each of its two tracks is stored whole as 16 kHz mono 16-bit
   samples, the other apps' track through its silences too, which is about 115 MB
   per track per hour, computed from that format, not measured — and then only its
   transcript is kept, until you delete it in *Meetings (Beta)*. Transcribing holds a second
-  copy of the recognition model in memory for as long as it runs.
+  copy of the recognition model in memory for as long as it runs, and while it
+  splits a call into speakers up to about 0.8 GB more for a meeting of an hour
+  (measured: 0.65 GB at 30 minutes, 0.77 GB at an hour); a meeting over two
+  hours is not split.
 - Three permissions, each asked for when it is first needed: **Accessibility**,
   which is what lets the record key be seen and swallowed outside our own
   window and lets ⌘V reach another application, **Microphone**, and **System
@@ -232,8 +242,8 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1621 tests: 1221 from `swift test`, 377 in the hosted app bundle, 23 driving the
-real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1692 tests: 1279 from `swift test` (the sum of the totals it prints, one per test
+target), 390 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
 the 23 check English copy and skip whenever a language is set, so a run without
@@ -287,13 +297,15 @@ Stated here rather than discovered later.
   expansion has started leaves the finished 1.56 GB model in
   `vocula-cleanup-2b-v1/` and removes the archive. While clean-up stays off,
   nothing in the app removes either; delete them by hand.
-- **One model downloads at a time.** While the speech model's automatic
+- **One of dictation's models downloads at a time.** While the speech model's automatic
   download waits for a good network or runs, turning clean-up on starts nothing
   and its `Load` is greyed out; Settings → Models' Cancel releases it, and `Load`
   fetches the clean-up model once the downloader is free. Turning
   clean-up on first holds the speech model back until the 1.49 GB clean-up model
   is done or you turn clean-up off; the speech model then downloads at the next
-  launch, or with "Download what is missing" on Settings → Models.
+  launch, or with "Download what is missing" on Settings → Models. The speaker
+  separation model has a downloader of its own, which starts when a meeting
+  starts and can run beside these.
 - **A language Parakeet cannot hear, missing from your Mac's language list,
   lands you on Parakeet.** The engine is chosen from the languages ticked in
   Vocula and the ones listed in System Settings → Language & Region. Someone on
@@ -309,12 +321,19 @@ Stated here rather than discovered later.
   drag it by itself into Applications in the Finder (if it is already there, drag
   it out and back in), and open it from there.
 - **Record Meeting is a beta.** After a meeting ends, Vocula transcribes it on
-  this Mac into lines labelled *Me* (your microphone) and *Others* (everything
-  other apps played) — it does not tell the other speakers apart yet — and
-  deletes the audio; speech the model misses is lost with it, and so is a reply
+  this Mac into lines labelled *Me* (your microphone, however many people sit at
+  it) and *Speaker 1*, *Speaker 2*… (the people in what other apps played,
+  numbered in the order they first spoke and told apart on this Mac) — a line no
+  single speaker can be given, two people at once, reads *Others*, and so does the
+  whole call when the separation fails, takes too long, or the meeting ran over
+  two hours — and deletes the audio; speech the model misses is lost with it, and so is a reply
   of yours that repeats, two words or more in a row, what the other side just
   said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
-  interrupted, keeps its audio until the next meeting you record ends.
+  interrupted, keeps its audio until the next meeting you record ends. So does a
+  meeting that ends before the speaker separation model has arrived: it shows as
+  not transcribed and waits, at most 24 hours, after which the next meeting's end
+  transcribes it with *Others*. A copy of that model that will not load is
+  deleted and fetched again at the next meeting's start, once per launch.
   *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting it can
   open and
   opens, renames, pins, exports as Markdown, copies and deletes one; a pinned
@@ -353,7 +372,7 @@ Stated here rather than discovered later.
 | --- | --- |
 | `Sources/VoculaKit` | Every decision. Foundation only, enforced by a script. All of it tested. |
 | `Sources/VoculaWhisper` | Adapters over the pinned whisper.cpp XCFramework. |
-| `Sources/VoculaParakeet` | Adapters over FluidAudio, which runs Parakeet on the Neural Engine. |
+| `Sources/VoculaParakeet` | Adapters over FluidAudio, which runs Parakeet on the Neural Engine and separates a meeting's speakers. |
 | `App/` | Event taps, audio, Accessibility, pasteboard, UI. |
 
 Most of `App/` has no fast automated tests by design: it touches hardware. When
