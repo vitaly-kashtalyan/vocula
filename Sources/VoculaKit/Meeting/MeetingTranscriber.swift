@@ -199,9 +199,11 @@ public actor MeetingTranscriber {
     guard let end = header.endHost else { throw Stop.meeting(step: "open", code: 0) }
     let mic = try await words(
       of: .mic, in: header, end: end, model: model, cipher: cipher, gather: false)
+    let refused = await splitRefusal(header)
     let system = try await words(
-      of: .system, in: header, end: end, model: model, cipher: cipher, gather: split == .on)
-    let speakers = try await speakers(of: system.words, in: system.track)
+      of: .system, in: header, end: end, model: model, cipher: cipher,
+      gather: split == .on && refused == nil)
+    let speakers = try await speakers(of: system.words, in: system.track, refused: refused)
     let built = MeetingTranscriptBuilder.build(
       me: mic.words,
       others: zip(system.words, speakers).map { (word: $0, speaker: $1) },
@@ -211,25 +213,66 @@ public actor MeetingTranscriber {
     return MeetingTranscript(model: model.model.rawValue, utterances: built.utterances)
   }
 
-  private func speakers(of words: [TimedText], in track: [Int16]) async throws
+  private func speakers(of words: [TimedText], in track: [Int16], refused: String?) async throws
     -> [MeetingSpeaker]
   {
     guard !words.isEmpty else { return [] }
     let others = words.map { _ in MeetingSpeaker.others }
     if split == .waited { diarizeFailed(step: "waited", code: 0) }
+    if let refused {
+      diarizeFailed(step: refused, code: 0)
+      return others
+    }
     guard split == .on, let diarizer = try await loadedDiarizer() else { return others }
     let state = deps.diarization.state
-    _ = await state.begin()
-    let turns: [SpeakerTurn]
-    do { turns = try await diarizer.turns(in: track) } catch {
-      await state.end()
+    guard await state.begin() else {
+      diarizeFailed(step: "busy", code: 0)
+      return others
+    }
+    let outcome = SplitOutcome()
+    let work = Self.split(track, with: diarizer, into: outcome, releasing: state)
+    let deadline = MeetingDiarizationRules.deadline(
+      forTrackSeconds: Double(track.count) / AudioFormat.sampleRate)
+    let sleep = deps.sleep
+    let finished = await withTaskCancellationHandler {
+      await MeetingBound.wait(for: work, atMost: deadline, sleep: sleep)
+    } onCancel: {
+      work.cancel()
+    }
+    guard finished, let result = outcome.result else {
+      try checkCancelled()
+      diarizeFailed(step: "deadline", code: 0)
+      return others
+    }
+    switch result {
+    case .success(let turns):
+      return MeetingSpeakerAssignment.assign(words, turns: turns)
+    case .failure(let error):
       try Self.throwIfCancelled(error)
       let fromTheModel = if case MeetingDiarizerError.model = error { true } else { false }
       await failedSplit(step: "diarize", error, discarding: fromTheModel)
       return others
     }
-    await state.end()
-    return MeetingSpeakerAssignment.assign(words, turns: turns)
+  }
+
+  private func splitRefusal(_ header: MeetingHeader) async -> String? {
+    guard split == .on else { return nil }
+    let length = header.end?.timeIntervalSince(header.startedAt) ?? 0
+    if length > deps.diarization.maxTrackSeconds { return "length" }
+    if await deps.diarization.state.isBusy { return "busy" }
+    return nil
+  }
+
+  private static func split(
+    _ track: [Int16], with diarizer: any MeetingDiarizing, into outcome: SplitOutcome,
+    releasing state: MeetingDiarizerState
+  ) -> Task<Void, Never> {
+    Task {
+      do { outcome.set(.success(try await diarizer.turns(in: track))) } catch {
+        outcome.set(.failure(error))
+      }
+      await state.end()
+    }
   }
 
   private func loadedDiarizer() async throws -> (any MeetingDiarizing)? {
@@ -434,4 +477,13 @@ public actor MeetingTranscriber {
     default: 0
     }
   }
+}
+
+private final class SplitOutcome: @unchecked Sendable {
+  private let lock = NSLock()
+  private var value: Result<[SpeakerTurn], any Error>?
+
+  var result: Result<[SpeakerTurn], any Error>? { lock.withLock { value } }
+
+  func set(_ result: Result<[SpeakerTurn], any Error>) { lock.withLock { value = result } }
 }

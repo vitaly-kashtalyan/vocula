@@ -148,6 +148,32 @@ final class CallLog: @unchecked Sendable {
   }
 }
 
+final class DeafGate: @unchecked Sendable {
+  private let lock = NSLock()
+  private var opened = false
+  private var waiting: [CheckedContinuation<Void, Never>] = []
+
+  func open() {
+    let resumed = lock.withLock {
+      opened = true
+      defer { waiting = [] }
+      return waiting
+    }
+    resumed.forEach { $0.resume() }
+  }
+
+  func wait() async {
+    await withCheckedContinuation { continuation in
+      let already = lock.withLock {
+        if opened { return true }
+        waiting.append(continuation)
+        return false
+      }
+      if already { continuation.resume() }
+    }
+  }
+}
+
 final class DiarizerLog: @unchecked Sendable {
   private let lock = NSLock()
   private var received: [[Int16]] = []
@@ -158,6 +184,7 @@ final class DiarizerLog: @unchecked Sendable {
   var turns: [SpeakerTurn] = []
   var error: (any Error)?
   var stall: TestClock?
+  var gate: DeafGate?
 
   var calls: Int { lock.withLock { received.count } }
   var samples: [[Int16]] { lock.withLock { received } }
@@ -202,6 +229,7 @@ struct FakeDiarizer: MeetingDiarizing {
 
   func turns(in samples: [Int16]) async throws -> [SpeakerTurn] {
     log.called(with: samples)
+    if let gate = log.gate { await gate.wait() }
     if let clock = log.stall {
       do { try await clock.sleep(for: .seconds(3_600)) } catch {
         log.didSeeCancellation()

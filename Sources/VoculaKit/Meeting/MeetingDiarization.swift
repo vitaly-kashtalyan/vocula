@@ -62,4 +62,10 @@ public struct MeetingDiarization: Sendable {
 public enum MeetingDiarizationRules {
   public static let maxWait: TimeInterval = 86_400
   public static let maxDiarizedSeconds: Double = 4 * 3_600
+  public static let deadlineFloor: Duration = .seconds(60)
+  public static let diarizeDeadlineFactor: Double = 1.0
+
+  public static func deadline(forTrackSeconds seconds: Double) -> Duration {
+    max(deadlineFloor, .seconds(seconds * diarizeDeadlineFactor))
+  }
 }

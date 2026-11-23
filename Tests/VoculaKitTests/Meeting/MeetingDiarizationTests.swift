@@ -222,4 +222,82 @@ import Testing
     #expect(rig.lines("meeting.diarizeFailed") == ["step=diarize code=4", "step=diarize code=-1"])
     #expect(rig.calls.count("discard") == 1)
   }
+
+  @Test func theDeadlineGrowsWithTheTrack() {
+    #expect(MeetingDiarizationRules.deadlineFloor == .seconds(60))
+    #expect(MeetingDiarizationRules.deadline(forTrackSeconds: 10) == .seconds(60))
+    let long = 600 * MeetingDiarizationRules.diarizeDeadlineFactor
+    #expect(long > 60)
+    #expect(MeetingDiarizationRules.deadline(forTrackSeconds: 600) == .seconds(long))
+  }
+
+  @Test func aStalledSplitStopsAtItsDeadlineWithoutJoining() async throws {
+    let rig = TranscriberRig()
+    let gate = DeafGate()
+    rig.diarizer.gate = gate
+    rig.diarizer.turns = wholeCall()
+    let stalled = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
+    let next = try rig.meeting(startedAt: 800_000_000, system: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.diarizer.untilCalled()
+    await rig.clock.untilSleeping(1)
+    rig.clock.advance(by: MeetingDiarizationRules.deadline(forTrackSeconds: 3) + .seconds(1))
+    await pass.value
+    #expect(await lines(rig, stalled).map(\.speaker) == [.others])
+    #expect(await lines(rig, next).map(\.speaker) == [.others])
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=deadline code=0", "step=busy code=0"])
+    #expect(rig.diarizer.calls == 1)
+    #expect(await rig.state.isBusy)
+    #expect(rig.recognizers.released == 1)
+
+    gate.open()
+    await rig.state.waitUntilIdle()
+    let later = try rig.meeting(startedAt: 800_000_090, system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, later).map(\.speaker) == [.numbered(1)])
+  }
+
+  @Test func busyAtThePassStartLoadsLazily() async throws {
+    let rig = TranscriberRig()
+    let gate = DeafGate()
+    rig.diarizer.gate = gate
+    rig.diarizer.turns = wholeCall()
+    try rig.meeting(startedAt: 799_999_000, system: [rig.speech(at: 0.5, for: 1)])
+    let earlier = Task { await rig.run() }
+    await rig.diarizer.untilCalled()
+    await rig.clock.untilSleeping(1)
+    rig.clock.advance(by: MeetingDiarizationRules.deadline(forTrackSeconds: 3) + .seconds(1))
+    await earlier.value
+    #expect(await rig.state.isBusy)
+
+    let busy = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
+    let freed = try rig.meeting(
+      startedAt: 800_000_000, mic: [rig.speech(at: 0.2, for: 0.2)],
+      system: [rig.speech(at: 1.5, for: 1)])
+    let state = rig.state
+    rig.recognizers.onCall = { call in
+      guard call == 3 else { return }
+      gate.open()
+      await state.waitUntilIdle()
+    }
+    let loadsBefore = rig.calls.count("load")
+    await rig.run()
+    #expect(await lines(rig, busy).map(\.speaker) == [.others])
+    #expect(await lines(rig, freed).map(\.speaker) == [.me, .numbered(1)])
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=deadline code=0", "step=busy code=0"])
+    #expect(rig.calls.count("load") == loadsBefore + 1)
+  }
+
+  @Test func aLongMeetingIsNotSplit() async throws {
+    let rig = TranscriberRig()
+    rig.maxTrackSeconds = 2
+    let long = try rig.meeting(lasting: 3, system: [rig.speech(at: 0.5, for: 1)])
+    let mine = try rig.meeting(
+      startedAt: 800_000_050, lasting: 3, mic: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, long).map(\.speaker) == [.others])
+    #expect(await lines(rig, mine).map(\.speaker) == [.me])
+    #expect(rig.diarizer.calls == 0)
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=length code=0"])
+  }
 }
