@@ -21,7 +21,10 @@ final class MeetingFixture {
     model: "fixture",
     utterances: [
       MeetingUtterance(start: 4, end: 6, speaker: .me, text: "Let's start with the release."),
-      MeetingUtterance(start: 11, end: 12, speaker: .others, text: "The build is green."),
+      MeetingUtterance(
+        start: 11, end: 12, speaker: .numbered(1), text: "The build is green."),
+      MeetingUtterance(
+        start: 14, end: 16, speaker: .numbered(2), text: "Then we ship on Friday."),
     ])
 
   func parts() -> MeetingTranscriptionParts {

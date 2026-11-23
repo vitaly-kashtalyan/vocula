@@ -9965,10 +9965,58 @@
       "comment" : "Label of one person on the call in a meeting transcript, numbered in the order they first spoke; the argument is that number, an identifier, not a count. Shown in the Meetings section's transcript sheet, and pasted or exported as text wherever the user puts it, often into an AI chat; one short word and the number.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprecher %lld"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Speaker %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hablante %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Intervenant %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interlocutore %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozmówca %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Participante %lld"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Собеседник %lld"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Співрозмовник %lld"
           }
         }
       }

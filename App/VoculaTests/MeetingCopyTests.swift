@@ -16,6 +16,7 @@ import Testing
     + [
       MenuCopy.copyTranscript, MenuCopy.copyIncludesMe, MenuCopy.meetingSpeakerMe,
       MenuCopy.meetingSpeakerOthers,
+      MenuCopy.meetingSpeakerNumbered(7),
       MenuCopy.meetingTranscribing(40), MenuCopy.transcriptUnreadable,
       MenuCopy.meetingItemLabel(.transcribing),
     ]
@@ -69,6 +70,15 @@ import Testing
     #expect(text(MenuCopy.transcriptRow(for: named), in: "en") == "Sync · " + (length ?? ""))
     let unnamed = MeetingListing(id: UUID(), startedAt: started, duration: 125)
     #expect(text(MenuCopy.transcriptRow(for: unnamed), in: "en") == plain)
+  }
+
+  @Test(arguments: ["de", "es", "fr", "it", "pl", "pt-BR", "ru", "uk"])
+  func numberedSpeakerLabelCarriesTheNumber(locale: String) {
+    let english = text(MenuCopy.meetingSpeakerNumbered(7), in: "en")
+    let translated = text(MenuCopy.meetingSpeakerNumbered(7), in: locale)
+    #expect(english == "Speaker 7")
+    #expect(translated.contains("7"))
+    #expect(translated != english)
   }
 
   @Test(arguments: lines)
