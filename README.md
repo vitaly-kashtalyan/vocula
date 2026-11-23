@@ -187,9 +187,11 @@ is kept to `arm64` on purpose.
 
 ## Build it yourself
 
-Xcode 26 or later — the package needs the Swift 6.2 toolchain and the macOS 26
-SDK. The first build needs a network for its dependencies: Sparkle, pinned by
-commit in `App/project.yml`; the whisper.cpp XCFramework, fetched from the
+Xcode 27.2 or later — the package needs the Swift 6.2 toolchain and the macOS 26
+SDK, and Xcode 26 builds a dependency's package trait without its compile
+condition, which leaves FluidAudio's speaker separation out of the app. The
+first build needs a network for its dependencies: Sparkle, pinned by commit in
+`App/project.yml`; the whisper.cpp XCFramework, fetched from the
 GitHub build page its release names and checked against the SHA-256 pinned in
 `Package.swift`; and
 FluidAudio, pinned to an exact tag there, which itself fetches a prebuilt
