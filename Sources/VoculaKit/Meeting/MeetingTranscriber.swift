@@ -94,7 +94,9 @@ public actor MeetingTranscriber {
   private var recognizer: (any MeetingRecognizing)?
   private var detector: (any SpeechDetecting)?
   private var diarizer: (any MeetingDiarizing)?
-  private var splitting = true
+  private enum Split { case on, waited, unloadable }
+
+  private var split = Split.on
   private var tally = Tally()
   private var remaining = 0
   private var total = 0
@@ -177,7 +179,7 @@ public actor MeetingTranscriber {
 
   private func waitingForTheDiarizer(_ pending: [MeetingWork]) async -> [MeetingWork] {
     guard !(await deps.diarization.isInstalled()) else { return pending }
-    splitting = false
+    split = .waited
     let now = deps.diarization.wallClock()
     let waited = pending.filter { item in
       item.header.end.map { now.timeIntervalSince($0) >= MeetingDiarizationRules.maxWait } ?? false
@@ -198,7 +200,7 @@ public actor MeetingTranscriber {
     let mic = try await words(
       of: .mic, in: header, end: end, model: model, cipher: cipher, gather: false)
     let system = try await words(
-      of: .system, in: header, end: end, model: model, cipher: cipher, gather: splitting)
+      of: .system, in: header, end: end, model: model, cipher: cipher, gather: split == .on)
     let speakers = try await speakers(of: system.words, in: system.track)
     let built = MeetingTranscriptBuilder.build(
       me: mic.words,
@@ -213,28 +215,42 @@ public actor MeetingTranscriber {
     -> [MeetingSpeaker]
   {
     guard !words.isEmpty else { return [] }
-    guard splitting else {
-      diarizeFailed(step: "waited", code: 0)
-      return words.map { _ in .others }
-    }
-    let diarizer = try await loadedDiarizer()
+    let others = words.map { _ in MeetingSpeaker.others }
+    if split == .waited { diarizeFailed(step: "waited", code: 0) }
+    guard split == .on, let diarizer = try await loadedDiarizer() else { return others }
     let state = deps.diarization.state
     _ = await state.begin()
     let turns: [SpeakerTurn]
     do { turns = try await diarizer.turns(in: track) } catch {
       await state.end()
-      if Task.isCancelled || error is CancellationError { throw Stop.cancelled }
-      throw Stop.meeting(step: "diarize", code: 0)
+      try Self.throwIfCancelled(error)
+      let fromTheModel = if case MeetingDiarizerError.model = error { true } else { false }
+      await failedSplit(step: "diarize", error, discarding: fromTheModel)
+      return others
     }
     await state.end()
     return MeetingSpeakerAssignment.assign(words, turns: turns)
   }
 
-  private func loadedDiarizer() async throws -> any MeetingDiarizing {
+  private func loadedDiarizer() async throws -> (any MeetingDiarizing)? {
     if let diarizer { return diarizer }
-    let loaded = try await deps.diarization.load()
-    diarizer = loaded
-    return loaded
+    do { diarizer = try await deps.diarization.load() } catch {
+      try Self.throwIfCancelled(error)
+      split = .unloadable
+      await failedSplit(step: "load", error, discarding: true)
+    }
+    return diarizer
+  }
+
+  private func failedSplit(step: String, _ error: any Error, discarding: Bool) async {
+    let code =
+      switch error {
+      case MeetingDiarizerError.model(let code), MeetingDiarizerError.failed(let code): code
+      default: 0
+      }
+    diarizeFailed(step: step, code: code)
+    guard discarding, await deps.diarization.state.mayDiscard() else { return }
+    await deps.diarization.discard()
   }
 
   private func words(
@@ -397,6 +413,10 @@ public actor MeetingTranscriber {
     ]
     if let model { fields.append("model=\(model.rawValue)") }
     deps.log?.record("meeting.transcribed", fields.joined(separator: " "))
+  }
+
+  private static func throwIfCancelled(_ error: any Error) throws {
+    if Task.isCancelled || error is CancellationError { throw Stop.cancelled }
   }
 
   private static func meetingStop(_ error: any Error) -> Stop {

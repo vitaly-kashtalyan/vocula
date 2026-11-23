@@ -110,10 +110,42 @@ final class Published: @unchecked Sendable {
 final class CallLog: @unchecked Sendable {
   private let lock = NSLock()
   private var names: [String] = []
+  private var waiters: [(id: UUID, name: String, continuation: CheckedContinuation<Void, Never>)] =
+    []
 
   var all: [String] { lock.withLock { names } }
-  func add(_ name: String) { lock.withLock { names.append(name) } }
   func count(_ name: String) -> Int { lock.withLock { names.filter { $0 == name }.count } }
+
+  func add(_ name: String) {
+    let ready = lock.withLock {
+      names.append(name)
+      let ready = waiters.filter { $0.name == name }.map(\.continuation)
+      waiters.removeAll { $0.name == name }
+      return ready
+    }
+    ready.forEach { $0.resume() }
+  }
+
+  func until(_ name: String) async {
+    let id = UUID()
+    await withTaskCancellationHandler {
+      await withCheckedContinuation { continuation in
+        let now = lock.withLock {
+          if names.contains(name) || Task.isCancelled { return true }
+          waiters.append((id, name, continuation))
+          return false
+        }
+        if now { continuation.resume() }
+      }
+    } onCancel: {
+      let waiter = lock.withLock {
+        let found = waiters.first { $0.id == id }?.continuation
+        waiters.removeAll { $0.id == id }
+        return found
+      }
+      waiter?.resume()
+    }
+  }
 }
 
 final class DiarizerLog: @unchecked Sendable {

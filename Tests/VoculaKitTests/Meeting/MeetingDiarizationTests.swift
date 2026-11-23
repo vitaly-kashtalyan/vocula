@@ -157,4 +157,69 @@ import Testing
     #expect(rig.calls.count("load") == 0)
     #expect(rig.lines("meeting.transcribeFailed") == ["step=model code=3"])
   }
+
+  @Test func aDiarizerThatWillNotLoadGivesOthersAndDiscardsOnce() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerLoadError = MeetingDiarizerError.model(code: -3)
+    let first = try rig.meeting(startedAt: 800_000_000, system: [rig.speech(at: 0.5, for: 1)])
+    let second = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, first).map(\.speaker) == [.others])
+    #expect(await lines(rig, second).map(\.speaker) == [.others])
+    #expect(!rig.hasAudio(first))
+    #expect(!rig.hasAudio(second))
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=load code=-3"])
+    #expect(rig.calls.count("load") == 1)
+    #expect(rig.calls.count("discard") == 1)
+    #expect(rig.diarizer.calls == 0)
+    #expect(rig.published.all.last == .finished(transcribed: 2, failed: 0))
+
+    try rig.meeting(startedAt: 800_000_090, system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=load code=-3", "step=load code=-3"])
+    #expect(rig.calls.count("discard") == 1)
+  }
+
+  @Test func aLoadFailureThatIsNotTheModelsKeepsCodeZero() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerLoadError = MeetingFailure.failed(step: "x", code: 9)
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, header).map(\.speaker) == [.others])
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=load code=0"])
+    #expect(rig.calls.count("discard") == 1)
+  }
+
+  @Test func aQuitDuringTheLoadNeverDiscards() async throws {
+    let rig = TranscriberRig()
+    rig.diarizerLoadStall = rig.clock
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.calls.until("load")
+    await rig.clock.untilSleeping(1)
+    pass.cancel()
+    await pass.value
+    #expect(await rig.transcript(of: header) == nil)
+    #expect(rig.hasAudio(header))
+    #expect(rig.calls.count("discard") == 0)
+    #expect(rig.lines("meeting.diarizeFailed").isEmpty)
+  }
+
+  @Test func aFailedSplitGivesOthers() async throws {
+    let rig = TranscriberRig()
+    rig.diarizer.error = MeetingDiarizerError.failed(code: 4)
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, header).map(\.speaker) == [.others])
+    #expect(!rig.hasAudio(header))
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=diarize code=4"])
+    #expect(rig.calls.count("discard") == 0)
+
+    rig.diarizer.error = MeetingDiarizerError.model(code: -1)
+    let next = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, next).map(\.speaker) == [.others])
+    #expect(rig.lines("meeting.diarizeFailed") == ["step=diarize code=4", "step=diarize code=-1"])
+    #expect(rig.calls.count("discard") == 1)
+  }
 }
