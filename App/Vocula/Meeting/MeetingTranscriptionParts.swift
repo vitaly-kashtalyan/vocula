@@ -55,6 +55,14 @@ struct MeetingTranscriptionParts {
         model: { await Task.detached(priority: .utility) { chosenModel() }.value },
         makeRecognizer: { try await recognizer(for: $0) },
         makeDetector: { WhisperVADDetector(modelPath: ModelStore.app().url(for: .speechDetector)) },
+        diarization: MeetingDiarization(
+          state: MeetingDiarizerState(),
+          isInstalled: { ModelStore.app().isReady([.speakerDiarizer]) },
+          load: {
+            try await ParakeetMeetingDiarizer.load(
+              modelDirectory: ModelStore.app().url(for: .speakerDiarizer))
+          },
+          discard: {}, wallClock: { Date() }),
         now: { Meetings.hostNanos() },
         sleep: { try await Task.sleep(for: $0) },
         publish: publish,

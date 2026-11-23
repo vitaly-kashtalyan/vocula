@@ -39,6 +39,7 @@ public actor MeetingTranscriber {
     public var model: @Sendable () async -> MeetingModel?
     public var makeRecognizer: @Sendable (MeetingModel) async throws -> any MeetingRecognizing
     public var makeDetector: @Sendable () -> any SpeechDetecting
+    public var diarization: MeetingDiarization
     public var now: @Sendable () -> UInt64
     public var sleep: @Sendable (Duration) async throws -> Void
     public var publish: @Sendable (MeetingTranscription) async -> Void
@@ -50,6 +51,7 @@ public actor MeetingTranscriber {
       model: @escaping @Sendable () async -> MeetingModel?,
       makeRecognizer: @escaping @Sendable (MeetingModel) async throws -> any MeetingRecognizing,
       makeDetector: @escaping @Sendable () -> any SpeechDetecting,
+      diarization: MeetingDiarization,
       now: @escaping @Sendable () -> UInt64,
       sleep: @escaping @Sendable (Duration) async throws -> Void,
       publish: @escaping @Sendable (MeetingTranscription) async -> Void,
@@ -60,6 +62,7 @@ public actor MeetingTranscriber {
       self.model = model
       self.makeRecognizer = makeRecognizer
       self.makeDetector = makeDetector
+      self.diarization = diarization
       self.now = now
       self.sleep = sleep
       self.publish = publish
@@ -90,6 +93,7 @@ public actor MeetingTranscriber {
   private let deps: Dependencies
   private var recognizer: (any MeetingRecognizing)?
   private var detector: (any SpeechDetecting)?
+  private var diarizer: (any MeetingDiarizing)?
   private var tally = Tally()
   private var remaining = 0
   private var total = 0
@@ -142,6 +146,7 @@ public actor MeetingTranscriber {
       await keep(.empty, of: item.header.id, cipher: cipher)
     }
     guard !pending.isEmpty else { return }
+    _ = await deps.diarization.isInstalled()
     total = pending.reduce(0) { sum, item in
       let seconds = max(0, item.header.end?.timeIntervalSince(item.header.startedAt) ?? 0)
       return sum + 2 * Int(seconds * AudioFormat.sampleRate)
@@ -172,24 +177,48 @@ public actor MeetingTranscriber {
     _ header: MeetingHeader, model: MeetingModel, cipher: any HistoryCipher
   ) async throws -> MeetingTranscript {
     guard let end = header.endHost else { throw Stop.meeting(step: "open", code: 0) }
-    var heard: [MeetingTrack: [TimedText]] = [:]
-    for track in MeetingTrack.allCases {
-      heard[track] = try await words(
-        of: track, in: header, end: end, model: model, cipher: cipher)
-    }
+    let mic = try await words(
+      of: .mic, in: header, end: end, model: model, cipher: cipher, gather: false)
+    let system = try await words(
+      of: .system, in: header, end: end, model: model, cipher: cipher, gather: true)
+    let speakers = try await speakers(of: system.words, in: system.track)
     let built = MeetingTranscriptBuilder.build(
-      me: heard[.mic] ?? [],
-      others: (heard[.system] ?? []).map { (word: $0, speaker: MeetingSpeaker.others) },
+      me: mic.words,
+      others: zip(system.words, speakers).map { (word: $0, speaker: $1) },
       dictations: MeetingTranscriptBuilder.dictationRanges(
         header.dictations, anchor: header.anchor))
     tally.echoDropped += built.echoDropped
     return MeetingTranscript(model: model.model.rawValue, utterances: built.utterances)
   }
 
+  private func speakers(of words: [TimedText], in track: [Int16]) async throws
+    -> [MeetingSpeaker]
+  {
+    guard !words.isEmpty else { return [] }
+    let diarizer = try await loadedDiarizer()
+    let state = deps.diarization.state
+    _ = await state.begin()
+    let turns: [SpeakerTurn]
+    do { turns = try await diarizer.turns(in: track) } catch {
+      await state.end()
+      if Task.isCancelled || error is CancellationError { throw Stop.cancelled }
+      throw Stop.meeting(step: "diarize", code: 0)
+    }
+    await state.end()
+    return MeetingSpeakerAssignment.assign(words, turns: turns)
+  }
+
+  private func loadedDiarizer() async throws -> any MeetingDiarizing {
+    if let diarizer { return diarizer }
+    let loaded = try await deps.diarization.load()
+    diarizer = loaded
+    return loaded
+  }
+
   private func words(
     of track: MeetingTrack, in header: MeetingHeader, end: UInt64, model: MeetingModel,
-    cipher: any HistoryCipher
-  ) async throws -> [TimedText] {
+    cipher: any HistoryCipher, gather: Bool
+  ) async throws -> (words: [TimedText], track: [Int16]) {
     let names: [String]
     do { names = try await deps.store.chunkNames(of: header.id, track: track) } catch {
       throw Self.meetingStop(error)
@@ -198,6 +227,7 @@ public actor MeetingTranscriber {
     var opened = 0
     var carry = Carry()
     var out: [TimedText] = []
+    var gathered: [Int16] = []
     for name in names {
       try checkCancelled()
       let chunk: MeetingChunk?
@@ -214,6 +244,7 @@ public actor MeetingTranscriber {
         tally.skipped += 1
       }
       while let window = windows.next(final: false) {
+        if gather { gathered += window.samples }
         out += try await handle(window, isLast: false, carry: &carry, model: model)
       }
     }
@@ -221,12 +252,13 @@ public actor MeetingTranscriber {
     var next = windows.next(final: true)
     while let window = next {
       next = windows.next(final: true)
+      if gather { gathered += window.samples }
       out += try await handle(window, isLast: next == nil, carry: &carry, model: model)
     }
     if !carry.samples.isEmpty {
       out += try await recognize(carry.samples, at: carry.start, model: model)
     }
-    return out
+    return (out, gathered)
   }
 
   private func handle(

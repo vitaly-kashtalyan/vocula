@@ -1,0 +1,101 @@
+import Foundation
+import Testing
+
+@testable import VoculaKit
+
+@Suite(.timeLimit(.minutes(1))) struct MeetingDiarizationTests {
+  private func wholeCall(_ speaker: String = "S0") -> [SpeakerTurn] {
+    [SpeakerTurn(speaker: speaker, start: 0, end: 60)]
+  }
+
+  private func lines(_ rig: TranscriberRig, _ header: MeetingHeader) async -> [MeetingUtterance] {
+    await rig.transcript(of: header)?.utterances ?? []
+  }
+
+  @Test func aSplitMeetingLabelsItsCallLines() async throws {
+    let rig = TranscriberRig()
+    rig.diarizer.turns = wholeCall()
+    let header = try rig.meeting(
+      mic: [rig.speech(at: 0.5, for: 0.5)], system: [rig.speech(at: 2, for: 0.5)])
+    await rig.run()
+    let split = await lines(rig, header)
+    #expect(split.map(\.speaker) == [.me, .numbered(1)])
+    #expect(rig.calls.all == ["isInstalled", "model", "makeRecognizer", "load"])
+
+    let plain = TranscriberRig()
+    let same = try plain.meeting(
+      mic: [plain.speech(at: 0.5, for: 0.5)], system: [plain.speech(at: 2, for: 0.5)])
+    await plain.run()
+    let unsplit = await lines(plain, same)
+    #expect(unsplit.map(\.speaker) == [.me, .others])
+    #expect(split.filter { $0.speaker == .me } == unsplit.filter { $0.speaker == .me })
+  }
+
+  @Test func theDiarizerGetsTheRawTrack() async throws {
+    let rig = TranscriberRig()
+    try rig.meeting(
+      lasting: 3,
+      system: [rig.speech(at: 0.5, for: 0.5, value: 900), rig.speech(at: 2, for: 1, value: -700)])
+    await rig.run()
+    let track = try #require(rig.diarizer.samples.first)
+    #expect(rig.diarizer.calls == 1)
+    #expect(track.count == 48_000)
+    #expect(track[0..<8_000].allSatisfy { $0 == 0 })
+    #expect(track[8_000..<16_000].allSatisfy { $0 == 900 })
+    #expect(track[16_000..<32_000].allSatisfy { $0 == 0 })
+    #expect(track[32_000..<48_000].allSatisfy { $0 == -700 })
+  }
+
+  @Test func noSystemWordsMeansNoDiarization() async throws {
+    let rig = TranscriberRig()
+    let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, header).map(\.speaker) == [.me])
+    #expect(rig.diarizer.calls == 0)
+    #expect(rig.calls.count("load") == 0)
+  }
+
+  @Test func noTurnsLeavesOthersAndLogsNothing() async throws {
+    let rig = TranscriberRig()
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(rig.diarizer.calls == 1)
+    #expect(await lines(rig, header).map(\.speaker) == [.others])
+    #expect(rig.lines("meeting.diarizeFailed").isEmpty)
+    #expect(!rig.hasAudio(header))
+  }
+
+  @Test func twoMeetingsInOnePassAreBothSplit() async throws {
+    let rig = TranscriberRig()
+    rig.diarizer.turns = wholeCall()
+    let first = try rig.meeting(startedAt: 800_000_000, system: [rig.speech(at: 0.5, for: 1)])
+    let second = try rig.meeting(startedAt: 800_000_050, system: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    #expect(await lines(rig, first).map(\.speaker) == [.numbered(1)])
+    #expect(await lines(rig, second).map(\.speaker) == [.numbered(1)])
+    #expect(rig.diarizer.calls == 2)
+    #expect(rig.calls.count("load") == 1)
+    #expect(await rig.state.isBusy == false)
+  }
+
+  @Test func aCancelledDiarizationWritesNothingAndTheNextPassSplits() async throws {
+    let rig = TranscriberRig()
+    rig.diarizer.turns = wholeCall()
+    rig.diarizer.stall = rig.clock
+    let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
+    let pass = Task { await rig.run() }
+    await rig.diarizer.untilCalled()
+    await rig.clock.untilSleeping(1)
+    pass.cancel()
+    await pass.value
+    #expect(await rig.transcript(of: header) == nil)
+    #expect(rig.hasAudio(header))
+    #expect(rig.calls.count("discard") == 0)
+    #expect(rig.diarizer.sawCancellation)
+    #expect(rig.lines("meeting.diarizeFailed").isEmpty)
+
+    rig.diarizer.stall = nil
+    await rig.run()
+    #expect(await lines(rig, header).map(\.speaker) == [.numbered(1)])
+  }
+}

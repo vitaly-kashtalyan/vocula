@@ -66,6 +66,9 @@ struct MeetingTranscriptionSlowTests {
         model: { MeetingModel(model: .largeV3Turbo, languages: languages) },
         makeRecognizer: { _ in try await recognizer() },
         makeDetector: { WhisperVADDetector(modelPath: detectorModel) },
+        diarization: MeetingDiarization(
+          state: MeetingDiarizerState(), isInstalled: { true }, load: { NoTurns() },
+          discard: {}, wallClock: { Date() }),
         now: { DispatchTime.now().uptimeNanoseconds },
         sleep: { try await Task.sleep(for: $0) },
         publish: { _ in },
@@ -207,4 +210,8 @@ struct ParakeetMeetingRecognizerTests {
     #expect(collapsed(words.map(\.text).joined(separator: " ")) == collapsed(text))
     #expect(zip(words, words.dropFirst()).allSatisfy { $0.start <= $1.start })
   }
+}
+
+private struct NoTurns: MeetingDiarizing {
+  func turns(in samples: [Int16]) async throws -> [SpeakerTurn] { [] }
 }
