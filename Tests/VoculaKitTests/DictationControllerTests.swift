@@ -1098,13 +1098,24 @@ struct SlowPassTests {
     }
   }
 
-  private func run(delay: Duration, audioSeconds: Int = 1) async -> [(String, String)] {
+  private struct AllSpeech: SpeechDetecting {
+    func markup(_ samples: [Float]) async throws -> SpeechMarkup {
+      let length = Duration.milliseconds(samples.count / 16)
+      return SpeechMarkup(
+        segments: [SpeechSegment(start: .zero, end: length, probability: 0.9)],
+        totalDuration: length)
+    }
+  }
+
+  private func run(
+    delay: Duration, audioSeconds: Int = 1, detector: any SpeechDetecting = FakeDetector()
+  ) async -> [(String, String)] {
     let recorded = EventBox()
     let audio = FakeAudio()
     await audio.setSamples([Float](repeating: 0.2, count: 16_000 * audioSeconds))
     let controller = DictationController(
       dependencies: .init(
-        audio: audio, detector: FakeDetector(), engine: TimedEngine(delay: delay),
+        audio: audio, detector: detector, engine: TimedEngine(delay: delay),
         probe: FakeProbe(),
         inserter: TextInserter(
           clipboard: FakeClipboard(), paste: FakePaste(),
@@ -1129,7 +1140,12 @@ struct SlowPassTests {
 
   @Test("an ordinary pass is not reported at all")
   func fast() async {
-    #expect(await run(delay: .zero, audioSeconds: 60).isEmpty)
+    #expect(await run(delay: .zero, audioSeconds: 60, detector: AllSpeech()).isEmpty)
+  }
+
+  @Test("the bound is a third of the speech, so a pass of 0.4 s over a minute of it is not slow")
+  func boundFollowsTheSpeech() async {
+    #expect(await run(delay: .milliseconds(400), audioSeconds: 60, detector: AllSpeech()).isEmpty)
   }
 }
 
