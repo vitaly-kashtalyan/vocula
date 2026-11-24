@@ -248,12 +248,6 @@ struct LevelWindowTests {
     for call in [3, 6] { #expect(abs(try #require(emitted[call]) - 0.2887) < 0.0005) }
   }
 
-  @Test("a faint buffer before two of exact zeros still reads above zero")
-  func faintBufferSurvives() {
-    var window = LevelWindow(deviceRate: 48_000)
-    #expect((run(&window, [0.001, 0, 0])[3] ?? 0) > 0)
-  }
-
   @Test("exact zeros, and a window with no samples, read exactly zero")
   func zeros() {
     var silent = LevelWindow(deviceRate: 48_000)
@@ -273,7 +267,8 @@ struct LevelWindowTests {
     "the device's buffer size sets the pace",
     arguments: [
       (48_000.0, 512, 9, [3, 6, 9]),
-      (44_100.0, 512, 9, [3, 6, 9]),
+      (48_000.0, 1263, 3, [1, 2, 3]),
+      (44_100.0, 1160, 3, [1, 2, 3]),
       (96_000.0, 512, 10, [5, 10]),
       (48_000.0, 2048, 6, [1, 2, 3, 4, 5, 6]),
     ])

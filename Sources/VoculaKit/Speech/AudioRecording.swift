@@ -45,7 +45,7 @@ public enum PCMSamples {
 }
 
 public struct LevelWindow: Sendable {
-  public static let shortestSpan = 1.0 / 38
+  private static let shortestSpan = 1.0 / 38
 
   private let framesPerLevel: Int
   private var frames = 0
@@ -53,7 +53,7 @@ public struct LevelWindow: Sendable {
   private var count = 0
 
   public init(deviceRate: Double) {
-    framesPerLevel = max(1, Int(deviceRate * Self.shortestSpan))
+    framesPerLevel = Int(deviceRate * Self.shortestSpan)
   }
 
   public mutating func add(_ samples: ArraySlice<Float>?, deviceFrames: Int) -> Float? {
