@@ -103,4 +103,47 @@ import Testing
     ]
     #expect(assign([(1.0, 1.5), (11.0, 11.5)], turns) == [.numbered(1), .numbered(2)])
   }
+
+  @Test func aWordInAPauseInsideOneSpeakersSpeechTakesTheirNumber() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "A", start: 3, end: 5),
+    ]
+    #expect(
+      assign([(1.0, 1.5), (2.25, 2.75), (3.5, 4.0)], turns)
+        == [.numbered(1), .numbered(1), .numbered(1)])
+  }
+
+  @Test func aWordInAPauseBetweenTwoSpeakersStaysOthers() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 3, end: 5),
+    ]
+    #expect(
+      assign([(1.0, 1.5), (2.25, 2.75), (3.5, 4.0)], turns)
+        == [.numbered(1), .others, .numbered(2)])
+  }
+
+  @Test func anOverlappedWordInsideOneSpeakersSpeechStaysOthers() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 10), SpeakerTurn(speaker: "B", start: 4, end: 6),
+    ]
+    #expect(
+      assign([(1.0, 1.5), (4.5, 5.0), (8.0, 8.5)], turns)
+        == [.numbered(1), .others, .numbered(1)])
+  }
+
+  @Test func aPauseWordIsJudgedByItsNeighboursInTime() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "A", start: 3, end: 5),
+    ]
+    #expect(
+      assign([(3.5, 4.0), (2.25, 2.75), (1.0, 1.5)], turns)
+        == [.numbered(1), .numbered(1), .numbered(1)])
+  }
+
+  @Test func aPauseWordAtEitherEndStaysOthers() {
+    let turns = [SpeakerTurn(speaker: "A", start: 1, end: 2)]
+    #expect(
+      assign([(0.0, 0.5), (1.25, 1.75), (2.5, 3.0)], turns) == [.others, .numbered(1), .others])
+  }
+
 }
