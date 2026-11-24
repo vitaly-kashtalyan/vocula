@@ -47,6 +47,25 @@ enum MeetingPieces {
     return Plan(pieces: pieces, carryFrom: nil)
   }
 
+  static func clamped(_ words: [TimedText], to speech: [ClosedRange<Double>]) -> [TimedText] {
+    guard !speech.isEmpty else { return words }
+    return words.map { word in
+      let start =
+        speech.contains { $0.contains(word.start) }
+        ? word.start : speech.first { $0.lowerBound > word.start }?.lowerBound
+      let end =
+        speech.contains { $0.contains(word.end) }
+        ? word.end : speech.last { $0.upperBound < word.end }?.upperBound
+      if let start, let end, start <= end {
+        return TimedText(start: start, end: end, text: word.text)
+      }
+      let middle = (word.start + word.end) / 2
+      let at =
+        [start, end].compactMap { $0 }.min { abs($0 - middle) < abs($1 - middle) } ?? word.start
+      return TimedText(start: at, end: at, text: word.text)
+    }
+  }
+
   static func padded(_ samples: [Float]) -> [Float] {
     samples.count >= minPiece
       ? samples : samples + [Float](repeating: 0, count: minPiece - samples.count)
