@@ -126,6 +126,13 @@ import Testing
     #expect(result.utterances.map(\.text) == ["how are you", "fine", "good"])
   }
 
+  @Test func aReplyRunningPastMyNextWordDoesNotSplitMyLine() {
+    let result = build(
+      me: words("how are you", from: 0) + words("good", from: 1),
+      others: [TimedText(start: 0.75, end: 1.1, text: "fine")])
+    #expect(result.utterances.map(\.text) == ["how are you good", "fine"])
+  }
+
   @Test func tracksInterleaveByStart() {
     let result = build(
       me: [
