@@ -19,11 +19,13 @@ jobs:
     runs-on: xcode-27
 
     env:
-      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
       VOCULA_NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
       VOCULA_NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
 
     steps:
+      - name: Xcode 27.2, as ci.yml explains
+        run: sudo xcode-select -s /Applications/Xcode_27.2.app
+
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
         with:
           fetch-depth: 0

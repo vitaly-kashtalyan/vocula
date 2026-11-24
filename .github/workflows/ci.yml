@@ -18,13 +18,15 @@ permissions:
 jobs:
   test:
     runs-on: xcode-27
-    # Xcode 26 builds a dependency's enabled package trait without its compile
-    # condition, so FluidAudio's `#if Diarizer` code compiles empty and the app
-    # does not build; 27.2 passes it. The image's default Xcode is 27.1.
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
 
     steps:
+      # Xcode 26 builds a dependency's enabled package trait without its compile
+      # condition, so FluidAudio's `#if Diarizer` code compiles empty and the app
+      # does not build; 27.2 passes it. The image defaults to 27.1, and a tool a test
+      # starts follows xcode-select rather than DEVELOPER_DIR.
+      - name: Xcode 27.2
+        run: sudo xcode-select -s /Applications/Xcode_27.2.app
+
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
         with:
           fetch-depth: 0
