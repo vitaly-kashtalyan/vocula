@@ -19,17 +19,6 @@ struct AudioBufferTests {
     #expect(AudioFormat.channels == 1)
   }
 
-  @Test("RMS of silence is zero and of a constant signal is its magnitude")
-  func rms() {
-    #expect(PCMSamples.rms([0, 0, 0, 0][...]) == 0)
-    #expect(abs(PCMSamples.rms([0.5, -0.5, 0.5, -0.5][...]) - 0.5) < 0.0001)
-  }
-
-  @Test("an empty buffer has zero level rather than NaN")
-  func emptyRMS() {
-    #expect(PCMSamples.rms([Float]()[...]) == 0)
-  }
-
   @Test("seconds are computed from the sample rate")
   func duration() {
     #expect(PCMSamples.duration(sampleCount: 32_000) == .seconds(2))

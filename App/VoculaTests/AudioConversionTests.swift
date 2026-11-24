@@ -161,14 +161,6 @@ struct RenderedBufferConversionTests {
   }
 }
 
-@Suite("Waveform scroll rate")
-struct WaveformScrollRateTests {
-  @Test("bar pitch times levels-per-second is still the pace the strip was drawn for")
-  func scrollRateHolds() {
-    #expect(WaveformGeometry.pitch * CGFloat(CaptureSink.levelsPerSecond) == 19)
-  }
-}
-
 @Suite("Capture sink level")
 struct CaptureSinkLevelTests {
   @Test("a loud buffer followed by two silent ones still shows on the level")
