@@ -228,3 +228,77 @@ struct QuietBoostCueTests {
     #expect(PCMSamples.boostedIfQuiet(samples, ignoringLeading: cueSamples) == samples)
   }
 }
+
+@Suite("Level window")
+struct LevelWindowTests {
+  private func run(
+    _ window: inout LevelWindow, _ buffers: [Float], samples: Int = 171, frames: Int = 512
+  ) -> [Int: Float] {
+    var emitted: [Int: Float] = [:]
+    for (index, value) in buffers.enumerated() {
+      let slice = Array(repeating: value, count: samples)[...]
+      if let level = window.add(slice, deviceFrames: frames) { emitted[index + 1] = level }
+    }
+    return emitted
+  }
+
+  @Test("a level covers every buffer since the last one, not only the one that crossed")
+  func wholeWindow() throws {
+    var window = LevelWindow(deviceRate: 48_000)
+    let emitted = run(&window, [0.5, 0, 0])
+    #expect(emitted.keys.sorted() == [3])
+    let level = try #require(emitted[3])
+    #expect(abs(level - 0.5 * Float((171.0 / 513.0).squareRoot())) < 0.0001)
+  }
+
+  @Test("both the sum and the sample count start again after each level")
+  func resetBetweenWindows() throws {
+    var window = LevelWindow(deviceRate: 48_000)
+    let emitted = run(&window, [0.5, 0, 0, 0.5, 0, 0])
+    #expect(emitted.keys.sorted() == [3, 6])
+    for call in [3, 6] { #expect(abs(try #require(emitted[call]) - 0.2887) < 0.0005) }
+  }
+
+  @Test("a faint buffer before two of exact zeros still reads above zero")
+  func faintBufferSurvives() {
+    var window = LevelWindow(deviceRate: 48_000)
+    #expect((run(&window, [0.001, 0, 0])[3] ?? 0) > 0)
+  }
+
+  @Test("exact zeros, and a window with no samples, read exactly zero")
+  func zeros() {
+    var silent = LevelWindow(deviceRate: 48_000)
+    #expect(run(&silent, [0, 0, 0])[3] == 0)
+    var empty = LevelWindow(deviceRate: 48_000)
+    #expect(run(&empty, [0, 0, 0], samples: 0)[3] == 0)
+  }
+
+  @Test("a buffer whose conversion failed counts neither frames nor samples")
+  func failedConversionIsSkipped() {
+    var window = LevelWindow(deviceRate: 48_000)
+    #expect(window.add(nil, deviceFrames: 4096) == nil)
+    #expect(run(&window, [0.5, 0, 0]).keys.sorted() == [3])
+  }
+
+  @Test(
+    "the device's buffer size sets the pace",
+    arguments: [
+      (48_000.0, 512, 9, [3, 6, 9]),
+      (44_100.0, 512, 9, [3, 6, 9]),
+      (96_000.0, 512, 10, [5, 10]),
+      (48_000.0, 2048, 6, [1, 2, 3, 4, 5, 6]),
+    ])
+  func cadence(rate: Double, frames: Int, calls: Int, expected: [Int]) {
+    var window = LevelWindow(deviceRate: rate)
+    let emitted = run(&window, Array(repeating: 0.1, count: calls), frames: frames)
+    #expect(emitted.keys.sorted() == expected)
+  }
+
+  @Test("TEMPORARY: carrying the remainder averages 38 levels a second")
+  func carriedCadence() {
+    var window = LevelWindow(deviceRate: 48_000, carriesRemainder: true)
+    let calls = run(&window, Array(repeating: 0.1, count: 75)).keys.sorted()
+    #expect(calls.count == 30)
+    #expect(Array(calls.prefix(2)) == [3, 5])
+  }
+}

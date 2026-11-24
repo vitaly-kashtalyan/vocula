@@ -50,6 +50,34 @@ public enum PCMSamples {
   }
 }
 
+public struct LevelWindow: Sendable {
+  public static let shortestSpan = 1.0 / 38
+
+  private let framesPerLevel: Int
+  private let carriesRemainder: Bool
+  private var frames = 0
+  private var squares: Float = 0
+  private var count = 0
+
+  public init(deviceRate: Double, carriesRemainder: Bool = false) {
+    framesPerLevel = max(1, Int(deviceRate * Self.shortestSpan))
+    self.carriesRemainder = carriesRemainder
+  }
+
+  public mutating func add(_ samples: ArraySlice<Float>?, deviceFrames: Int) -> Float? {
+    guard let samples else { return nil }
+    squares += samples.reduce(0) { $0 + $1 * $1 }
+    count += samples.count
+    frames += deviceFrames
+    guard frames >= framesPerLevel else { return nil }
+    let level = count == 0 ? 0 : (squares / Float(count)).squareRoot()
+    squares = 0
+    count = 0
+    frames = carriesRemainder ? frames % framesPerLevel : 0
+    return level
+  }
+}
+
 public final class AudioAccumulator: @unchecked Sendable {
   private let condition = NSCondition()
   private var accepting = false
