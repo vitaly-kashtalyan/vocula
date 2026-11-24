@@ -6,12 +6,6 @@ public enum AudioFormat {
 }
 
 public enum PCMSamples {
-  public static func rms(_ samples: ArraySlice<Float>) -> Float {
-    guard !samples.isEmpty else { return 0 }
-    let sum = samples.reduce(Float(0)) { $0 + $1 * $1 }
-    return (sum / Float(samples.count)).squareRoot()
-  }
-
   public static func displayLevel(_ level: Float) -> Double {
     let gated = Double(max(0, level - 0.004)) * 9
     return pow(min(1, gated), 0.6)
@@ -47,6 +41,32 @@ public enum PCMSamples {
     let gain = min(target / peak, maxGain, 1 / wholePeak)
     guard gain > 1 else { return samples }
     return samples.map { $0 * gain }
+  }
+}
+
+public struct LevelWindow: Sendable {
+  private static let shortestSpan = 1.0 / 38
+
+  private let framesPerLevel: Int
+  private var frames = 0
+  private var squares: Float = 0
+  private var count = 0
+
+  public init(deviceRate: Double) {
+    framesPerLevel = Int(deviceRate * Self.shortestSpan)
+  }
+
+  public mutating func add(_ samples: ArraySlice<Float>?, deviceFrames: Int) -> Float? {
+    guard let samples else { return nil }
+    squares += samples.reduce(0) { $0 + $1 * $1 }
+    count += samples.count
+    frames += deviceFrames
+    guard frames >= framesPerLevel else { return nil }
+    let level = count == 0 ? 0 : (squares / Float(count)).squareRoot()
+    squares = 0
+    count = 0
+    frames = 0
+    return level
   }
 }
 

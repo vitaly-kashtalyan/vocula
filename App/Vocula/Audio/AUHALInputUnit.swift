@@ -53,8 +53,7 @@ final class CaptureSink: @unchecked Sendable {
   private let converters: ConverterCache
   private let conversionFailed = OneShot()
   private let renderFailed = OneShot()
-  private var framesSinceLevel: AVAudioFrameCount = 0
-  private let framesPerLevel: AVAudioFrameCount
+  private var window: LevelWindow
   let renderBuffer: AVAudioPCMBuffer
 
   init?(
@@ -83,7 +82,7 @@ final class CaptureSink: @unchecked Sendable {
     self.diagnose = diagnose
     self.converters = ConverterCache(target: target)
     self.renderBuffer = buffer
-    self.framesPerLevel = AVAudioFrameCount(clientFormat.rate / Self.levelsPerSecond)
+    self.window = LevelWindow(deviceRate: clientFormat.rate)
   }
 
   func deliver(frames: AVAudioFrameCount) {
@@ -96,17 +95,9 @@ final class CaptureSink: @unchecked Sendable {
     if slice == nil, conversionFailed.fire() {
       diagnose?("audio.conversionFailed", "")
     }
-    if let slice {
-      framesSinceLevel += frames
-      if framesSinceLevel >= framesPerLevel {
-        framesSinceLevel = 0
-        levels.emit(PCMSamples.rms(slice[...]))
-      }
-    }
+    if let level = window.add(slice?[...], deviceFrames: Int(frames)) { levels.emit(level) }
     accumulator?.finishSlice(slice)
   }
-
-  static let levelsPerSecond: Double = 38
 
   func renderDidFail(_ status: OSStatus) {
     if renderFailed.fire() { diagnose?("audio.renderFailed", "code=\(status)") }
