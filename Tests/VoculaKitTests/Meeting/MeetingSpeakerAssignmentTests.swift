@@ -9,17 +9,28 @@ import Testing
   ]
 
   private func words(_ spans: [(Double, Double)]) -> [TimedText] {
-    spans.map { TimedText(start: $0.0, end: $0.1, text: "w") }
+    spans.map { TimedText(start: $0.0, end: $0.1, text: "w.") }
   }
 
   private func assign(_ spans: [(Double, Double)], _ turns: [SpeakerTurn]) -> [MeetingSpeaker] {
     MeetingSpeakerAssignment.assign(words(spans), turns: turns)
   }
 
+  private func said(_ items: [(String, Double, Double)], _ turns: [SpeakerTurn])
+    -> [MeetingSpeaker]
+  {
+    MeetingSpeakerAssignment.assign(
+      items.map { TimedText(start: $0.1, end: $0.2, text: $0.0) }, turns: turns)
+  }
+
   @Test func theConstantsAreTheSpecsStartingValues() {
     #expect(MeetingSpeakerAssignment.pointSpan == 0.05)
     #expect(MeetingSpeakerAssignment.minCoverage == 0.5)
     #expect(MeetingSpeakerAssignment.overlapCoverage == 0.3)
+    #expect(MeetingSpeakerAssignment.nearestReach == 2.0)
+    #expect(MeetingSpeakerAssignment.sentencePause == 2.0)
+    #expect(MeetingSpeakerAssignment.longestSentence == 50)
+    #expect(MeetingSpeakerAssignment.longestFlip == 2)
   }
 
   @Test func aWordInsideOneTurnTakesItsSpeaker() {
@@ -42,9 +53,9 @@ import Testing
     #expect(assign([(2.0, 2.5), (10.0, 10.0)], two) == [.numbered(1), .numbered(2)])
   }
 
-  @Test func aWordMostlyOutsideTurnsStaysOthers() {
+  @Test func aWordMostlyOutsideTheOnlyTurnTakesItsSpeaker() {
     let turns = [SpeakerTurn(speaker: "A", start: 0, end: 2)]
-    #expect(assign([(1.75, 2.5)], turns) == [.others])
+    #expect(assign([(1.75, 2.5)], turns) == [.numbered(1)])
   }
 
   @Test func exactlyHalfCoveredTakesTheSpeaker() {
@@ -84,7 +95,7 @@ import Testing
       SpeakerTurn(speaker: "A", start: 0, end: 5), SpeakerTurn(speaker: "B", start: 6, end: 10),
     ]
     #expect(
-      assign([(-1.0, -0.5), (25.0, 25.5), (5.25, 5.75)], turns) == [.others, .others, .others])
+      assign([(-3.0, -2.5), (25.0, 25.5), (5.25, 5.75)], turns) == [.others, .others, .others])
   }
 
   @Test func noTurnsMeansAllOthers() {
@@ -113,7 +124,7 @@ import Testing
         == [.numbered(1), .numbered(1), .numbered(1)])
   }
 
-  @Test func aWordInAPauseBetweenTwoSpeakersStaysOthers() {
+  @Test func aWordInAPauseEquallyFarFromTwoSpeakersStaysOthers() {
     let turns = [
       SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 3, end: 5),
     ]
@@ -140,10 +151,114 @@ import Testing
         == [.numbered(1), .numbered(1), .numbered(1)])
   }
 
-  @Test func aPauseWordAtEitherEndStaysOthers() {
+  @Test func aPauseWordAtEitherEndTakesTheSpeakerWithinReach() {
     let turns = [SpeakerTurn(speaker: "A", start: 1, end: 2)]
     #expect(
-      assign([(0.0, 0.5), (1.25, 1.75), (2.5, 3.0)], turns) == [.others, .numbered(1), .others])
+      assign([(0.0, 0.5), (1.25, 1.75), (2.5, 3.0), (4.5, 5.0)], turns)
+        == [.numbered(1), .numbered(1), .numbered(1), .others])
+  }
+
+  @Test func aPauseWordBetweenTwoSpeakersTakesTheNearer() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 3, end: 5),
+    ]
+    #expect(
+      assign([(1.0, 1.5), (2.1, 2.4), (3.5, 4.0)], turns)
+        == [.numbered(1), .numbered(1), .numbered(2)])
+  }
+
+  @Test func aWordFlippedInsideASentenceTakesTheSentencesSpeaker() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 2.4),
+      SpeakerTurn(speaker: "A", start: 2.4, end: 5),
+    ]
+    let spoken = [
+      ("we", 0.5, 0.8), ("will", 1.0, 1.3), ("ship", 2.05, 2.35), ("it", 2.5, 2.8),
+      ("tomorrow.", 3.0, 3.5),
+    ]
+    #expect(said(spoken, turns) == Array(repeating: .numbered(1), count: 5))
+  }
+
+  @Test func aSentenceOfItsOwnKeepsItsSpeaker() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 3),
+      SpeakerTurn(speaker: "A", start: 3, end: 5),
+    ]
+    let spoken = [
+      ("we", 0.5, 0.8), ("ship.", 1.0, 1.3), ("agreed.", 2.2, 2.6), ("then", 3.2, 3.5),
+      ("tomorrow.", 3.7, 4.2),
+    ]
+    #expect(
+      said(spoken, turns) == [.numbered(1), .numbered(1), .numbered(2), .numbered(1), .numbered(1)])
+  }
+
+  @Test func aSentenceSplitEvenlyIsLeftAlone() {
+    let spoken = [("one", 0.5, 0.8), ("two", 1.0, 1.3), ("three", 2.2, 2.5), ("four", 2.7, 3.0)]
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 4),
+    ]
+    #expect(said(spoken, turns) == [.numbered(1), .numbered(1), .numbered(2), .numbered(2)])
+  }
+
+  @Test func aReplyOfMoreThanTwoWordsWithoutPunctuationKeepsItsSpeaker() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 4), SpeakerTurn(speaker: "B", start: 4, end: 6),
+    ]
+    let spoken = [
+      ("okay", 0.2, 0.5), ("so", 0.7, 1.0), ("what", 1.2, 1.5), ("do", 1.7, 2.0),
+      ("you", 2.2, 2.5), ("think", 2.6, 2.9), ("sounds", 4.1, 4.3), ("good", 4.4, 4.6),
+      ("to", 4.7, 4.8), ("me", 4.9, 5.1),
+    ]
+    #expect(
+      said(spoken, turns)
+        == Array(repeating: .numbered(1), count: 6) + Array(repeating: .numbered(2), count: 4))
+  }
+
+  @Test func aSentenceWhoseTopSpeakerHoldsUnderHalfIsLeftAlone() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 1), SpeakerTurn(speaker: "A", start: 1, end: 3),
+      SpeakerTurn(speaker: "B", start: 1, end: 3), SpeakerTurn(speaker: "B", start: 3, end: 3.6),
+      SpeakerTurn(speaker: "A", start: 3.6, end: 5),
+    ]
+    let spoken = [
+      ("a", 0.2, 0.5), ("o", 1.2, 1.5), ("o", 1.7, 2.0), ("o", 2.2, 2.5), ("b", 3.1, 3.4),
+      ("a", 3.8, 4.1),
+    ]
+    #expect(
+      said(spoken, turns)
+        == [.numbered(1), .others, .others, .others, .numbered(2), .numbered(1)])
+  }
+
+  @Test func otherScriptsEndASentenceToo() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 3),
+    ]
+    let greek = [
+      ("Θα", 0.2, 0.4), ("το", 0.5, 0.7), ("στείλεις", 0.8, 1.2), ("αύριο;", 1.3, 1.8),
+      ("Ναι.", 2.2, 2.5),
+    ]
+    #expect(said(greek, turns).last == .numbered(2))
+    let chinese = [("明天", 0.2, 0.8), ("发吗？", 0.9, 1.6), ("好。", 2.2, 2.5)]
+    #expect(said(chinese, turns).last == .numbered(2))
+  }
+
+  @Test func aLongPauseEndsASentence() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 4, end: 6),
+    ]
+    let spoken = [("we", 0.3, 0.6), ("ship", 0.8, 1.1), ("it", 1.3, 1.6), ("fine", 4.2, 4.5)]
+    #expect(said(spoken, turns) == [.numbered(1), .numbered(1), .numbered(1), .numbered(2)])
+  }
+
+  @Test func aSentenceLongerThanTheLimitIsLeftAlone() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 25), SpeakerTurn(speaker: "B", start: 25, end: 25.4),
+      SpeakerTurn(speaker: "A", start: 25.4, end: 100),
+    ]
+    let spoken = (0...MeetingSpeakerAssignment.longestSentence).map { i in
+      ("w", Double(i) * 0.5, Double(i) * 0.5 + 0.3)
+    }
+    #expect(said(spoken, turns).last == .numbered(2))
   }
 
 }
