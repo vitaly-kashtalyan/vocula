@@ -4,7 +4,7 @@ import Testing
 @testable import Vocula
 @testable import VoculaKit
 
-private final class Latch: @unchecked Sendable {
+final class Latch: @unchecked Sendable {
   private let lock = NSLock()
   private var opened = false
   private var nextWaiter = 0
@@ -228,11 +228,14 @@ private final class PassProbe {
   var written: [(Data, URL)] = []
   var pasted: [String] = []
   let cipherGate = Latch()
+  var states: [MeetingDiarizerState] = []
+  var fetched: [DiagnosticLog?] = []
 
   func parts(store: MeetingStore) -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
-      makeTranscriber: { [self] log, publish in
+      makeTranscriber: { [self] log, state, publish in
         made += 1
+        states.append(state)
         guard blocking else { return nil }
         let gate = cipherGate
         return MeetingTranscriber(
@@ -243,7 +246,12 @@ private final class PassProbe {
               return PassthroughCipher()
             },
             model: { nil }, makeRecognizer: { _ in throw CancellationError() },
-            makeDetector: { NoSpeech() }, now: { 0 },
+            makeDetector: { NoSpeech() },
+            diarization: MeetingDiarization(
+              state: MeetingDiarizerState(), isInstalled: { true },
+              load: { throw CancellationError() },
+              discard: {}, wallClock: { Date() }),
+            now: { 0 },
             sleep: { try await Task.sleep(for: $0) }, publish: publish, log: log))
       },
       listing: { [self] _ in
@@ -279,7 +287,8 @@ private final class PassProbe {
           return writeResult
         }
       },
-      paste: { [self] in pasted.append($0) })
+      paste: { [self] in pasted.append($0) },
+      fetchDiarizer: { [self] in fetched.append($0) })
   }
 }
 
@@ -455,6 +464,34 @@ struct MeetingsTests {
     try await rig.record()
     await finishes(rig.meetings.toggle())
     #expect(rig.passes.made == 1)
+  }
+
+  @Test func aStartedMeetingAsksForTheDiarizerOnce() async throws {
+    let rig = Rig()
+    try await rig.record()
+    #expect(rig.passes.fetched.count == 1)
+    #expect(rig.passes.fetched.first.flatMap { $0 } === rig.log)
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.fetched.count == 1)
+  }
+
+  @Test func aStartThatNeverRecordsAsksForNothing() async {
+    let rig = Rig(key: KeySource(failure: .failed(step: "key", code: -25308)))
+    await finishes(rig.meetings.toggle())
+    await finishes(rig.meetings.stopping)
+    #expect(rig.passes.fetched.isEmpty)
+  }
+
+  @Test func everyPassGetsTheSameDiarizerState() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    await rig.meetings.pass?.value
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    await rig.meetings.pass?.value
+    #expect(rig.passes.states.count == 2)
+    #expect(rig.passes.states.first === rig.passes.states.last)
   }
 
   @Test func quitRequestsNoPass() async throws {
@@ -924,7 +961,8 @@ struct MeetingsTests {
   @Test func aSecondCopyCreatesNoStore() {
     #expect(Meetings.makeStore() == nil)
     #expect(
-      MeetingTranscriptionParts.liveTranscriber(log: nil, publish: { _ in }) == nil)
+      MeetingTranscriptionParts.liveTranscriber(
+        log: nil, state: MeetingDiarizerState(), publish: { _ in }) == nil)
     #expect(Meetings.live(log: nil, recover: true) == nil)
   }
 

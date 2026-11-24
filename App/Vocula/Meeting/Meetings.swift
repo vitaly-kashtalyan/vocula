@@ -18,6 +18,7 @@ final class Meetings {
   private var follower: Task<Void, Never>?
   private var signals: StreamFanout<DictationSignal>?
   private let parts: MeetingTranscriptionParts
+  private let diarizerState = MeetingDiarizerState()
   private var schedule = MeetingPassSchedule()
   private var listings = MeetingPassSchedule()
   private var stopsInFlight = 0
@@ -136,7 +137,9 @@ final class Meetings {
     let started = new.isRecording && !status.isRecording
     if new.isRecording { meetingSwitch.began(meeting) } else { concluded = meeting }
     status.update(new)
-    if started { requestListing() }
+    guard started else { return }
+    requestListing()
+    parts.fetchDiarizer(diagnosticLog())
   }
 
   @discardableResult
@@ -215,7 +218,7 @@ final class Meetings {
       return .transcript(
         MeetingMarkdown.render(
           transcript, title: listing.title, startedAt: listing.startedAt,
-          duration: listing.duration, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe))
+          duration: listing.duration, label: MenuCopy.meetingSpeakerLabel, includeMe: includeMe))
     case .failed(let step, let code):
       return .failed(step: step, code: code)
     case .unavailable:
@@ -331,7 +334,8 @@ final class Meetings {
   private func startPass() async {
     guard
       let transcriber = parts.makeTranscriber(
-        diagnosticLog(), { [weak self] in await self?.status.update(transcription: $0) })
+        diagnosticLog(), diarizerState,
+        { [weak self] in await self?.status.update(transcription: $0) })
     else {
       await passEnded()
       return

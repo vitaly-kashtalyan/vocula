@@ -38,9 +38,9 @@ sync_one() {
 }
 
 failed=0
-# The target fragment pins the TARGET: /Vocula.build/ alone also matches .../Vocula.build/Debug/VoculaKit.build/.
+# The target fragment pins the TARGET: /Vocula.build/ alone also matches .../Vocula.build/Debug/VoculaKit-t.build/.
 sync_one "$APP_CATALOG" "/Debug/Vocula.build/" "app" || failed=1
-sync_one "$KIT_CATALOG" "/Debug/VoculaKit.build/" "kit" || failed=1
+sync_one "$KIT_CATALOG" "/Debug/VoculaKit-t.build/" "kit" || failed=1
 [ -f "$INFO_CATALOG" ] && { sync_one "$INFO_CATALOG" "/Debug/Vocula.build/" "InfoPlist" || failed=1; }
 
 exit "$failed"

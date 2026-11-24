@@ -6,10 +6,11 @@ import VoculaParakeet
 import VoculaWhisper
 
 extension ModelStore {
-  static func app() -> ModelStore {
+  static func app(manifest: [ModelDescriptor] = ModelManifest.current) -> ModelStore {
     ModelStore(
       directory: ApplicationSupport.modelsDirectory,
       fileSystem: SystemModelFileSystem(),
+      manifest: manifest,
       localOverrides: developmentOverrides())
   }
 

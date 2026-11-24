@@ -16,6 +16,7 @@ import Testing
     + [
       MenuCopy.copyTranscript, MenuCopy.copyIncludesMe, MenuCopy.meetingSpeakerMe,
       MenuCopy.meetingSpeakerOthers,
+      MenuCopy.meetingSpeakerNumbered(7),
       MenuCopy.meetingTranscribing(40), MenuCopy.transcriptUnreadable,
       MenuCopy.meetingItemLabel(.transcribing),
     ]
@@ -51,6 +52,16 @@ import Testing
     #expect((localized as? String)?.isEmpty == false)
   }
 
+  @Test func labelsFollowTheSpeaker() {
+    #expect(MenuCopy.meetingSpeakerLabel(.me) == String(localized: MenuCopy.meetingSpeakerMe))
+    #expect(
+      MenuCopy.meetingSpeakerLabel(.others) == String(localized: MenuCopy.meetingSpeakerOthers))
+    #expect(
+      MenuCopy.meetingSpeakerLabel(.numbered(3))
+        == String(localized: MenuCopy.meetingSpeakerNumbered(3)))
+    #expect(MenuCopy.meetingSpeakerLabel(MeetingSpeaker(rawValue: "x")) == "x")
+  }
+
   @Test func theCopyRowUsesTheNameWhenSet() {
     let started = Date(timeIntervalSince1970: 0)
     let plain = text(MenuCopy.transcriptRow(startedAt: started, duration: 125), in: "en")
@@ -59,6 +70,15 @@ import Testing
     #expect(text(MenuCopy.transcriptRow(for: named), in: "en") == "Sync · " + (length ?? ""))
     let unnamed = MeetingListing(id: UUID(), startedAt: started, duration: 125)
     #expect(text(MenuCopy.transcriptRow(for: unnamed), in: "en") == plain)
+  }
+
+  @Test(arguments: ["de", "es", "fr", "it", "pl", "pt-BR", "ru", "uk"])
+  func numberedSpeakerLabelCarriesTheNumber(locale: String) {
+    let english = text(MenuCopy.meetingSpeakerNumbered(7), in: "en")
+    let translated = text(MenuCopy.meetingSpeakerNumbered(7), in: locale)
+    #expect(english == "Speaker 7")
+    #expect(translated.contains("7"))
+    #expect(translated != english)
   }
 
   @Test(arguments: lines)

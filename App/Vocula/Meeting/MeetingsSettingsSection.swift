@@ -197,7 +197,7 @@ struct MeetingTranscriptSheet: View {
 
   private var lines: [String] {
     MeetingMarkdown.lines(
-      item.transcript, labels: MenuCopy.meetingSpeakerLabels, includeMe: includeMe)
+      item.transcript, label: MenuCopy.meetingSpeakerLabel, includeMe: includeMe)
   }
 
   var body: some View {

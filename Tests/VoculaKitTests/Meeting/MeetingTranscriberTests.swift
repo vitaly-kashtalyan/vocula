@@ -107,6 +107,54 @@ final class Published: @unchecked Sendable {
   func add(_ value: MeetingTranscription) { lock.withLock { values.append(value) } }
 }
 
+final class CallLog: @unchecked Sendable {
+  private let lock = NSLock()
+  private var names: [String] = []
+
+  var all: [String] { lock.withLock { names } }
+  func add(_ name: String) { lock.withLock { names.append(name) } }
+  func count(_ name: String) -> Int { lock.withLock { names.filter { $0 == name }.count } }
+}
+
+final class DiarizerLog: @unchecked Sendable {
+  private let lock = NSLock()
+  private var received: [[Int16]] = []
+  private var cancelled = false
+  let called = Latch()
+  var turns: [SpeakerTurn] = []
+  var error: (any Error)?
+  var stall: TestClock?
+  var gate: Gate?
+
+  var calls: Int { lock.withLock { received.count } }
+  var samples: [[Int16]] { lock.withLock { received } }
+  var sawCancellation: Bool { lock.withLock { cancelled } }
+
+  func called(with samples: [Int16]) {
+    lock.withLock { received.append(samples) }
+    called.open()
+  }
+
+  func didSeeCancellation() { lock.withLock { cancelled = true } }
+}
+
+struct FakeDiarizer: MeetingDiarizing {
+  let log: DiarizerLog
+
+  func turns(in samples: [Int16]) async throws -> [SpeakerTurn] {
+    log.called(with: samples)
+    if let gate = log.gate { await gate.wait() }
+    if let clock = log.stall {
+      do { try await clock.sleep(for: .seconds(3_600)) } catch {
+        log.didSeeCancellation()
+        throw error
+      }
+    }
+    if let error = log.error { throw error }
+    return log.turns
+  }
+}
+
 final class TranscriberRig: @unchecked Sendable {
   let s: UInt64 = 1_000_000_000
   let root = meetingTemporaryDirectory()
@@ -121,6 +169,16 @@ final class TranscriberRig: @unchecked Sendable {
   let cipher = MarkingCipher()
   var model: MeetingModel? = MeetingModel(model: .largeV3Turbo, languages: .default)
   var recognizerLoadError: (any Error)?
+  let diarizer = DiarizerLog()
+  let calls = CallLog()
+  let loading = Latch()
+  let state = MeetingDiarizerState()
+  var diarizerInstalled = true
+  var diarizerLoadError: (any Error)?
+  var diarizerLoadStall: TestClock?
+  var diarizerLoadGate: Gate?
+  var maxTrackSeconds = MeetingDiarizationRules.maxDiarizedSeconds
+  var wallNow = Date(timeIntervalSinceReferenceDate: 800_000_100)
 
   init() {
     log = DiagnosticLog(fileURL: root.appendingPathComponent("diagnostics.json"))
@@ -138,12 +196,33 @@ final class TranscriberRig: @unchecked Sendable {
           if let cipherError { throw cipherError }
           return cipher
         },
-        model: { [self] in model },
+        model: { [self] in
+          calls.add("model")
+          return model
+        },
         makeRecognizer: { [self] _ in
+          calls.add("makeRecognizer")
           if let recognizerLoadError { throw recognizerLoadError }
           return PassRecognizer(recognizers)
         },
         makeDetector: { [self] in PassDetector(detectors) },
+        diarization: MeetingDiarization(
+          state: state,
+          isInstalled: { [self] in
+            calls.add("isInstalled")
+            return diarizerInstalled
+          },
+          load: { [self] in
+            calls.add("load")
+            loading.open()
+            if let diarizerLoadStall { try await diarizerLoadStall.sleep(for: .seconds(3_600)) }
+            if let diarizerLoadGate { await diarizerLoadGate.wait() }
+            if let diarizerLoadError { throw diarizerLoadError }
+            return FakeDiarizer(log: diarizer)
+          },
+          discard: { [self] in calls.add("discard") },
+          wallClock: { [self] in wallNow },
+          maxTrackSeconds: maxTrackSeconds),
         now: { [clock] in clock.now() },
         sleep: { [clock] in try await clock.sleep(for: $0) },
         publish: { [published] in published.add($0) },
@@ -204,6 +283,8 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.detectors.made == 0)
     #expect(rig.published.all.isEmpty)
     #expect(rig.lines("meeting.transcribed").isEmpty)
+    #expect(rig.calls.count("isInstalled") == 0)
+    #expect(rig.calls.count("load") == 0)
   }
 
   @Test func transcribesNewestFirstAndRemovesAudio() async throws {
@@ -246,6 +327,8 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(await rig.transcript(of: header)?.utterances == [])
     #expect(rig.recognizers.made == 0)
     #expect(rig.published.all.last == .finished(transcribed: 1, failed: 0))
+    #expect(rig.calls.count("isInstalled") == 0)
+    #expect(rig.calls.count("load") == 0)
   }
 
   @Test func removalsNeedNoModel() async throws {

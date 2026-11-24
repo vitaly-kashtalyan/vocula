@@ -30,6 +30,17 @@ struct LocalizationBundleTests {
     #expect(String(localized: "refusal.noSpeech", bundle: .module) != "refusal.noSpeech")
   }
 
+  @Test(
+    "the speaker model's name is translated through the kit's bundle",
+    arguments: ["de", "es", "fr", "it", "pl", "pt-BR", "ru", "uk"])
+  func theSpeakerModelNameIsTranslated(locale: String) {
+    var resource = LocalizedStringResource(
+      "models.speakerDiarizer", defaultValue: "Speaker separation",
+      bundle: .atURL(Bundle.module.bundleURL))
+    resource.locale = Locale(identifier: locale)
+    #expect(String(localized: resource) != "Speaker separation")
+  }
+
   @Test("the microphone usage description is localizable and localized")
   func microphoneUsageDescriptionIsInTheCatalog() throws {
     let path = try #require(Bundle.main.path(forResource: "en", ofType: "lproj"))

@@ -81,16 +81,21 @@ everything this Mac plays, from every app, except Vocula's own sounds.
 
 **After a meeting ends, Vocula transcribes it on this Mac**, together with any
 earlier meeting still waiting, using its own copy of the recognition model
-dictation uses — loaded only while it transcribes, and nothing is sent anywhere.
-What your microphone heard becomes lines labelled *Me*, what other apps played
-lines labelled *Others*. Two or more words of yours in a row that repeat what
+dictation uses and a speaker separation model — loaded only while it
+transcribes, and nothing is sent anywhere. What your microphone heard becomes
+lines labelled *Me*. What other apps played is split by voice into *Speaker 1*,
+*Speaker 2*… numbered in the order they first spoke; a line no single speaker
+can be given, and a whole call that could not be split (a failure, a split that
+took too long, a meeting over two hours), is labelled *Others*. Two or more words of yours in a row that repeat what
 other apps played within a second and a half are left out, as the call heard
 back through your speakers — so a reply that repeats the other side's words
 loses them. What you dictate during the meeting is left out too.
 It runs alongside your dictation and alongside a meeting you record meanwhile,
 which is transcribed after it. Quitting Vocula stops it, and a meeting that
 ended because you quit is not transcribed then: both wait, audio and all, until
-the next meeting you record ends. Once a meeting's transcript is written and read back, its audio is
+the next meeting you record ends. So does a meeting that ends before the speaker
+separation model has arrived, for at most 24 hours; after that the next
+meeting's end transcribes it without speakers, as *Others*. Once a meeting's transcript is written and read back, its audio is
 deleted, and speech the model missed or misheard — with Whisper, including
 speech in a language you have not ticked — is gone with it, as is any piece of the
 recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts
@@ -198,7 +203,8 @@ day or everything — nor the one-year retention.
 *Meetings (Beta)* put the transcript you choose on the clipboard as Markdown — a
 front-matter header with the meeting's name if you gave it one, its start in
 UTC, its length and who spoke, then each line with its time from the start; with
-*Include My Lines* unticked, only the *Others* lines. *Export…* writes the same
+*Include My Lines* unticked, only the other participants' lines (*Speaker N* and
+*Others*). *Export…* writes the same
 Markdown to a file you choose. After Vocula restarts the menu item is absent
 until you open *Meetings (Beta)* or record a meeting, because the meeting key is
 not read before then. *Open* shows a transcript in the window without writing it
@@ -225,7 +231,8 @@ transcript writes one line
 saying how many meetings it transcribed, how many seconds of audio and pieces it
 went through, how many lines the transcripts hold and how many of your words were
 dropped as echo, how many of the recording's three-second pieces it could not open, how long it took,
-and which model it used — never the text. Renaming, pinning, opening, copying,
+and which model it used — never the text. When a call could not be split into
+speakers, a line says at which step and with which error code. Renaming, pinning, opening, copying,
 exporting or deleting a meeting in *Meetings (Beta)* writes a line only when it
 fails, saying which of those and the error code — never the meeting's name or
 text. There is a line for each other problem it ran into. It holds the last 2,000 events.
@@ -233,7 +240,8 @@ text. There is a line for each other problem it ran into. It holds the last 2,00
 
 ## What leaves this Mac
 
-Two things, and both go to this project's own GitHub releases, over HTTPS.
+Two kinds of thing, and both go to this project's own GitHub releases, over
+HTTPS.
 
 **The speech model and its voice-activity detector, by themselves, whenever a
 launch finds them missing**: the first
@@ -246,7 +254,15 @@ Settings → Models, then its button, downloads on request over whatever you are
 connected to. Which file is fetched depends on the languages your Mac lists and
 the ones you ticked, so GitHub can tell whether one of them is outside the 25
 that Parakeet hears. **The clean-up
-model only when you ask for it.** Each file is verified against a checksum built
+model only when you ask for it.** **The speaker separation model (19 MB), by
+itself, when a meeting starts recording and it is not on this Mac**: your first
+meeting, any meeting started before it has arrived, and the next one after a
+copy that would not load was deleted (at most once per launch). Like the speech
+model, it never downloads over an expensive or Low Data connection. Because it
+is fetched only at a meeting's start, the request tells GitHub, from your IP
+address, that a meeting began on this Mac at that moment, and the file's public
+download count shows how many copies have recorded one; nothing about the
+meeting travels with it. Each file is verified against a checksum built
 into the app, and a file that does not match it is deleted rather than used.
 
 **A version check, once a day**, while the switch on Settings → Permissions is

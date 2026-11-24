@@ -4,10 +4,22 @@ public struct MeetingSpeaker: RawRepresentable, Codable, Hashable, Sendable {
   public static let me = MeetingSpeaker(rawValue: "me")
   public static let others = MeetingSpeaker(rawValue: "others")
 
+  public static func numbered(_ number: Int) -> MeetingSpeaker {
+    precondition(number >= 1, "speakers are numbered from 1")
+    return MeetingSpeaker(rawValue: "speaker-\(number)")
+  }
+
   public let rawValue: String
 
   public init(rawValue: String) {
     self.rawValue = rawValue
+  }
+
+  public var number: Int? {
+    guard let number = Int(rawValue.dropFirst("speaker-".count)), number > 0,
+      Self.numbered(number) == self
+    else { return nil }
+    return number
   }
 }
 

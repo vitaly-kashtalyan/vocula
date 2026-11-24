@@ -17,9 +17,16 @@ permissions:
 
 jobs:
   test:
-    runs-on: macos-26
+    runs-on: xcode-27
 
     steps:
+      # Xcode 26 builds a dependency's enabled package trait without its compile
+      # condition, so FluidAudio's `#if Diarizer` code compiles empty and the app
+      # does not build; 27.2 passes it. The image defaults to 27.1, and a tool a test
+      # starts follows xcode-select rather than DEVELOPER_DIR.
+      - name: Xcode 27.2
+        run: sudo xcode-select -s /Applications/Xcode_27.2.app
+
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5.1.0
         with:
           fetch-depth: 0
@@ -45,7 +52,7 @@ jobs:
           VOCULA_RELEASES: ${{ runner.temp }}/releases
         run: swift test
 
-      # MLX compiles its Metal kernels from source, and Xcode 26 ships that
+      # MLX compiles its Metal kernels from source, and Xcode ships that
       # toolchain as a separate component. Without it the build fails at a step
       # that did not exist before MLX, with "cannot execute tool 'metal'".
       - name: Metal Toolchain

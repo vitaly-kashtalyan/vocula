@@ -127,6 +127,7 @@ public final class DiagnosticLog: @unchecked Sendable {
     "meeting.systemZeros",
     "meeting.transcribed",
     "meeting.transcribeFailed",
+    "meeting.diarizeFailed",
     "meeting.storeFailed",
   ]
 

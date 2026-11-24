@@ -63,4 +63,45 @@ struct ModelDiscardTests {
       #expect(ModelStore.developmentOverrides(defaults).isEmpty)
     #endif
   }
+
+  @Test("the speaker model's discard refuses a second copy and an override")
+  func theDiarizerDiscardRefusesASecondCopyAndAnOverride() throws {
+    let root = FileManager.default.temporaryDirectory
+      .appendingPathComponent("discard-\(UUID().uuidString)")
+    defer { try? FileManager.default.removeItem(at: root) }
+    let plain = ModelStore(directory: root, fileSystem: SystemModelFileSystem())
+    let installed = plain.url(for: .speakerDiarizer)
+    try FileManager.default.createDirectory(at: installed, withIntermediateDirectories: true)
+
+    #expect(!MeetingTranscriptionParts.discardDiarizer(from: plain, isSecondCopy: true))
+    #expect(FileManager.default.fileExists(atPath: installed.path))
+
+    let own = root.appendingPathComponent("own")
+    try FileManager.default.createDirectory(at: own, withIntermediateDirectories: true)
+    let overridden = ModelStore(
+      directory: root, fileSystem: SystemModelFileSystem(), localOverrides: [.speakerDiarizer: own])
+    #expect(!MeetingTranscriptionParts.discardDiarizer(from: overridden, isSecondCopy: false))
+    #expect(FileManager.default.fileExists(atPath: own.path))
+
+    #expect(MeetingTranscriptionParts.discardDiarizer(from: plain, isSecondCopy: false))
+    #expect(!FileManager.default.fileExists(atPath: installed.path))
+  }
+
+  @Test("a speaker model that could not be removed is not reported as removed")
+  func anUnremovableDiarizerIsNotReportedRemoved() throws {
+    let root = FileManager.default.temporaryDirectory
+      .appendingPathComponent("discard-\(UUID().uuidString)")
+    let store = ModelStore(directory: root, fileSystem: SystemModelFileSystem())
+    let installed = store.url(for: .speakerDiarizer)
+    try FileManager.default.createDirectory(at: installed, withIntermediateDirectories: true)
+    try Data("x".utf8).write(to: installed.appendingPathComponent("f"))
+    chmod(root.path, 0o500)
+    defer {
+      chmod(root.path, 0o700)
+      try? FileManager.default.removeItem(at: root)
+    }
+
+    #expect(!MeetingTranscriptionParts.discardDiarizer(from: store, isSecondCopy: false))
+    #expect(FileManager.default.fileExists(atPath: installed.path))
+  }
 }

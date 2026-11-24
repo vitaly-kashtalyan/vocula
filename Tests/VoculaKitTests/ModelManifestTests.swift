@@ -29,4 +29,22 @@ struct ModelManifestTests {
     let names = ModelManifest.current.map(\.fileName)
     #expect(Set(names).count == names.count)
   }
+
+  @Test("the speaker separation model is pinned, and it is not a transcription engine")
+  func theDiarizerIsPinnedAndNotAnEngine() {
+    let model = ModelManifest.descriptor(for: .speakerDiarizer)
+    #expect(model.family == .parakeet)
+    #expect(model.fileName == "speaker-diarizer-df2625a.zip")
+    #expect(model.unpacked == "speaker-diarizer-df2625a")
+    #expect(!ModelManifest.transcriptionModels.contains(.speakerDiarizer))
+  }
+
+  @Test("the Parakeet credit says FluidAudio also separates speakers, and whose weights")
+  func theParakeetCreditNamesSpeakerSeparation() {
+    let credit = ModelFamily.parakeet.engineCredit
+    #expect(credit.contains("separates speakers"))
+    for name in ["pyannote", "WeSpeaker", "BUT Speech@FIT", "CC-BY-4.0"] {
+      #expect(credit.contains(name), "\(name)")
+    }
+  }
 }

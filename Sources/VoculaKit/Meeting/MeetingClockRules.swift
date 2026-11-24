@@ -58,7 +58,7 @@ public enum MeetingBound {
   public static let termination: Duration = .seconds(3)
 
   public static func wait(
-    for work: Task<Void, Never>, atMost bound: Duration,
+    for work: Task<some Sendable, Never>, atMost bound: Duration,
     sleep: @escaping @Sendable (Duration) async throws -> Void
   ) async -> Bool {
     await withCheckedContinuation { continuation in

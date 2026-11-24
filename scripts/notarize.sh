@@ -98,7 +98,7 @@ METALLIB="$APP/Contents/Resources/mlx-swift_Cmlx.bundle/Contents/Resources/defau
    MLX calls exit() the first time the clean-up model runs without it."
 
 extras=$(find "$APP" -name 'FluidAudio_*.bundle' -print) || fail "cannot scan $APP for FluidAudio's resource bundles"
-[ -z "$extras" ] || fail "FluidAudio's resources are in the bundle — its TTS data is GPL-3.0+ and CC-BY-SA-4.0: $extras — Package.swift must keep traits: []"
+[ -z "$extras" ] || fail "FluidAudio's resources are in the bundle — its TTS data is GPL-3.0+ and CC-BY-SA-4.0: $extras — Package.swift must not enable FluidAudio's TTS trait"
 
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$APP/Contents/Info.plist"; }
 BUILD_NUMBER=$(plist CFBundleVersion)

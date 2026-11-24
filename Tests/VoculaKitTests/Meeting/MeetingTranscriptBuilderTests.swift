@@ -12,9 +12,17 @@ import Testing
   }
 
   private func build(
-    me: [TimedText] = [], others: [TimedText] = [], dictations: [ClosedRange<Double>] = []
+    me: [TimedText] = [], others: [TimedText] = [],
+    said: [(word: TimedText, speaker: MeetingSpeaker)] = [], dictations: [ClosedRange<Double>] = []
   ) -> (utterances: [MeetingUtterance], echoDropped: Int) {
-    MeetingTranscriptBuilder.build(me: me, others: others, dictations: dictations)
+    MeetingTranscriptBuilder.build(
+      me: me, others: others.map { (word: $0, speaker: .others) } + said, dictations: dictations)
+  }
+
+  private func said(_ text: String, by number: Int, from start: Double)
+    -> [(word: TimedText, speaker: MeetingSpeaker)]
+  {
+    words(text, from: start).map { (word: $0, speaker: .numbered(number)) }
   }
 
   @Test func dictationIsLeftOut() {
@@ -115,6 +123,37 @@ import Testing
         TimedText(start: 3, end: 3.5, text: "theirs"), TimedText(start: 1, end: 1.5, text: "first"),
       ])
     #expect(result.utterances.map(\.text) == ["first", "mine", "theirs", "late"])
+  }
+
+  @Test func aSpeakerChangeStartsALine() {
+    let result = build(said: said("a b", by: 1, from: 0) + said("c", by: 2, from: 0.5))
+    #expect(result.utterances.map(\.speaker) == [.numbered(1), .numbered(2)])
+    #expect(result.utterances.map(\.text) == ["a b", "c"])
+  }
+
+  @Test func sameSpeakerAcrossAShortGapIsOneLine() {
+    let result = build(said: said("one", by: 1, from: 0) + said("two", by: 1, from: 0.75))
+    #expect(result.utterances.map(\.speaker) == [.numbered(1)])
+    #expect(result.utterances.map(\.text) == ["one two"])
+  }
+
+  @Test func linesAtOneStartPutMeFirstThenTheirBuildOrder() {
+    let at = { (speaker: MeetingSpeaker) in
+      (word: TimedText(start: 2, end: 2.25, text: "w"), speaker: speaker)
+    }
+    let result = build(
+      me: [TimedText(start: 2, end: 2.25, text: "m")],
+      said: [
+        at(.numbered(2)), at(.numbered(1)),
+        (word: TimedText(start: 1, end: 1.25, text: "e"), speaker: .numbered(1)),
+      ])
+    #expect(result.utterances.map(\.speaker) == [.numbered(1), .me, .numbered(2), .numbered(1)])
+  }
+
+  @Test func echoStillMatchesNumberedWords() {
+    let result = build(me: words("yes go", from: 5.1), said: said("yes go", by: 1, from: 5))
+    #expect(result.echoDropped == 2)
+    #expect(result.utterances.map(\.speaker) == [.numbered(1)])
   }
 
   @Test func spansBecomeSecondsFromTheAnchor() {

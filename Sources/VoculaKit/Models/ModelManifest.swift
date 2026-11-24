@@ -5,6 +5,7 @@ public enum ModelID: String, Codable, Sendable, Equatable, CaseIterable {
   case parakeetUltra
   case speechDetector
   case qwenRefine2B
+  case speakerDiarizer
 
   public init?(rawValue: String) {
     if rawValue == "parakeetV3" {
@@ -60,7 +61,7 @@ public enum ModelFamily: String, Codable, Sendable, Equatable, CaseIterable {
       return "whisper.cpp v1.9.5 — MIT, The ggml authors"
     case .parakeet:
       return
-        "FluidAudio — Apache-2.0; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0"
+        "FluidAudio — Apache-2.0, which also separates speakers; Parakeet Ultra weights by moondream, from NVIDIA Parakeet TDT v3, under CC-BY-4.0; speaker separation weights by pyannote, WeSpeaker and BUT Speech@FIT, converted by Fluid Inference, under CC-BY-4.0"
     case .refiner:
       return
         "MLX — MIT, Apple; swift-transformers — Apache-2.0, Hugging Face; Qwen3.5 weights by Alibaba under Apache-2.0, fine-tuned by Vocula"
@@ -154,6 +155,30 @@ public enum ModelManifest {
         "tokenizer.json", "tokenizer_config.json", "vocab.json", "chat_template.jinja",
       ],
       expandedBytes: 1_556_519_683),
+    ModelDescriptor(
+      id: .speakerDiarizer,
+      family: .parakeet,
+      fileName: "speaker-diarizer-df2625a.zip",
+      remoteURL: URL(
+        string:
+          "https://github.com/vitaly-kashtalyan/vocula/releases/download/models-v1/speaker-diarizer-df2625a.zip"
+      )!,
+      sha256: "d61af26a58ea09645c3801a07ae981922bb7c42ae26f0189a0b3bfdb3a1b61fe",
+      byteSize: 18_915_123,
+      version: "speaker-diarization-coreml @ df2625ac (pyannote community-1)",
+      licence:
+        "CC-BY-4.0 (pyannote speaker-diarization-community-1, WeSpeaker embeddings, BUT Speech@FIT PLDA; modified Core ML conversion by Fluid Inference)",
+      displayName: String(
+        localized: "models.speakerDiarizer", defaultValue: "Speaker separation", bundle: .module,
+        comment:
+          "Name of the model that tells the people on a recorded call apart, shown in the licence list of the Models screen. A noun phrase, not a sentence."
+      ),
+      unpacked: "speaker-diarizer-df2625a",
+      contents: [
+        "Segmentation.mlmodelc", "FBank.mlmodelc", "Embedding.mlmodelc", "PldaRho.mlmodelc",
+        "plda-parameters.json",
+      ],
+      expandedBytes: 21_626_800),
   ]
 
   public static let transcriptionModels: [ModelID] = [.largeV3Turbo, .parakeetUltra]

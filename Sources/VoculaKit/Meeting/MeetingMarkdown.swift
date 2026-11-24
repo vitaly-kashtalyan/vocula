@@ -3,11 +3,11 @@ import Foundation
 public enum MeetingMarkdown {
   public static func render(
     _ transcript: MeetingTranscript, title: String? = nil, startedAt: Date,
-    duration: TimeInterval, labels: [MeetingSpeaker: String], includeMe: Bool
+    duration: TimeInterval, label: (MeetingSpeaker) -> String, includeMe: Bool
   ) -> String {
-    let spoken = labelled(transcript, labels: labels, includeMe: includeMe)
+    let spoken = labelled(transcript, label: label, includeMe: includeMe)
     var speakers: [String] = []
-    for label in spoken.map(\.label) where !speakers.contains(label) { speakers.append(label) }
+    for name in spoken.map(\.label) where !speakers.contains(name) { speakers.append(name) }
     var lines = ["---"]
     if let title {
       let escaped = title.replacingOccurrences(of: "\\", with: "\\\\")
@@ -20,16 +20,16 @@ public enum MeetingMarkdown {
       "speakers: [\(speakers.joined(separator: ", "))]",
       "---",
     ]
-    for (utterance, label) in spoken {
-      lines += ["", "**\(label)** [\(clock(utterance.start))]: \(utterance.text)"]
+    for (utterance, name) in spoken {
+      lines += ["", "**\(name)** [\(clock(utterance.start))]: \(utterance.text)"]
     }
     return lines.joined(separator: "\n") + "\n"
   }
 
   public static func lines(
-    _ transcript: MeetingTranscript, labels: [MeetingSpeaker: String], includeMe: Bool
+    _ transcript: MeetingTranscript, label: (MeetingSpeaker) -> String, includeMe: Bool
   ) -> [String] {
-    labelled(transcript, labels: labels, includeMe: includeMe).map {
+    labelled(transcript, label: label, includeMe: includeMe).map {
       "\($0.label) [\(clock($0.utterance.start))]: \($0.utterance.text)"
     }
   }
@@ -45,10 +45,10 @@ public enum MeetingMarkdown {
   }
 
   private static func labelled(
-    _ transcript: MeetingTranscript, labels: [MeetingSpeaker: String], includeMe: Bool
+    _ transcript: MeetingTranscript, label: (MeetingSpeaker) -> String, includeMe: Bool
   ) -> [(utterance: MeetingUtterance, label: String)] {
     transcript.utterances.filter { includeMe || $0.speaker != .me }.map {
-      (utterance: $0, label: labels[$0.speaker] ?? $0.speaker.rawValue)
+      (utterance: $0, label: label($0.speaker))
     }
   }
 
