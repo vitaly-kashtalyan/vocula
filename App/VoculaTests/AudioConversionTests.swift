@@ -168,3 +168,29 @@ struct WaveformScrollRateTests {
     #expect(WaveformGeometry.pitch * CGFloat(CaptureSink.levelsPerSecond) == 19)
   }
 }
+
+@Suite("Capture sink level")
+struct CaptureSinkLevelTests {
+  @Test("a loud buffer followed by two silent ones still shows on the level")
+  func earlierBuffersCount() async throws {
+    let client = try #require(CaptureFormat.client(hardwareRate: 48_000, hardwareChannels: 1))
+    let levels = StreamFanout<Float>(bufferingPolicy: .unbounded)
+    let sink = try #require(
+      CaptureSink(
+        clientFormat: client, frameCapacity: 512, accumulator: nil,
+        levels: levels, counter: BufferCounter(), diagnose: nil))
+    let stream = levels.subscribe()
+    for buffer in 0..<3 {
+      let samples = try #require(sink.renderBuffer.floatChannelData?[0])
+      for frame in 0..<512 {
+        samples[frame] = buffer == 0 ? Float(sin(2 * .pi * 1_000 * Double(frame) / 48_000)) : 0
+      }
+      sink.deliver(frames: 512)
+    }
+    levels.finishAll()
+    var emitted: [Float] = []
+    for await level in stream { emitted.append(level) }
+    #expect(emitted.count == 1)
+    #expect(emitted.allSatisfy { $0 > 0.2 && $0 < 0.5 }, "levels: \(emitted)")
+  }
+}
