@@ -30,6 +30,7 @@ import Testing
     #expect(MeetingSpeakerAssignment.nearestReach == 2.0)
     #expect(MeetingSpeakerAssignment.sentencePause == 2.0)
     #expect(MeetingSpeakerAssignment.longestSentence == 50)
+    #expect(MeetingSpeakerAssignment.longestFlip == 2)
   }
 
   @Test func aWordInsideOneTurnTakesItsSpeaker() {
@@ -197,6 +198,48 @@ import Testing
       SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 4),
     ]
     #expect(said(spoken, turns) == [.numbered(1), .numbered(1), .numbered(2), .numbered(2)])
+  }
+
+  @Test func aReplyOfMoreThanTwoWordsWithoutPunctuationKeepsItsSpeaker() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 4), SpeakerTurn(speaker: "B", start: 4, end: 6),
+    ]
+    let spoken = [
+      ("okay", 0.2, 0.5), ("so", 0.7, 1.0), ("what", 1.2, 1.5), ("do", 1.7, 2.0),
+      ("you", 2.2, 2.5), ("think", 2.6, 2.9), ("sounds", 4.1, 4.3), ("good", 4.4, 4.6),
+      ("to", 4.7, 4.8), ("me", 4.9, 5.1),
+    ]
+    #expect(
+      said(spoken, turns)
+        == Array(repeating: .numbered(1), count: 6) + Array(repeating: .numbered(2), count: 4))
+  }
+
+  @Test func aSentenceWhoseTopSpeakerHoldsUnderHalfIsLeftAlone() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 1), SpeakerTurn(speaker: "A", start: 1, end: 3),
+      SpeakerTurn(speaker: "B", start: 1, end: 3), SpeakerTurn(speaker: "B", start: 3, end: 3.6),
+      SpeakerTurn(speaker: "A", start: 3.6, end: 5),
+    ]
+    let spoken = [
+      ("a", 0.2, 0.5), ("o", 1.2, 1.5), ("o", 1.7, 2.0), ("o", 2.2, 2.5), ("b", 3.1, 3.4),
+      ("a", 3.8, 4.1),
+    ]
+    #expect(
+      said(spoken, turns)
+        == [.numbered(1), .others, .others, .others, .numbered(2), .numbered(1)])
+  }
+
+  @Test func otherScriptsEndASentenceToo() {
+    let turns = [
+      SpeakerTurn(speaker: "A", start: 0, end: 2), SpeakerTurn(speaker: "B", start: 2, end: 3),
+    ]
+    let greek = [
+      ("Θα", 0.2, 0.4), ("το", 0.5, 0.7), ("στείλεις", 0.8, 1.2), ("αύριο;", 1.3, 1.8),
+      ("Ναι.", 2.2, 2.5),
+    ]
+    #expect(said(greek, turns).last == .numbered(2))
+    let chinese = [("明天", 0.2, 0.8), ("发吗？", 0.9, 1.6), ("好。", 2.2, 2.5)]
+    #expect(said(chinese, turns).last == .numbered(2))
   }
 
   @Test func aLongPauseEndsASentence() {

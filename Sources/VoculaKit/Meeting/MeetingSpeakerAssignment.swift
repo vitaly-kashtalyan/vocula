@@ -7,8 +7,11 @@ enum MeetingSpeakerAssignment {
   static let nearestReach = 2.0
   static let sentencePause = 2.0
   static let longestSentence = 50
+  static let longestFlip = 2
 
-  private static let sentenceEnds: Set<Character> = [".", "?", "!", "…"]
+  private static let sentenceEnds: Set<Character> = [
+    ".", "?", "!", "…", ";", "。", "？", "！", "؟", "।",
+  ]
   private static let closers: Set<Character> = ["\"", "'", "»", "”", "’", ")", "]"]
 
   private enum Found: Equatable {
@@ -78,6 +81,7 @@ enum MeetingSpeakerAssignment {
   private static func majority(_ speakers: [String], of count: Int) -> String? {
     let tally = Dictionary(speakers.map { ($0, 1) }, uniquingKeysWith: +)
     guard tally.count > 1, let top = tally.values.max(), 2 * top >= count,
+      speakers.count - top <= longestFlip,
       tally.values.filter({ $0 == top }).count == 1
     else { return nil }
     return tally.first { $0.value == top }?.key
