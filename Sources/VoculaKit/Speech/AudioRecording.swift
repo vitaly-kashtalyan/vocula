@@ -48,14 +48,12 @@ public struct LevelWindow: Sendable {
   public static let shortestSpan = 1.0 / 38
 
   private let framesPerLevel: Int
-  private let carriesRemainder: Bool
   private var frames = 0
   private var squares: Float = 0
   private var count = 0
 
-  public init(deviceRate: Double, carriesRemainder: Bool = false) {
+  public init(deviceRate: Double) {
     framesPerLevel = max(1, Int(deviceRate * Self.shortestSpan))
-    self.carriesRemainder = carriesRemainder
   }
 
   public mutating func add(_ samples: ArraySlice<Float>?, deviceFrames: Int) -> Float? {
@@ -67,7 +65,7 @@ public struct LevelWindow: Sendable {
     let level = count == 0 ? 0 : (squares / Float(count)).squareRoot()
     squares = 0
     count = 0
-    frames = carriesRemainder ? frames % framesPerLevel : 0
+    frames = 0
     return level
   }
 }

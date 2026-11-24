@@ -82,9 +82,7 @@ final class CaptureSink: @unchecked Sendable {
     self.diagnose = diagnose
     self.converters = ConverterCache(target: target)
     self.renderBuffer = buffer
-    self.window = LevelWindow(
-      deviceRate: clientFormat.rate,
-      carriesRemainder: UserDefaults.standard.bool(forKey: "levels.carryRemainder"))
+    self.window = LevelWindow(deviceRate: clientFormat.rate)
   }
 
   func deliver(frames: AVAudioFrameCount) {

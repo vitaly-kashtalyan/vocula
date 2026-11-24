@@ -282,12 +282,4 @@ struct LevelWindowTests {
     let emitted = run(&window, Array(repeating: 0.1, count: calls), frames: frames)
     #expect(emitted.keys.sorted() == expected)
   }
-
-  @Test("TEMPORARY: carrying the remainder averages 38 levels a second")
-  func carriedCadence() {
-    var window = LevelWindow(deviceRate: 48_000, carriesRemainder: true)
-    let calls = run(&window, Array(repeating: 0.1, count: 75)).keys.sorted()
-    #expect(calls.count == 30)
-    #expect(Array(calls.prefix(2)) == [3, 5])
-  }
 }
