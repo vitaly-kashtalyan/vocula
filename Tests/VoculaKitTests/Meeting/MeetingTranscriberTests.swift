@@ -10,6 +10,7 @@ final class RecognizerLog: @unchecked Sendable {
   private var sizes: [Int] = []
   var failures: [Int: any Error] = [:]
   var stall: TestClock?
+  var words: [TimedText]?
   var onCall: (@Sendable (Int) async -> Void)?
 
   var made: Int { lock.withLock { madeCount } }
@@ -42,7 +43,7 @@ final class PassRecognizer: MeetingRecognizing, @unchecked Sendable {
     let call = try log.called(samples.count)
     await log.onCall?(call)
     if let clock = log.stall { try await clock.sleep(for: .seconds(3_600)) }
-    return [TimedText(start: 0.1, end: 0.3, text: "w\(call)")]
+    return log.words ?? [TimedText(start: 0.1, end: 0.3, text: "w\(call)")]
   }
 }
 
@@ -317,6 +318,16 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(utterances.map(\.speaker) == [.others, .me])
     #expect(abs(utterances[0].start - 5.1) < 0.001)
     #expect(abs(utterances[1].start - 8.1) < 0.001)
+  }
+
+  @Test func aWordStretchedPastTheSpeechEndsWhereTheSpeechEnds() async throws {
+    let rig = TranscriberRig()
+    rig.recognizers.words = [TimedText(start: 0.1, end: 2.5, text: "stretched")]
+    let header = try rig.meeting(lasting: 6, mic: [rig.speech(at: 1, for: 1)])
+    await rig.run()
+    let utterance = try #require(await rig.transcript(of: header)?.utterances.first)
+    #expect(abs(utterance.start - 1.1) < 0.001)
+    #expect(abs(utterance.end - 2.0) < 0.001)
   }
 
   @Test func anEmptyMeetingNeedsNoModel() async throws {

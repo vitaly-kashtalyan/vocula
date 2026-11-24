@@ -77,28 +77,28 @@ enum MeetingTranscriptBuilder {
   private static func lines(_ words: [(word: TimedText, speaker: MeetingSpeaker)])
     -> [MeetingUtterance]
   {
-    var out: [MeetingUtterance] = []
+    var out: [(start: Double, end: Double, speaker: MeetingSpeaker, texts: [String])] = []
     var open: [MeetingSpeaker: (line: Int, word: Int)] = [:]
     for (index, said) in words.enumerated() {
       if let at = open[said.speaker] {
-        let last = out[at.line]
+        let lastEnd = out[at.line].end
         let replied = words[(at.word + 1)..<index].contains {
-          $0.word.start >= last.end && $0.word.end <= said.word.start
+          $0.word.start >= lastEnd && $0.word.end <= said.word.start
         }
         if !replied {
-          out[at.line] = MeetingUtterance(
-            start: last.start, end: max(last.end, said.word.end), speaker: said.speaker,
-            text: last.text + " " + said.word.text)
+          out[at.line].end = max(lastEnd, said.word.end)
+          out[at.line].texts.append(said.word.text)
           open[said.speaker] = (at.line, index)
           continue
         }
       }
       open[said.speaker] = (out.count, index)
-      out.append(
-        MeetingUtterance(
-          start: said.word.start, end: said.word.end, speaker: said.speaker, text: said.word.text))
+      out.append((said.word.start, said.word.end, said.speaker, [said.word.text]))
     }
-    return out
+    return out.map {
+      MeetingUtterance(
+        start: $0.start, end: $0.end, speaker: $0.speaker, text: $0.texts.joined(separator: " "))
+    }
   }
 
   private static func seconds(_ nanos: UInt64) -> Double {

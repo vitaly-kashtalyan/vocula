@@ -367,7 +367,12 @@ public actor MeetingTranscriber {
       plan.carryFrom.map { Carry(samples: Array(buffer[$0...]), start: start + $0) } ?? Carry()
     read += window.samples.count
     await progress()
-    return out
+    let base = Double(start) / AudioFormat.sampleRate
+    let speech = markup.segments.map { segment in
+      let from = base + Double(segment.start.milliseconds) / 1000
+      return from...max(from, base + Double(segment.end.milliseconds) / 1000)
+    }
+    return MeetingPieces.clamped(out, to: speech)
   }
 
   private func recognize(_ samples: [Float], at offset: Int, model: MeetingModel) async throws
