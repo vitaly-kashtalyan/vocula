@@ -1129,7 +1129,7 @@ struct SlowPassTests {
 
   @Test("an ordinary pass is not reported at all")
   func fast() async {
-    #expect(await run(delay: .zero, audioSeconds: 10).isEmpty)
+    #expect(await run(delay: .zero, audioSeconds: 60).isEmpty)
   }
 }
 
