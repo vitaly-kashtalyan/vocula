@@ -33,20 +33,16 @@ import Testing
       TimedText(start: 3.95, end: 4.15, text: "after"),
     ]
     let result = build(me: me, dictations: [2.0...4.0])
-    #expect(result.utterances.map(\.text) == ["kept", "after"])
+    #expect(result.utterances.map(\.text) == ["kept after"])
   }
 
-  @Test func aGapUnderSevenTenthsMerges() {
-    let joined = build(me: [
-      TimedText(start: 0, end: 0.5, text: "one"), TimedText(start: 1.19, end: 1.5, text: "two"),
+  @Test func aSpeakerIsOneLineHoweverLongTheSilence() {
+    let result = build(me: [
+      TimedText(start: 0, end: 0.5, text: "one"), TimedText(start: 60, end: 60.5, text: "two"),
     ])
-    #expect(joined.utterances.map(\.text) == ["one two"])
-    #expect(joined.utterances.first?.start == 0)
-    #expect(joined.utterances.first?.end == 1.5)
-    let split = build(me: [
-      TimedText(start: 0, end: 0.5, text: "one"), TimedText(start: 1.2, end: 1.5, text: "two"),
-    ])
-    #expect(split.utterances.map(\.text) == ["one", "two"])
+    #expect(result.utterances.map(\.text) == ["one two"])
+    #expect(result.utterances.first?.start == 0)
+    #expect(result.utterances.first?.end == 60.5)
   }
 
   @Test func echoOfOthersIsDropped() {
@@ -105,22 +101,38 @@ import Testing
     #expect(result.echoDropped == 2)
   }
 
-  @Test func othersAreSplitWhereIStartSpeaking() {
+  @Test func othersAreSplitWhereISpeakInTheirPause() {
     let result = build(
-      me: [TimedText(start: 4.05, end: 4.4, text: "question")],
-      others: words("one two three four five six seven eight nine ten", from: 2, step: 0.5))
+      me: words("yes I agree", from: 5),
+      others: words("one two three four five", from: 2, step: 0.5)
+        + words("six seven eight nine ten", from: 6.5, step: 0.5))
     #expect(result.utterances.map(\.speaker) == [.others, .me, .others])
     #expect(result.utterances.first?.text == "one two three four five")
     #expect(result.utterances.last?.text == "six seven eight nine ten")
   }
 
-  @Test func tracksInterleaveByStartMeFirstOnTies() {
+  @Test func aWordOverTheirSpeechSplitsNothing() {
+    let result = build(
+      me: [TimedText(start: 4.05, end: 4.4, text: "question")],
+      others: words("one two three four five six seven eight nine ten", from: 2, step: 0.5))
+    #expect(result.utterances.map(\.speaker) == [.others, .me])
+    #expect(result.utterances.first?.text == "one two three four five six seven eight nine ten")
+  }
+
+  @Test func myLineIsSplitWhereTheyReplyInMyPause() {
+    let result = build(
+      me: words("how are you", from: 0) + words("good", from: 1),
+      others: [TimedText(start: 0.75, end: 0.95, text: "fine")])
+    #expect(result.utterances.map(\.text) == ["how are you", "fine", "good"])
+  }
+
+  @Test func tracksInterleaveByStart() {
     let result = build(
       me: [
         TimedText(start: 3, end: 3.5, text: "mine"), TimedText(start: 9, end: 9.5, text: "late"),
       ],
       others: [
-        TimedText(start: 3, end: 3.5, text: "theirs"), TimedText(start: 1, end: 1.5, text: "first"),
+        TimedText(start: 5, end: 5.5, text: "theirs"), TimedText(start: 1, end: 1.5, text: "first"),
       ])
     #expect(result.utterances.map(\.text) == ["first", "mine", "theirs", "late"])
   }
@@ -143,11 +155,8 @@ import Testing
     }
     let result = build(
       me: [TimedText(start: 2, end: 2.25, text: "m")],
-      said: [
-        at(.numbered(2)), at(.numbered(1)),
-        (word: TimedText(start: 1, end: 1.25, text: "e"), speaker: .numbered(1)),
-      ])
-    #expect(result.utterances.map(\.speaker) == [.numbered(1), .me, .numbered(2), .numbered(1)])
+      said: [at(.numbered(2)), at(.numbered(1))])
+    #expect(result.utterances.map(\.speaker) == [.me, .numbered(2), .numbered(1)])
   }
 
   @Test func echoStillMatchesNumberedWords() {

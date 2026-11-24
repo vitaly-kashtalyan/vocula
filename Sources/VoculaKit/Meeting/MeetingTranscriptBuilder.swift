@@ -1,7 +1,6 @@
 import Foundation
 
 enum MeetingTranscriptBuilder {
-  static let pause = 0.7
   static let echoReach = 1.5
   static let echoRun = 2
 
@@ -25,12 +24,11 @@ enum MeetingTranscriptBuilder {
     }
     let theirs = others.sorted { $0.word.start < $1.word.start }
     let (kept, dropped) = withoutEcho(spoken, of: theirs.map(\.word))
-    let mine = merge(kept.map { (word: $0, speaker: .me) }, breaks: [])
-    let all = (mine + merge(theirs, breaks: mine.map(\.start))).enumerated().sorted {
-      ($0.element.start, $0.element.speaker == .me ? 0 : 1, $0.offset)
-        < ($1.element.start, $1.element.speaker == .me ? 0 : 1, $1.offset)
+    let words = (kept.map { (word: $0, speaker: MeetingSpeaker.me) } + theirs).enumerated().sorted {
+      ($0.element.word.start, $0.element.speaker == .me ? 0 : 1, $0.offset)
+        < ($1.element.word.start, $1.element.speaker == .me ? 0 : 1, $1.offset)
     }
-    return (all.map(\.element), dropped)
+    return (lines(words.map(\.element)), dropped)
   }
 
   static func normalized(_ word: String) -> String {
@@ -76,22 +74,29 @@ enum MeetingTranscriptBuilder {
     return (kept, mine.count - kept.count)
   }
 
-  private static func merge(
-    _ words: [(word: TimedText, speaker: MeetingSpeaker)], breaks: [Double]
-  ) -> [MeetingUtterance] {
+  private static func lines(_ words: [(word: TimedText, speaker: MeetingSpeaker)])
+    -> [MeetingUtterance]
+  {
     var out: [MeetingUtterance] = []
-    var previousStart = -Double.infinity
-    for (word, speaker) in words {
-      let interrupted = breaks.contains { $0 > previousStart && $0 <= word.start }
-      if let last = out.last, last.speaker == speaker, word.start - last.end < pause, !interrupted {
-        out[out.count - 1] = MeetingUtterance(
-          start: last.start, end: max(last.end, word.end), speaker: speaker,
-          text: last.text + " " + word.text)
-      } else {
-        out.append(
-          MeetingUtterance(start: word.start, end: word.end, speaker: speaker, text: word.text))
+    var open: [MeetingSpeaker: (line: Int, word: Int)] = [:]
+    for (index, said) in words.enumerated() {
+      if let at = open[said.speaker] {
+        let last = out[at.line]
+        let replied = words[(at.word + 1)..<index].contains {
+          $0.word.start >= last.end && $0.word.end <= said.word.start
+        }
+        if !replied {
+          out[at.line] = MeetingUtterance(
+            start: last.start, end: max(last.end, said.word.end), speaker: said.speaker,
+            text: last.text + " " + said.word.text)
+          open[said.speaker] = (at.line, index)
+          continue
+        }
       }
-      previousStart = word.start
+      open[said.speaker] = (out.count, index)
+      out.append(
+        MeetingUtterance(
+          start: said.word.start, end: said.word.end, speaker: said.speaker, text: said.word.text))
     }
     return out
   }
