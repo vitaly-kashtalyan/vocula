@@ -95,9 +95,22 @@ extension MenuCopy {
     )
   }
 
-  static func meetingTranscribing(_ percent: Int) -> LocalizedStringResource {
-    let done = (Double(percent) / 100).formatted(
-      .percent.precision(.fractionLength(0)).locale(.interface))
+  private static func percent(_ value: Int) -> String {
+    (Double(value) / 100).formatted(.percent.precision(.fractionLength(0)).locale(.interface))
+  }
+
+  static func speakerModelDownloading(_ value: Int) -> LocalizedStringResource {
+    let done = percent(value)
+    return LocalizedStringResource(
+      "meeting.status.speakerModelDownloading",
+      defaultValue: "Downloading the speaker model — \(done); transcription follows.",
+      comment:
+        "Line in the meeting's own menu bar menu and in the footer of the Meetings section of the Vocula window while the model that tells the people on a call apart downloads; recorded meetings are turned into text only once it has arrived. The argument is how much of it has arrived, already formatted as a percent. In the menu it is drawn on one line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+    )
+  }
+
+  static func meetingTranscribing(_ value: Int) -> LocalizedStringResource {
+    let done = percent(value)
     return LocalizedStringResource(
       "meeting.status.transcribing", defaultValue: "Transcribing meetings — \(done)",
       comment:

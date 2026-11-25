@@ -231,6 +231,7 @@ private final class PassProbe {
   var states: [MeetingDiarizerState] = []
   var fetched: [DiagnosticLog?] = []
   var arrivals: [@MainActor () async -> Void] = []
+  var progress: [@MainActor (Int?) -> Void] = []
 
   func parts(store: MeetingStore) -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
@@ -289,8 +290,9 @@ private final class PassProbe {
         }
       },
       paste: { [self] in pasted.append($0) },
-      fetchDiarizer: { [self] log, arrived in
+      fetchDiarizer: { [self] log, progressed, arrived in
         fetched.append(log)
+        progress.append(progressed)
         arrivals.append(arrived)
       })
   }
@@ -487,6 +489,18 @@ struct MeetingsTests {
     let arrived = try #require(rig.passes.arrivals.first)
     await arrived()
     #expect(rig.passes.made == 2)
+  }
+
+  @Test func theSpeakerModelsDownloadKeepsTheItemAfterTheMeeting() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    let progressed = try #require(rig.passes.progress.first)
+    progressed(40)
+    #expect(rig.meetings.status.speakerModel == 40)
+    #expect(rig.meetings.status.statusItemShown)
+    progressed(nil)
+    #expect(rig.meetings.status.speakerModel == nil)
   }
 
   @Test func aStartThatNeverRecordsAsksForNothing() async {

@@ -40,7 +40,10 @@ struct MeetingsSettingsSection: View {
         }
       }
     } footer: {
-      if status.passRunning { Text(MenuCopy.meetingsDeleteWaits) }
+      VStack(alignment: .leading, spacing: 6) {
+        if let percent = status.speakerModel { Text(MenuCopy.speakerModelDownloading(percent)) }
+        if status.passRunning { Text(MenuCopy.meetingsDeleteWaits) }
+      }
     }
     .task { meetings.sectionAppeared() }
     .refreshOnActivate { meetings.sectionAppeared() }

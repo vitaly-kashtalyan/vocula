@@ -131,10 +131,12 @@ extension MeetingStatusRules {
   public enum Label: Equatable, Sendable { case recording, transcribing, idle }
 
   public static func symbol(
-    for status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool
+    for status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool,
+    downloading: Bool = false
   ) -> String {
     if status.isRecording || !status.warnings.isEmpty { return symbol(for: status) }
     if case .running = transcription { return transcribingSymbol }
+    if downloading { return transcribingSymbol }
     if status.notice != nil { return symbol(for: status) }
     if copyFailed { return warningSymbol }
     if case .finished(_, let failed) = transcription {
@@ -144,9 +146,10 @@ extension MeetingStatusRules {
   }
 
   public static func showsItem(
-    _ status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool
+    _ status: MeetingStatus, transcription: MeetingTranscription?, copyFailed: Bool,
+    downloading: Bool = false
   ) -> Bool {
-    showsItem(status) || transcription != nil || copyFailed
+    showsItem(status) || transcription != nil || copyFailed || downloading
   }
 
   public static func label(for status: MeetingStatus, transcription: MeetingTranscription?)
@@ -164,10 +167,11 @@ extension MeetingStatusRules {
     return new
   }
 
-  public static func removal(of status: MeetingStatus, transcription: MeetingTranscription?)
-    -> Removal
-  {
+  public static func removal(
+    of status: MeetingStatus, transcription: MeetingTranscription?, downloading: Bool = false
+  ) -> Removal {
     if case .running = transcription { return .putBack }
+    if downloading { return .putBack }
     return removal(of: status)
   }
 }

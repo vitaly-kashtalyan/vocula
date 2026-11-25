@@ -139,7 +139,9 @@ final class Meetings {
     status.update(new)
     guard started else { return }
     requestListing()
-    parts.fetchDiarizer(diagnosticLog()) { [weak self] in await self?.diarizerArrived() }
+    parts.fetchDiarizer(diagnosticLog(), { [weak self] in self?.status.update(speakerModel: $0) }) {
+      [weak self] in await self?.diarizerArrived()
+    }
   }
 
   @discardableResult

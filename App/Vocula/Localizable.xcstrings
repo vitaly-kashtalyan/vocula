@@ -10861,6 +10861,66 @@
         }
       }
     },
+    "meeting.status.speakerModelDownloading" : {
+      "comment" : "Line in the meeting's own menu bar menu and in the footer of the Meetings section of the Vocula window while the model that tells the people on a call apart downloads; recorded meetings are turned into text only once it has arrived. The argument is how much of it has arrived, already formatted as a percent. In the menu it is drawn on one line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprechermodell wird geladen – %@; danach folgt die Transkription."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Downloading the speaker model — %@; transcription follows."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Descargando el modelo de hablantes — %@; después, la transcripción."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Téléchargement du modèle des intervenants — %@ ; la transcription suivra."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Download del modello degli interlocutori — %@; poi la trascrizione."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie modelu rozmówców — %@; potem transkrypcja."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Baixando o modelo de participantes — %@; depois, a transcrição."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Загрузка модели собеседников — %@; затем расшифровка."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Завантаження моделі співрозмовників — %@; потім розшифровка."
+          }
+        }
+      }
+    },
     "meeting.status.transcribing" : {
       "comment" : "Menu line while Vocula turns recorded meetings into text; the argument is how much is done, already formatted as a percent. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",

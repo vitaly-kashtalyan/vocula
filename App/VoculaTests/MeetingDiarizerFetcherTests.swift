@@ -62,7 +62,7 @@ struct MeetingDiarizerFetcherTests {
   @Test func aSecondCopyFetchesNothing() async throws {
     let fetcher = try fetcher(secondCopy: true)
     var ready = false
-    fetcher.fetch(log: nil) { ready = true }
+    fetcher.fetch(log: nil, progress: { _ in }) { ready = true }
     await fetcher.running?.value
     #expect(DiarizerStub.requests == 0)
     #expect(!ready)
@@ -71,10 +71,10 @@ struct MeetingDiarizerFetcherTests {
   @Test func twoFetchesMakeOneRequest() async throws {
     let fetcher = try fetcher(secondCopy: false)
     DiarizerStub.hangs = true
-    fetcher.fetch(log: nil) {}
-    fetcher.fetch(log: nil) {}
+    fetcher.fetch(log: nil, progress: { _ in }) {}
+    fetcher.fetch(log: nil, progress: { _ in }) {}
     await DiarizerStub.requested.wait()
-    fetcher.fetch(log: nil) {}
+    fetcher.fetch(log: nil, progress: { _ in }) {}
     #expect(DiarizerStub.requests == 1)
     #expect(fetcher.running != nil)
   }
@@ -84,11 +84,21 @@ struct MeetingDiarizerFetcherTests {
     DiarizerStub.status = 500
     let log = DiagnosticLog(fileURL: root.appendingPathComponent("diagnostics.json"))
     var ready = false
-    fetcher.fetch(log: log) { ready = true }
+    fetcher.fetch(log: log, progress: { _ in }) { ready = true }
     await fetcher.running?.value
     #expect(!ready)
     let lines = log.recent(20).filter { $0.kind == "model.download" }.map(\.detail)
     #expect(!lines.isEmpty)
     #expect(lines.allSatisfy { $0.contains("model=speakerDiarizer") })
+  }
+
+  @Test func aDownloadReportsItsProgressThenNothing() async throws {
+    let fetcher = try fetcher(secondCopy: false)
+    DiarizerStub.status = 500
+    var seen: [Int?] = []
+    fetcher.fetch(log: nil, progress: { seen.append($0) }) {}
+    await fetcher.running?.value
+    #expect(seen.contains(0))
+    #expect(seen.last == .some(nil))
   }
 }

@@ -242,8 +242,8 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1721 tests: 1307 from `swift test` (the sum of the totals it prints, one per test
-target), 391 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1725 tests: 1308 from `swift test` (the sum of the totals it prints, one per test
+target), 394 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
 the 23 check English copy and skip whenever a language is set, so a run without
@@ -331,7 +331,8 @@ Stated here rather than discovered later.
   said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
   interrupted, keeps its audio until the next meeting you record ends. A meeting
   that ends before the speaker separation model has arrived shows as not
-  transcribed and is transcribed as soon as the model arrives — it is fetched when
+  transcribed, under a line saying how much of the model has arrived, and is
+  transcribed as soon as the model arrives — it is fetched when
   a meeting starts, over Wi-Fi or Ethernet, never a personal hotspot or Low Data
   Mode; if 24 hours pass first, the next meeting's end transcribes it with *Others*. A copy of that model that will not load is
   deleted and fetched again at the next meeting's start, once per launch.
