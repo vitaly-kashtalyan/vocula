@@ -5,7 +5,7 @@ import VoculaKit
 @MainActor
 final class MeetingDiarizerFetcher {
   let store: ModelStore
-  private let downloader: ModelDownloader
+  let downloader: ModelDownloader
   private(set) var running: Task<Void, Never>?
 
   init(
@@ -16,7 +16,7 @@ final class MeetingDiarizerFetcher {
     self.store = store
     downloader = ModelDownloader(
       store: store, requiredModels: { [.speakerDiarizer] }, configuration: configuration,
-      isWanted: { _ in true }, isSecondCopy: isSecondCopy)
+      isWanted: { _ in true }, isSecondCopy: isSecondCopy, allowsExpensiveNetworks: true)
   }
 
   func fetch(

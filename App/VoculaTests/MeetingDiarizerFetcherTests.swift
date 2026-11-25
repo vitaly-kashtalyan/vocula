@@ -59,6 +59,13 @@ struct MeetingDiarizerFetcherTests {
     #expect(MeetingDiarizerFetcher().store.descriptors.map(\.id) == [.speakerDiarizer])
   }
 
+  @Test func aHotspotIsUsedButLowDataModeIsWaitedOut() throws {
+    let automatic = try fetcher(secondCopy: true).downloader.automaticSession.configuration
+    #expect(automatic.waitsForConnectivity)
+    #expect(automatic.allowsExpensiveNetworkAccess)
+    #expect(!automatic.allowsConstrainedNetworkAccess)
+  }
+
   @Test func aSecondCopyFetchesNothing() async throws {
     let fetcher = try fetcher(secondCopy: true)
     var ready = false

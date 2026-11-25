@@ -80,7 +80,7 @@ Nothing you say. Ever.
 | Clean-up, if you switch it on | This Mac, on the GPU. The model sees the transcript and nothing else. |
 | Dictation history | This Mac, AES-GCM encrypted, one file per day, kept a year. The key is in your login keychain. |
 | Licence check | This Mac. An Ed25519 signature against a public key compiled into the binary. |
-| Model download | This project's GitHub releases. The speech model is fetched by itself at launch whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. The 19 MB speaker separation model is fetched by itself when a meeting starts recording and it is missing, under the same network rule; it has no button. SHA-256 verified. |
+| Model download | This project's GitHub releases. The speech model is fetched by itself at launch whenever it is missing, waiting for a connection macOS does not mark as expensive or Low Data; the Models screen's button and the clean-up model download on request. The 19 MB speaker separation model is fetched by itself when a meeting starts recording and it is missing, over any connection but one in Low Data Mode, a personal hotspot included; it has no button. SHA-256 verified. |
 | Update check | This project's GitHub releases, once a day, while the switch on Settings → Permissions is on. It asks whether a newer version exists and sends nothing about you. |
 
 **Do not take that on trust — the repository is open in front of you.** Every
@@ -242,8 +242,8 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1725 tests: 1308 from `swift test` (the sum of the totals it prints, one per test
-target), 394 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1726 tests: 1308 from `swift test` (the sum of the totals it prints, one per test
+target), 395 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
 the 23 check English copy and skip whenever a language is set, so a run without
@@ -333,8 +333,8 @@ Stated here rather than discovered later.
   that ends before the speaker separation model has arrived shows as not
   transcribed, under a line saying how much of the model has arrived, and is
   transcribed as soon as the model arrives — it is fetched when
-  a meeting starts, over Wi-Fi or Ethernet, never a personal hotspot or Low Data
-  Mode; if 24 hours pass first, the next meeting's end transcribes it with *Others*. A copy of that model that will not load is
+  a meeting starts, over any connection, a personal hotspot included, but never
+  in Low Data Mode; if 24 hours pass first, the next meeting's end transcribes it with *Others*. A copy of that model that will not load is
   deleted and fetched again at the next meeting's start, once per launch.
   *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting it can
   open and
