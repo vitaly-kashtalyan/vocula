@@ -17,6 +17,7 @@ final class MeetingStatusModel {
   private(set) var statusItemShown = false
   private(set) var elapsed: String?
   private(set) var transcription: MeetingTranscription?
+  private(set) var speakerModel: Int?
   private(set) var copyFailed = false
   private(set) var meetings: [MeetingListing] = []
   private(set) var listingLoaded = false
@@ -40,7 +41,9 @@ final class MeetingStatusModel {
   }
 
   var symbol: String {
-    MeetingStatusRules.symbol(for: status, transcription: transcription, copyFailed: copyFailed)
+    MeetingStatusRules.symbol(
+      for: status, transcription: transcription, copyFailed: copyFailed,
+      downloading: speakerModel != nil)
   }
 
   var label: MeetingStatusRules.Label {
@@ -99,6 +102,11 @@ final class MeetingStatusModel {
     guard let finished = MeetingStatusRules.announcements(from: old, to: new) else { return }
     announce(
       MenuCopy.meetingTranscription(finished).map { String(localized: $0) }.joined(separator: "\n"))
+  }
+
+  func update(speakerModel new: Int?) {
+    if speakerModel != new { speakerModel = new }
+    refreshShown()
   }
 
   func update(listing: MeetingListingOutcome) {
@@ -161,7 +169,9 @@ final class MeetingStatusModel {
   }
 
   private var itemShouldShow: Bool {
-    MeetingStatusRules.showsItem(status, transcription: transcription, copyFailed: copyFailed)
+    MeetingStatusRules.showsItem(
+      status, transcription: transcription, copyFailed: copyFailed,
+      downloading: speakerModel != nil)
   }
 
   private func refreshShown() {
@@ -177,7 +187,9 @@ final class MeetingStatusModel {
 
   @discardableResult
   func statusItemRemoved() -> Task<Void, Never>? {
-    switch MeetingStatusRules.removal(of: status, transcription: transcription) {
+    switch MeetingStatusRules.removal(
+      of: status, transcription: transcription, downloading: speakerModel != nil)
+    {
     case .putBack:
       statusItemShown = false
       return Task { @MainActor in

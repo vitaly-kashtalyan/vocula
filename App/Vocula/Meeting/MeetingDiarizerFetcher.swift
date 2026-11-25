@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import VoculaKit
 
@@ -18,12 +19,21 @@ final class MeetingDiarizerFetcher {
       isWanted: { _ in true }, isSecondCopy: isSecondCopy)
   }
 
-  func fetch(log: DiagnosticLog?) {
+  func fetch(
+    log: DiagnosticLog?, progress: @escaping @MainActor (Int?) -> Void,
+    onReady: @escaping @MainActor () async -> Void
+  ) {
     guard running == nil else { return }
     downloader.diagnose = { log?.record($0, $1) }
+    let watch = downloader.$fraction.combineLatest(downloader.$isDownloading).sink {
+      fraction, downloading in
+      progress(downloading ? Int((fraction[.speakerDiarizer] ?? 0) * 100) : nil)
+    }
     running = Task {
-      _ = await downloader.downloadAutomatically()
+      let downloaded = await downloader.downloadAutomatically()
+      watch.cancel()
       running = nil
+      if downloaded { await onReady() }
     }
   }
 }

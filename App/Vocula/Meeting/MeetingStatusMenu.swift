@@ -26,6 +26,9 @@ struct MeetingStatusMenu: View {
     }
     ForEach(meetings.status.warnings, id: \.self) { Text(MenuCopy.meetingWarning($0)) }
     if let notice = meetings.status.notice { Text(MenuCopy.meetingNotice(notice)) }
+    if let percent = meetings.status.speakerModel {
+      Text(MenuCopy.speakerModelDownloading(percent))
+    }
     if let transcription = meetings.status.transcription {
       ForEach(Array(MenuCopy.meetingTranscription(transcription).enumerated()), id: \.offset) {
         Text($0.element)

@@ -201,6 +201,19 @@ struct MeetingStatusModelTests {
     #expect(model.statusItemShown)
   }
 
+  @Test func aSpeakerModelDownloadKeepsTheItemUntilItEnds() {
+    let (model, spoken) = make()
+    model.update(speakerModel: 40)
+    #expect(model.statusItemShown)
+    #expect(model.symbol == MeetingStatusRules.transcribingSymbol)
+    model.dismiss()
+    #expect(model.speakerModel == 40)
+    #expect(model.statusItemShown)
+    model.update(speakerModel: nil)
+    #expect(!model.statusItemShown)
+    #expect(spoken.lines.isEmpty)
+  }
+
   @Test func everyUnreadableCopyIsAnnounced() {
     let (model, spoken) = make()
     model.transcriptUnreadable()

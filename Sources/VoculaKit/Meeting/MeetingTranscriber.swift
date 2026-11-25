@@ -187,7 +187,6 @@ public actor MeetingTranscriber {
     let fresh = pending.count - waited.count
     if fresh > 0 {
       failed(step: "diarizer", code: 0)
-      tally.failed += fresh
       remaining -= fresh
     }
     return waited

@@ -199,4 +199,16 @@ import Testing
       Rules.removal(of: idle, transcription: .finished(transcribed: 1, failed: 0)) == .dismiss)
     #expect(Rules.removal(of: MeetingStatus(isRecording: true), transcription: nil) == .putBack)
   }
+
+  @Test func aSpeakerModelDownloadKeepsTheItemAndPutsItBack() {
+    #expect(Rules.showsItem(idle, transcription: nil, copyFailed: false, downloading: true))
+    #expect(
+      Rules.symbol(for: idle, transcription: nil, copyFailed: false, downloading: true)
+        == Rules.transcribingSymbol)
+    #expect(Rules.removal(of: idle, transcription: nil, downloading: true) == .putBack)
+    #expect(
+      Rules.symbol(
+        for: MeetingStatus(isRecording: true), transcription: nil, copyFailed: false,
+        downloading: true) == Rules.recordingSymbol)
+  }
 }

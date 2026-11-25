@@ -139,7 +139,9 @@ final class Meetings {
     status.update(new)
     guard started else { return }
     requestListing()
-    parts.fetchDiarizer(diagnosticLog())
+    parts.fetchDiarizer(diagnosticLog(), { [weak self] in self?.status.update(speakerModel: $0) }) {
+      [weak self] in await self?.diarizerArrived()
+    }
   }
 
   @discardableResult
@@ -329,6 +331,10 @@ final class Meetings {
     {
       await startPass()
     }
+  }
+
+  private func diarizerArrived() async {
+    if schedule.requested() { await startPass() }
   }
 
   private func startPass() async {

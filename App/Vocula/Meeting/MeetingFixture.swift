@@ -36,7 +36,7 @@ final class MeetingFixture {
       delete: { id, _ in await self.delete(id) },
       write: { _, _ in .done },
       paste: { _ in },
-      fetchDiarizer: { _ in })
+      fetchDiarizer: { _, _, _ in })
   }
 
   private func read(_ id: UUID) -> MeetingReadResult {
