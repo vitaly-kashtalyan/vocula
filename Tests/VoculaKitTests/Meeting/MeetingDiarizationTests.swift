@@ -117,7 +117,7 @@ import Testing
     #expect(rig.hasAudio(header))
     #expect(rig.lines("meeting.transcribeFailed") == ["step=diarizer code=0"])
     #expect(rig.calls.all == ["isInstalled"])
-    #expect(rig.published.all == [.finished(transcribed: 0, failed: 1)])
+    #expect(rig.published.all.isEmpty)
   }
 
   @Test func aMeetingThatWaitedADayIsTranscribedWithoutSpeakers() async throws {
@@ -134,7 +134,7 @@ import Testing
     #expect(rig.hasAudio(fresh))
     #expect(rig.lines("meeting.diarizeFailed") == ["step=waited code=0"])
     #expect(rig.lines("meeting.transcribeFailed") == ["step=diarizer code=0"])
-    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
+    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 0))
     #expect(Array(rig.calls.all.prefix(3)) == ["isInstalled", "model", "makeRecognizer"])
     #expect(rig.calls.count("load") == 0)
     #expect(rig.diarizer.calls == 0)

@@ -27,7 +27,7 @@ struct MeetingTranscriptionParts {
   var delete: @Sendable (_ id: UUID, _ busy: Bool) async -> MeetingActionResult
   var write: @Sendable (_ data: Data, _ url: URL) async -> MeetingActionResult
   var paste: @MainActor (String) -> Void
-  var fetchDiarizer: @MainActor (DiagnosticLog?) -> Void
+  var fetchDiarizer: @MainActor (DiagnosticLog?, @escaping @MainActor () async -> Void) -> Void
 
   @MainActor static var live: MeetingTranscriptionParts {
     VoculaAppDelegate.isUITesting ? MeetingFixture().parts() : liveSystem
@@ -45,7 +45,7 @@ struct MeetingTranscriptionParts {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
       },
-      fetchDiarizer: { fetcher.fetch(log: $0) })
+      fetchDiarizer: { fetcher.fetch(log: $0, onReady: $1) })
   }
 
   @MainActor private static let fetcher = MeetingDiarizerFetcher()

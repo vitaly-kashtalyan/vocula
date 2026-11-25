@@ -242,8 +242,8 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1720 tests: 1307 from `swift test` (the sum of the totals it prints, one per test
-target), 390 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1721 tests: 1307 from `swift test` (the sum of the totals it prints, one per test
+target), 391 in the hosted app bundle, 23 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
 the 23 check English copy and skip whenever a language is set, so a run without

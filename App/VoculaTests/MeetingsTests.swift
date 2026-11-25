@@ -230,6 +230,7 @@ private final class PassProbe {
   let cipherGate = Latch()
   var states: [MeetingDiarizerState] = []
   var fetched: [DiagnosticLog?] = []
+  var arrivals: [@MainActor () async -> Void] = []
 
   func parts(store: MeetingStore) -> MeetingTranscriptionParts {
     MeetingTranscriptionParts(
@@ -288,7 +289,10 @@ private final class PassProbe {
         }
       },
       paste: { [self] in pasted.append($0) },
-      fetchDiarizer: { [self] in fetched.append($0) })
+      fetchDiarizer: { [self] log, arrived in
+        fetched.append(log)
+        arrivals.append(arrived)
+      })
   }
 }
 
@@ -473,6 +477,16 @@ struct MeetingsTests {
     #expect(rig.passes.fetched.first.flatMap { $0 } === rig.log)
     await finishes(rig.meetings.toggle())
     #expect(rig.passes.fetched.count == 1)
+  }
+
+  @Test func aSpeakerModelThatArrivesStartsAPass() async throws {
+    let rig = Rig()
+    try await rig.record()
+    await finishes(rig.meetings.toggle())
+    #expect(rig.passes.made == 1)
+    let arrived = try #require(rig.passes.arrivals.first)
+    await arrived()
+    #expect(rig.passes.made == 2)
   }
 
   @Test func aStartThatNeverRecordsAsksForNothing() async {

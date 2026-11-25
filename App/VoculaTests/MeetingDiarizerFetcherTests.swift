@@ -61,18 +61,20 @@ struct MeetingDiarizerFetcherTests {
 
   @Test func aSecondCopyFetchesNothing() async throws {
     let fetcher = try fetcher(secondCopy: true)
-    fetcher.fetch(log: nil)
+    var ready = false
+    fetcher.fetch(log: nil) { ready = true }
     await fetcher.running?.value
     #expect(DiarizerStub.requests == 0)
+    #expect(!ready)
   }
 
   @Test func twoFetchesMakeOneRequest() async throws {
     let fetcher = try fetcher(secondCopy: false)
     DiarizerStub.hangs = true
-    fetcher.fetch(log: nil)
-    fetcher.fetch(log: nil)
+    fetcher.fetch(log: nil) {}
+    fetcher.fetch(log: nil) {}
     await DiarizerStub.requested.wait()
-    fetcher.fetch(log: nil)
+    fetcher.fetch(log: nil) {}
     #expect(DiarizerStub.requests == 1)
     #expect(fetcher.running != nil)
   }
@@ -81,8 +83,10 @@ struct MeetingDiarizerFetcherTests {
     let fetcher = try fetcher(secondCopy: false)
     DiarizerStub.status = 500
     let log = DiagnosticLog(fileURL: root.appendingPathComponent("diagnostics.json"))
-    fetcher.fetch(log: log)
+    var ready = false
+    fetcher.fetch(log: log) { ready = true }
     await fetcher.running?.value
+    #expect(!ready)
     let lines = log.recent(20).filter { $0.kind == "model.download" }.map(\.detail)
     #expect(!lines.isEmpty)
     #expect(lines.allSatisfy { $0.contains("model=speakerDiarizer") })
