@@ -64,7 +64,8 @@ final class ModelDownloader: NSObject, ObservableObject {
     store: ModelStore, requiredModels: @escaping @Sendable () -> [ModelID],
     configuration: URLSessionConfiguration = .default,
     isWanted: @escaping (ModelID) -> Bool,
-    isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy
+    isSecondCopy: Bool = VoculaAppDelegate.isSecondCopy,
+    allowsExpensiveNetworks: Bool = false
   ) {
     self.store = store
     self.requiredModels = requiredModels
@@ -76,7 +77,7 @@ final class ModelDownloader: NSObject, ObservableObject {
       delegateQueue: nil)
     let waiting = configuration.copy() as! URLSessionConfiguration
     waiting.waitsForConnectivity = true
-    waiting.allowsExpensiveNetworkAccess = false
+    waiting.allowsExpensiveNetworkAccess = allowsExpensiveNetworks
     waiting.allowsConstrainedNetworkAccess = false
     self.automaticSession = URLSession(
       configuration: waiting, delegate: self,

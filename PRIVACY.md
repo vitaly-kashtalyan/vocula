@@ -258,8 +258,9 @@ that Parakeet hears. **The clean-up
 model only when you ask for it.** **The speaker separation model (19 MB), by
 itself, when a meeting starts recording and it is not on this Mac**: your first
 meeting, any meeting started before it has arrived, and the next one after a
-copy that would not load was deleted (at most once per launch). Like the speech
-model, it never downloads over an expensive or Low Data connection. Because it
+copy that would not load was deleted (at most once per launch). Unlike the speech
+model, it also downloads over a connection macOS marks as expensive, such as an
+iPhone hotspot; in Low Data Mode it waits for another connection. Because it
 is fetched only at a meeting's start, the request tells GitHub, from your IP
 address, that a meeting began on this Mac at that moment, and the file's public
 download count shows how many copies have recorded one; nothing about the
