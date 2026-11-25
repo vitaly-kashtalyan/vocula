@@ -329,10 +329,11 @@ Stated here rather than discovered later.
   two hours — and deletes the audio; speech the model misses is lost with it, and so is a reply
   of yours that repeats, two words or more in a row, what the other side just
   said, which is dropped as echo; what you dictate during it is left out. A meeting ended by quitting Vocula, or one whose transcription a quit
-  interrupted, keeps its audio until the next meeting you record ends. So does a
-  meeting that ends before the speaker separation model has arrived: it shows as
-  not transcribed and waits, at most 24 hours, after which the next meeting's end
-  transcribes it with *Others*. A copy of that model that will not load is
+  interrupted, keeps its audio until the next meeting you record ends. A meeting
+  that ends before the speaker separation model has arrived shows as not
+  transcribed and is transcribed as soon as the model arrives — it is fetched when
+  a meeting starts, over Wi-Fi or Ethernet, never a personal hotspot or Low Data
+  Mode; if 24 hours pass first, the next meeting's end transcribes it with *Others*. A copy of that model that will not load is
   deleted and fetched again at the next meeting's start, once per launch.
   *Meetings (Beta)*, in the window below *Clean-up*, lists every meeting it can
   open and

@@ -93,9 +93,10 @@ loses them. What you dictate during the meeting is left out too.
 It runs alongside your dictation and alongside a meeting you record meanwhile,
 which is transcribed after it. Quitting Vocula stops it, and a meeting that
 ended because you quit is not transcribed then: both wait, audio and all, until
-the next meeting you record ends. So does a meeting that ends before the speaker
-separation model has arrived, for at most 24 hours; after that the next
-meeting's end transcribes it without speakers, as *Others*. Once a meeting's transcript is written and read back, its audio is
+the next meeting you record ends. A meeting that ends before the speaker
+separation model has arrived waits for it and is transcribed as soon as it
+arrives; if 24 hours pass first, the next meeting's end transcribes it without
+speakers, as *Others*. Once a meeting's transcript is written and read back, its audio is
 deleted, and speech the model missed or misheard — with Whisper, including
 speech in a language you have not ticked — is gone with it, as is any piece of the
 recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts
