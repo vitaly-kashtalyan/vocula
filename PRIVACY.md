@@ -46,6 +46,17 @@ When its result loses a number, a negation or a question, or changes the
 language, the text as recognised is pasted instead. History keeps the text as
 recognised beside the cleaned-up one.
 
+## Before you record a meeting
+
+**While *Offer to record when a call starts* is on** — it is until you switch it
+off in *Meetings (Beta)* — Vocula asks macOS every two seconds which apps are
+using the microphone and which are playing sound. That is all it learns, never
+what they hear or play. When one app has done both for ten seconds, Vocula
+takes it for a call and offers, in a small panel at the top right of the
+screen, to record it; nothing records until you choose *Record*, and each call
+is offered once. To name the app in the offer, Vocula reads where the app sits
+on disk. None of this is stored or written to the diagnostic log.
+
 ## While you record a meeting
 
 *Record Meeting (Beta)*, in Vocula's menu, records two tracks until you choose

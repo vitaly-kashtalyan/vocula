@@ -120,7 +120,11 @@ transcribed them on this Mac — then the audio is deleted and the encrypted
 transcript kept, until you delete the meeting in *Meetings (Beta)*. The first
 meeting you record, or any meeting started while it is missing, downloads the
 speaker separation model from the same GitHub releases, which tells GitHub, from
-your IP address, that a meeting is starting.
+your IP address, that a meeting is starting. While *Offer to record when a call
+starts* is on, as it is until you switch it off in *Meetings (Beta)*, Vocula asks
+macOS every two seconds which apps use the microphone and play sound — never what
+they hear or play — and offers to record when one has done both for ten seconds;
+nothing records until you choose *Record*.
 Insertion goes through the system pasteboard for about a second, which other
 applications can read, and *Copy Transcript* puts a meeting's transcript there
 as plain Markdown; *Export…* writes it to a file you choose. All four are in [PRIVACY.md](PRIVACY.md), at length,
@@ -242,8 +246,8 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1728 tests: 1309 from `swift test` (the sum of the totals it prints, one per test
-target), 395 in the hosted app bundle, 24 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1735 tests: 1315 from `swift test` (the sum of the totals it prints, one per test
+target), 395 in the hosted app bundle, 25 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
 the 23 check English copy and skip whenever a language is set, so a run without

@@ -14,6 +14,7 @@ struct MeetingsSettingsSection: View {
   let meetings: Meetings
   @AppStorage(CopyTranscriptMenu.includeMeKey) private var includeMe = true
   @AppStorage(MeetingStatusLabel.showsTimeKey) private var showsTime = true
+  @AppStorage(CallWatch.enabledKey) private var offersOnCall = true
   @State private var renaming: MeetingListing?
   @State private var renameText = ""
   @State private var deleting: MeetingListing?
@@ -74,8 +75,12 @@ struct MeetingsSettingsSection: View {
       MeetingTranscriptSheet(item: item, export: { export(item.listing) })
     }
     Section {
+      Toggle(isOn: $offersOnCall) { Text(MenuCopy.meetingsOffersOnCall) }
+        .accessibilityIdentifier("meetings.offersOnCall")
       Toggle(isOn: $showsTime) { Text(MenuCopy.meetingsShowTime) }
         .accessibilityIdentifier("meetings.showsTime")
+    } footer: {
+      Text(MenuCopy.meetingsOffersOnCallFooter)
     }
   }
 

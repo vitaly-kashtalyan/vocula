@@ -92,6 +92,7 @@ final class AppCoordinator: ObservableObject {
   private var diagnosticLog: DiagnosticLog?
   private var runningModel: ModelID?
   private(set) lazy var meetings = Meetings(diagnosticLog: { [weak self] in self?.diagnosticLog })
+  private(set) lazy var callWatch = CallWatch(meetings: meetings)
 
   private static var launchDetail: String {
     let version = Bundle.main.shortVersion
