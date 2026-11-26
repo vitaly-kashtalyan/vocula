@@ -306,6 +306,18 @@ extension MenuCopy {
       "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. The longest of the three statuses; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short."
   )
 
+  static let meetingShowsTime = LocalizedStringResource(
+    "meeting.menu.showsTime", defaultValue: "Show Recording Time",
+    comment:
+      "Menu item with a checkmark in the meeting's own menu bar menu while a meeting records. When it is off, the meeting's menu bar item shows only its symbol, without the running time of the recording, for example while the screen is being shared. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows."
+  )
+
+  static let meetingsShowTime = LocalizedStringResource(
+    "meetings.showsTime", defaultValue: "Show recording time in the menu bar",
+    comment:
+      "Switch in the Meetings section of the Vocula window. When it is off, the meeting's menu bar item shows only its symbol while a meeting records, without the running time, for example so that people watching a shared screen do not see it."
+  )
+
   static func meetingStatusTranscribing(_ value: Int) -> LocalizedStringResource {
     let done = percent(value)
     return LocalizedStringResource(

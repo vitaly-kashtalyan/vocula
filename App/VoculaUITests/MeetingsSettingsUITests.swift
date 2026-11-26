@@ -61,6 +61,25 @@ final class MeetingsSettingsUITests: XCTestCase {
     XCUIApplication().typeKey(.escape, modifierFlags: [])
   }
 
+  func testTheRecordingTimeSwitchTurnsAndTurnsBack() throws {
+    let window = try openSection("meetings")
+    let toggle = element("meetings.showsTime", in: window)
+    XCTAssertTrue(toggle.waitForExistence(timeout: 10), "the recording time switch is missing")
+    let before = "\(toggle.value ?? "")"
+    let changed = NSPredicate { element, _ in
+      "\((element as? XCUIElement)?.value ?? "")" != before
+    }
+    toggle.click()
+    expectation(for: changed, evaluatedWith: toggle)
+    waitForExpectations(timeout: 5)
+    toggle.click()
+    let restored = NSPredicate { element, _ in
+      "\((element as? XCUIElement)?.value ?? "")" == before
+    }
+    expectation(for: restored, evaluatedWith: toggle)
+    waitForExpectations(timeout: 5)
+  }
+
   func testDeleteAsksFirstAndRemovesTheMeeting() throws {
     let window = try openSection("meetings")
     choose("delete", onRow: 1, in: window)

@@ -9901,6 +9901,66 @@
         }
       }
     },
+    "meeting.menu.showsTime" : {
+      "comment" : "Menu item with a checkmark in the meeting's own menu bar menu while a meeting records. When it is off, the meeting's menu bar item shows only its symbol, without the running time of the recording, for example while the screen is being shared. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahmezeit anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show Recording Time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar tiempo de grabación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afficher la durée d’enregistrement"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostra durata registrazione"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj czas nagrania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar tempo de gravação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показывать время записи"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показувати час запису"
+          }
+        }
+      }
+    },
     "meeting.speaker.me" : {
       "comment" : "Label of the user's own lines in a meeting transcript: what the microphone heard. Shown in the Meetings section's transcript sheet, and pasted or exported as text wherever the user puts it, often into an AI chat; one short word.",
       "extractionState" : "extracted_with_value",
@@ -12597,6 +12657,66 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Закрити"
+          }
+        }
+      }
+    },
+    "meetings.showsTime" : {
+      "comment" : "Switch in the Meetings section of the Vocula window. When it is off, the meeting's menu bar item shows only its symbol while a meeting records, without the running time, for example so that people watching a shared screen do not see it.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahmezeit in der Menüleiste anzeigen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show recording time in the menu bar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar el tiempo de grabación en la barra de menús"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afficher la durée d’enregistrement dans la barre des menus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostra la durata della registrazione nella barra dei menu"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj czas nagrania na pasku menu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostrar o tempo de gravação na barra de menus"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показывать время записи в строке меню"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показувати час запису в рядку меню"
           }
         }
       }

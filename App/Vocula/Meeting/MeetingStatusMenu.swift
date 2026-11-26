@@ -18,11 +18,13 @@ struct MeetingStatusScene: Scene {
 
 struct MeetingStatusMenu: View {
   let meetings: Meetings
+  @AppStorage(MeetingStatusLabel.showsTimeKey) private var showsTime = true
 
   var body: some View {
     if meetings.status.isRecording {
       Button(MenuCopy.stopMeeting) { meetings.toggle() }
       if let since = meetings.status.startedAt { Text(MenuCopy.meetingSince(since)) }
+      Toggle(MenuCopy.meetingShowsTime, isOn: $showsTime)
     }
     ForEach(meetings.status.warnings, id: \.self) { Text(MenuCopy.meetingWarning($0)) }
     if let notice = meetings.status.notice { Text(MenuCopy.meetingNotice(notice)) }
@@ -63,11 +65,15 @@ struct CopyTranscriptMenu: View {
 }
 
 struct MeetingStatusLabel: View {
+  static let showsTimeKey = "meeting.menuBar.showsTime"
+
   let model: MeetingStatusModel
+  @AppStorage(Self.showsTimeKey) private var showsTime = true
 
   var body: some View {
     Group {
-      if let elapsed = model.elapsed, let timer = Self.timer(symbol: model.symbol, elapsed: elapsed)
+      if showsTime, let elapsed = model.elapsed,
+        let timer = Self.timer(symbol: model.symbol, elapsed: elapsed)
       {
         Image(nsImage: timer)
       } else {
