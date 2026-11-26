@@ -12721,6 +12721,66 @@
         }
       }
     },
+    "meetings.status.transcribing" : {
+      "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window while it is being turned into text, in place of the status saying it waits for transcription; the argument is how much of this meeting is done, already formatted as a percent. Drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wird transkribiert – %@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Transcribing — %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcribiendo — %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcription en cours — %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "In trascrizione — %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transkrybowanie — %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Transcrevendo — %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Расшифровывается — %@"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Розшифровується — %@"
+          }
+        }
+      }
+    },
     "meetings.status.waiting" : {
       "comment" : "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. The longest of the three statuses; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short.",
       "extractionState" : "extracted_with_value",
