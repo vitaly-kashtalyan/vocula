@@ -36,6 +36,7 @@ enum Theme {
     dark: Tokens.textMutedDark)
 
   static let accent = Color.accentColor
+  static let accentFill = dynamic(light: Ink.fillLight, dark: Ink.fillDark)
   static let accentText = dynamic(light: Ink.inkLight, dark: Ink.inkDark)
 
   static let onAccent = dynamic(light: Ink.onAccentLight, dark: Ink.onAccentDark)

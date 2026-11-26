@@ -20,7 +20,12 @@ final class CallWatch {
   func start() {
     if VoculaAppDelegate.isSecondCopy {
       if ProcessInfo.processInfo.arguments.contains("-VoculaPretendCall") {
-        panel.show(app: "Zoom") {}
+        let safari = "/Applications/Safari.app"
+        panel.show(
+          app: URL(fileURLWithPath: safari).deletingPathExtension().lastPathComponent,
+          icon: NSWorkspace.shared.icon(
+            forFile: URL(fileURLWithPath: safari).resolvingSymlinksInPath().path)
+        ) {}
       }
       return
     }
@@ -39,7 +44,9 @@ final class CallWatch {
     let recording = meetings.status.isRecording || meetings.status.busy
     let now = ProcessInfo.processInfo.systemUptime
     guard let pid = offer.observe(clients, at: now, recording: recording) else { return }
-    panel.show(app: Self.appName(of: pid)) { [weak self] in
+    let app = Self.app(of: pid)
+    panel.show(app: app?.name, icon: app.map { NSWorkspace.shared.icon(forFile: $0.path) }) {
+      [weak self] in
       guard let self, !self.meetings.status.busy else { return }
       _ = self.meetings.toggle()
     }
@@ -83,13 +90,13 @@ final class CallWatch {
       ? value : nil
   }
 
-  private static func appName(of pid: Int32) -> String? {
+  private static func app(of pid: Int32) -> (name: String, path: String)? {
     var buffer = [CChar](repeating: 0, count: 4096)
     guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0 else { return nil }
     let path = String(
       decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
     guard let app = CallOffer.appPath(ofExecutable: path) else { return nil }
-    return URL(fileURLWithPath: app).deletingPathExtension().lastPathComponent
+    return (URL(fileURLWithPath: app).deletingPathExtension().lastPathComponent, app)
   }
 }
 
@@ -100,11 +107,12 @@ final class CallOfferPanel {
   private var panel: NSPanel?
   private var hiding: Task<Void, Never>?
 
-  func show(app: String?, record: @escaping () -> Void) {
+  func show(app: String?, icon: NSImage?, record: @escaping () -> Void) {
     close()
     let host = FirstClickHostingView(
       rootView: CallOfferView(
         app: app,
+        icon: icon,
         record: { [weak self] in
           self?.close()
           record()
@@ -149,24 +157,73 @@ private final class FirstClickHostingView: NSHostingView<CallOfferView> {
 
 struct CallOfferView: View {
   let app: String?
+  let icon: NSImage?
   let record: () -> Void
   let dismiss: () -> Void
 
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
-      Text(MenuCopy.callOffer(in: app))
-        .fixedSize(horizontal: false, vertical: true)
-      HStack {
+      HStack(spacing: 6) {
+        Image(nsImage: NSApp.applicationIconImage)
+          .resizable()
+          .frame(width: 16, height: 16)
+        Text(verbatim: ProcessInfo.processInfo.processName)
+          .font(.caption.weight(.semibold))
+          .foregroundStyle(.secondary)
+      }
+      .accessibilityHidden(true)
+      HStack(spacing: 12) {
+        source
+          .frame(width: 40, height: 40)
+          .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 2) {
+          if let app {
+            Text(verbatim: app)
+              .font(.headline)
+          }
+          Text(MenuCopy.callOfferUnnamed)
+            .foregroundStyle(app == nil ? .primary : .secondary)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+      }
+      HStack(spacing: 8) {
         Spacer()
         Button(MenuCopy.callOfferNotNow, action: dismiss)
           .accessibilityIdentifier("callOffer.notNow")
-        Button(MenuCopy.callOfferRecord, action: record)
-          .buttonStyle(.borderedProminent)
-          .accessibilityIdentifier("callOffer.record")
+        Button(action: record) {
+          Label(MenuCopy.callOfferRecord, systemImage: "record.circle.fill")
+        }
+        .buttonStyle(RecordButtonStyle())
+        .accessibilityIdentifier("callOffer.record")
       }
     }
     .padding(14)
-    .frame(width: 320)
-    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+    .frame(width: 340)
+    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+  }
+
+  @ViewBuilder
+  private var source: some View {
+    if let icon {
+      Image(nsImage: icon)
+        .resizable()
+    } else {
+      Image(systemName: "phone.fill")
+        .font(.title2)
+        .foregroundStyle(.secondary)
+    }
+  }
+}
+
+private struct RecordButtonStyle: ButtonStyle {
+  func makeBody(configuration: Configuration) -> some View {
+    configuration.label
+      .font(.body.weight(.semibold))
+      .foregroundStyle(Theme.onAccent)
+      .padding(.horizontal, 12)
+      .padding(.vertical, 5)
+      .background(
+        Theme.accentFill.opacity(configuration.isPressed ? 0.75 : 1),
+        in: RoundedRectangle(cornerRadius: Theme.Radius.control))
   }
 }
