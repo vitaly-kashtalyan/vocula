@@ -315,7 +315,7 @@ extension MenuCopy {
     )
   }
 
-  private static let callOfferUnnamed = LocalizedStringResource(
+  static let callOfferUnnamed = LocalizedStringResource(
     "meeting.callOffer.unnamed", defaultValue: "Looks like a call. Record the meeting?",
     comment:
       "Question in a small panel at the top right of the screen when something on the Mac has used the microphone and played sound for ten seconds, which Vocula takes for a call, and the app cannot be named. Answered by two buttons, Record and Not Now; the panel is about 320 points wide and wraps."
