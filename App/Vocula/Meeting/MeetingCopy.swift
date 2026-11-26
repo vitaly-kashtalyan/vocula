@@ -120,7 +120,7 @@ extension MenuCopy {
 
   static func meetingTranscription(_ value: MeetingTranscription) -> [LocalizedStringResource] {
     switch value {
-    case .running(let percent): [meetingTranscribing(percent)]
+    case .running(let percent, _, _): [meetingTranscribing(percent)]
     case .finished(let transcribed, let failed):
       (transcribed > 0 ? [transcriptReady] : []) + (failed > 0 ? [transcriptionFailed] : [])
     }
@@ -305,6 +305,15 @@ extension MenuCopy {
     comment:
       "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. The longest of the three statuses; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short."
   )
+
+  static func meetingStatusTranscribing(_ value: Int) -> LocalizedStringResource {
+    let done = percent(value)
+    return LocalizedStringResource(
+      "meetings.status.transcribing", defaultValue: "Transcribing — \(done)",
+      comment:
+        "Status of one meeting in the list of the Meetings section of the Vocula window while it is being turned into text, in place of the status saying it waits for transcription; the argument is how much of this meeting is done, already formatted as a percent. Drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short."
+    )
+  }
 
   static let meetingStatusRecording = LocalizedStringResource(
     "meetings.status.recording", defaultValue: "Recording",

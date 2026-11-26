@@ -28,8 +28,13 @@ public struct MeetingModel: Equatable, Sendable {
 }
 
 public enum MeetingTranscription: Equatable, Sendable {
-  case running(percent: Int)
+  case running(percent: Int, meeting: UUID? = nil, meetingPercent: Int = 0)
   case finished(transcribed: Int, failed: Int)
+
+  public func percent(of meeting: UUID) -> Int? {
+    guard case .running(_, let current, let done) = self, current == meeting else { return nil }
+    return done
+  }
 }
 
 public actor MeetingTranscriber {
@@ -101,7 +106,8 @@ public actor MeetingTranscriber {
   private var remaining = 0
   private var total = 0
   private var read = 0
-  private var percent: Int?
+  private var published: MeetingTranscription?
+  private var current: (id: UUID, from: Int, size: Int)?
   private var model: ModelID?
 
   public init(_ dependencies: Dependencies) {
@@ -151,10 +157,7 @@ public actor MeetingTranscriber {
     guard !pending.isEmpty else { return }
     let recognizing = await waitingForTheDiarizer(pending)
     guard !recognizing.isEmpty else { return }
-    total = recognizing.reduce(0) { sum, item in
-      let seconds = max(0, item.header.end?.timeIntervalSince(item.header.startedAt) ?? 0)
-      return sum + 2 * Int(seconds * AudioFormat.sampleRate)
-    }
+    total = recognizing.reduce(0) { $0 + Self.samples(in: $1.header) }
     await progress()
     guard let chosen = await deps.model() else { throw Stop.pass(step: "model", code: 0) }
     try checkCancelled()
@@ -165,6 +168,8 @@ public actor MeetingTranscriber {
     detector = deps.makeDetector()
     for item in recognizing {
       try checkCancelled()
+      current = (item.header.id, read, Self.samples(in: item.header))
+      await progress()
       do {
         let transcript = try await transcribe(item.header, model: chosen, cipher: cipher)
         try checkCancelled()
@@ -432,10 +437,21 @@ public actor MeetingTranscriber {
   }
 
   private func progress() async {
-    let value = total > 0 ? min(100, read * 100 / total) : 0
-    guard value != percent else { return }
-    percent = value
-    await deps.publish(.running(percent: value))
+    let now = MeetingTranscription.running(
+      percent: Self.percent(read, of: total), meeting: current?.id,
+      meetingPercent: current.map { Self.percent(read - $0.from, of: $0.size) } ?? 0)
+    guard now != published else { return }
+    published = now
+    await deps.publish(now)
+  }
+
+  private static func percent(_ part: Int, of whole: Int) -> Int {
+    whole > 0 ? min(100, part * 100 / whole) : 0
+  }
+
+  private static func samples(in header: MeetingHeader) -> Int {
+    let seconds = max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0)
+    return 2 * Int(seconds * AudioFormat.sampleRate)
   }
 
   private func checkCancelled() throws {

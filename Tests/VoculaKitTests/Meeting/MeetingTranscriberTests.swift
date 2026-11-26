@@ -540,12 +540,32 @@ final class TranscriberRig: @unchecked Sendable {
 
   @Test func progressIsPublishedAsAWholePercent() async throws {
     let rig = TranscriberRig()
-    try rig.meeting(
+    let header = try rig.meeting(
       lasting: 2, mic: [rig.speech(at: 0, for: 2)], system: [rig.speech(at: 0, for: 2)])
     await rig.run()
     #expect(rig.published.all.first == .running(percent: 0))
-    #expect(rig.published.all.contains(.running(percent: 50)))
+    #expect(
+      rig.published.all.contains(.running(percent: 50, meeting: header.id, meetingPercent: 50)))
     #expect(rig.published.all.last == .finished(transcribed: 1, failed: 0))
+  }
+
+  @Test func eachMeetingReportsItsOwnPercent() async throws {
+    let rig = TranscriberRig()
+    let first = try rig.meeting(
+      startedAt: 800_000_000, lasting: 2, mic: [rig.speech(at: 0, for: 2)],
+      system: [rig.speech(at: 0, for: 2)])
+    let second = try rig.meeting(
+      startedAt: 800_000_600, lasting: 2, mic: [rig.speech(at: 0, for: 2)],
+      system: [rig.speech(at: 0, for: 2)])
+    await rig.run()
+    let seen = rig.published.all
+    for header in [first, second] {
+      #expect(seen.contains { $0.percent(of: header.id) == 0 })
+      #expect(seen.contains { $0.percent(of: header.id) == 100 })
+    }
+    #expect(seen.contains { if case .running(50, _, 100) = $0 { true } else { false } })
+    #expect(MeetingTranscription.running(percent: 10).percent(of: first.id) == nil)
+    #expect(MeetingTranscription.finished(transcribed: 1, failed: 0).percent(of: first.id) == nil)
   }
 
   @Test func silentTrackYieldsNoUtterances() async throws {

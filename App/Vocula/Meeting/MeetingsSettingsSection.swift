@@ -35,6 +35,7 @@ struct MeetingsSettingsSection: View {
           position, listing in
           MeetingRow(
             listing: listing, position: position, status: listing.status(busy: status.busy),
+            transcribing: status.transcription?.percent(of: listing.id),
             allows: { listing.allows($0, busy: status.busy, passRunning: status.passRunning) },
             perform: { perform($0, on: listing) })
         }
@@ -123,6 +124,7 @@ struct MeetingRow: View {
   let listing: MeetingListing
   let position: Int
   let status: MeetingListingStatus
+  let transcribing: Int?
   let allows: (MeetingAction) -> Bool
   let perform: (MeetingAction) -> Void
 
@@ -186,7 +188,12 @@ struct MeetingRow: View {
   private var statusText: some View {
     switch status {
     case .transcribed: Text(MenuCopy.meetingStatusTranscribed)
-    case .waiting: Text(MenuCopy.meetingStatusWaiting)
+    case .waiting:
+      if let transcribing {
+        Text(MenuCopy.meetingStatusTranscribing(transcribing))
+      } else {
+        Text(MenuCopy.meetingStatusWaiting)
+      }
     case .recording: Text(MenuCopy.meetingStatusRecording)
     }
   }
