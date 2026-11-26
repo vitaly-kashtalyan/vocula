@@ -306,6 +306,47 @@ extension MenuCopy {
       "Status of one meeting in the list of the Meetings section of the Vocula window: recorded, not turned into text yet. The longest of the three statuses; drawn at the end of the row's last line, after the date (when the meeting has a name) and the length (when known); keep it short."
   )
 
+  static func callOffer(in app: String?) -> LocalizedStringResource {
+    guard let app else { return callOfferUnnamed }
+    return LocalizedStringResource(
+      "meeting.callOffer.named", defaultValue: "Looks like a call in \(app). Record the meeting?",
+      comment:
+        "Question in a small panel at the top right of the screen when an app has used the microphone and played sound for ten seconds, which Vocula takes for a call. The argument is the app's name, e.g. Zoom or Telegram. Answered by two buttons, Record and Not Now; the panel is about 320 points wide and wraps."
+    )
+  }
+
+  private static let callOfferUnnamed = LocalizedStringResource(
+    "meeting.callOffer.unnamed", defaultValue: "Looks like a call. Record the meeting?",
+    comment:
+      "Question in a small panel at the top right of the screen when something on the Mac has used the microphone and played sound for ten seconds, which Vocula takes for a call, and the app cannot be named. Answered by two buttons, Record and Not Now; the panel is about 320 points wide and wraps."
+  )
+
+  static let callOfferRecord = LocalizedStringResource(
+    "meeting.callOffer.record", defaultValue: "Record",
+    comment:
+      "Button in the panel that offers to record a call that seems to have started: starts recording the meeting. A short button beside Not Now."
+  )
+
+  static let callOfferNotNow = LocalizedStringResource(
+    "meeting.callOffer.notNow", defaultValue: "Not Now",
+    comment:
+      "Button in the panel that offers to record a call that seems to have started: closes the panel and does not ask again during this call. A short button beside Record."
+  )
+
+  static let meetingsOffersOnCall = LocalizedStringResource(
+    "meetings.offersOnCall", defaultValue: "Offer to record when a call starts",
+    comment:
+      "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call."
+  )
+
+  static let meetingsOffersOnCallFooter = LocalizedStringResource(
+    "meetings.offersOnCall.footer",
+    defaultValue:
+      "A call is an app that uses the microphone and plays sound for ten seconds. Vocula only asks: nothing records until you choose Record.",
+    comment:
+      "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call. Record is the button in the offer's panel; translate it as that button is translated."
+  )
+
   static let meetingShowsTime = LocalizedStringResource(
     "meeting.menu.showsTime", defaultValue: "Show Recording Time",
     comment:

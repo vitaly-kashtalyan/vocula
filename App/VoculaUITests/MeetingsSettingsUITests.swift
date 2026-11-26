@@ -61,23 +61,35 @@ final class MeetingsSettingsUITests: XCTestCase {
     XCUIApplication().typeKey(.escape, modifierFlags: [])
   }
 
-  func testTheRecordingTimeSwitchTurnsAndTurnsBack() throws {
+  func testTheMeetingSwitchesTurnAndTurnBack() throws {
     let window = try openSection("meetings")
-    let toggle = element("meetings.showsTime", in: window)
-    XCTAssertTrue(toggle.waitForExistence(timeout: 10), "the recording time switch is missing")
-    let before = "\(toggle.value ?? "")"
-    let changed = NSPredicate { element, _ in
-      "\((element as? XCUIElement)?.value ?? "")" != before
+    for identifier in ["meetings.offersOnCall", "meetings.showsTime"] {
+      let toggle = element(identifier, in: window)
+      XCTAssertTrue(toggle.waitForExistence(timeout: 10), "the switch \(identifier) is missing")
+      let before = "\(toggle.value ?? "")"
+      let changed = NSPredicate { element, _ in
+        "\((element as? XCUIElement)?.value ?? "")" != before
+      }
+      let restored = NSPredicate { element, _ in
+        "\((element as? XCUIElement)?.value ?? "")" == before
+      }
+      toggle.click()
+      expectation(for: changed, evaluatedWith: toggle)
+      waitForExpectations(timeout: 5)
+      toggle.click()
+      expectation(for: restored, evaluatedWith: toggle)
+      waitForExpectations(timeout: 5)
     }
-    toggle.click()
-    expectation(for: changed, evaluatedWith: toggle)
-    waitForExpectations(timeout: 5)
-    toggle.click()
-    let restored = NSPredicate { element, _ in
-      "\((element as? XCUIElement)?.value ?? "")" == before
-    }
-    expectation(for: restored, evaluatedWith: toggle)
-    waitForExpectations(timeout: 5)
+  }
+
+  func testAPretendCallIsOfferedAndNotNowClosesTheOffer() throws {
+    _ = try openSection("meetings", arguments: ["-VoculaPretendCall"])
+    let app = XCUIApplication()
+    let notNow = app.buttons["callOffer.notNow"]
+    XCTAssertTrue(notNow.waitForExistence(timeout: 10), "no call offer appeared")
+    XCTAssertTrue(app.buttons["callOffer.record"].exists, "the offer has no Record button")
+    notNow.click()
+    XCTAssertTrue(notNow.waitForNonExistence(timeout: 5), "Not Now left the offer up")
   }
 
   func testDeleteAsksFirstAndRemovesTheMeeting() throws {

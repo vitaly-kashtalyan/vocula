@@ -110,6 +110,7 @@ final class VoculaAppDelegate: NSObject, NSApplicationDelegate {
       reopenSettingsIfAsked()
       openSettingsIfTheMenuBarIconIsHidden()
       startUpdaterIfAllowed()
+      coordinator.callWatch.start()
     }
   }
 

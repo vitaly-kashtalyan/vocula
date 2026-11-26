@@ -9901,6 +9901,246 @@
         }
       }
     },
+    "meeting.callOffer.named" : {
+      "comment" : "Question in a small panel at the top right of the screen when an app has used the microphone and played sound for ten seconds, which Vocula takes for a call. The argument is the app's name, e.g. Zoom or Telegram. Answered by two buttons, Record and Not Now; the panel is about 320 points wide and wraps.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Offenbar läuft ein Anruf in %@. Als Meeting aufnehmen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Looks like a call in %@. Record the meeting?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que hay una llamada en %@. ¿Grabar la reunión?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un appel semble en cours dans %@. Enregistrer la réunion ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sembra in corso una chiamata in %@. Registrare la riunione?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygląda na to, że trwa rozmowa w %@. Nagrać spotkanie?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que há uma chamada no %@. Gravar a reunião?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Похоже, идёт звонок в %@. Записать встречу?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Схоже, триває дзвінок у %@. Записати зустріч?"
+          }
+        }
+      }
+    },
+    "meeting.callOffer.notNow" : {
+      "comment" : "Button in the panel that offers to record a call that seems to have started: closes the panel and does not ask again during this call. A short button beside Record.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nicht jetzt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not Now"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ahora no"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non ora"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie teraz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Agora não"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не сейчас"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не зараз"
+          }
+        }
+      }
+    },
+    "meeting.callOffer.record" : {
+      "comment" : "Button in the panel that offers to record a call that seems to have started: starts recording the meeting. A short button beside Not Now.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnehmen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Record"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grabar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Registra"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nagraj"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gravar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Записать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Записати"
+          }
+        }
+      }
+    },
+    "meeting.callOffer.unnamed" : {
+      "comment" : "Question in a small panel at the top right of the screen when something on the Mac has used the microphone and played sound for ten seconds, which Vocula takes for a call, and the app cannot be named. Answered by two buttons, Record and Not Now; the panel is about 320 points wide and wraps.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Offenbar läuft ein Anruf. Als Meeting aufnehmen?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Looks like a call. Record the meeting?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que hay una llamada. ¿Grabar la reunión?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un appel semble en cours. Enregistrer la réunion ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sembra in corso una chiamata. Registrare la riunione?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygląda na to, że trwa rozmowa. Nagrać spotkanie?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que há uma chamada. Gravar a reunião?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Похоже, идёт звонок. Записать встречу?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Схоже, триває дзвінок. Записати зустріч?"
+          }
+        }
+      }
+    },
     "meeting.menu.showsTime" : {
       "comment" : "Menu item with a checkmark in the meeting's own menu bar menu while a meeting records. When it is off, the meeting's menu bar item shows only its symbol, without the running time of the recording, for example while the screen is being shared. Drawn on one menu line that does not wrap: a longer translation widens the whole menu, so keep it as short as the meaning allows.",
       "extractionState" : "extracted_with_value",
@@ -12297,6 +12537,126 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Не вдалося зберегти зміну."
+          }
+        }
+      }
+    },
+    "meetings.offersOnCall" : {
+      "comment" : "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aufnahme anbieten, wenn ein Anruf beginnt"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Offer to record when a call starts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ofrecer grabar cuando empiece una llamada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Proposer l’enregistrement au début d’un appel"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Proponi la registrazione quando inizia una chiamata"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Proponuj nagrywanie, gdy zaczyna się rozmowa"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oferecer gravação quando uma chamada começar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Предлагать запись, когда начинается звонок"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Пропонувати запис, коли починається дзвінок"
+          }
+        }
+      }
+    },
+    "meetings.offersOnCall.footer" : {
+      "comment" : "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call. Record is the button in the offer's panel; translate it as that button is translated.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Als Anruf gilt eine App, die zehn Sekunden lang das Mikrofon nutzt und Ton abspielt. Vocula fragt nur: Aufgenommen wird erst, wenn Sie „Aufnehmen“ wählen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A call is an app that uses the microphone and plays sound for ten seconds. Vocula only asks: nothing records until you choose Record."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Una llamada es una app que usa el micrófono y reproduce sonido durante diez segundos. Vocula solo pregunta: no se graba nada hasta que eliges Grabar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un appel, c’est une app qui utilise le micro et diffuse du son pendant dix secondes. Vocula ne fait que demander : rien n’est enregistré tant que vous n’avez pas choisi Enregistrer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Una chiamata è un’app che usa il microfono e riproduce audio per dieci secondi. Vocula si limita a chiedere: non registra nulla finché non scegli Registra."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozmowa to aplikacja, która przez dziesięć sekund używa mikrofonu i odtwarza dźwięk. Vocula tylko pyta: nic nie jest nagrywane, dopóki nie wybierzesz „Nagraj”."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uma chamada é um app que usa o microfone e reproduz som por dez segundos. O Vocula só pergunta: nada é gravado até você escolher Gravar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Звонок — это приложение, которое десять секунд использует микрофон и воспроизводит звук. Vocula только спрашивает: запись не начнётся, пока вы не нажмёте «Записать»."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Дзвінок — це застосунок, який десять секунд використовує мікрофон і відтворює звук. Vocula лише питає: запис не почнеться, доки ви не натиснете «Записати»."
           }
         }
       }
