@@ -13,6 +13,7 @@ struct OpenedTranscript: Identifiable {
 struct MeetingsSettingsSection: View {
   let meetings: Meetings
   @AppStorage(CopyTranscriptMenu.includeMeKey) private var includeMe = true
+  @AppStorage(MeetingStatusLabel.showsTimeKey) private var showsTime = true
   @State private var renaming: MeetingListing?
   @State private var renameText = ""
   @State private var deleting: MeetingListing?
@@ -71,6 +72,10 @@ struct MeetingsSettingsSection: View {
     }
     .sheet(item: $opened) { item in
       MeetingTranscriptSheet(item: item, export: { export(item.listing) })
+    }
+    Section {
+      Toggle(isOn: $showsTime) { Text(MenuCopy.meetingsShowTime) }
+        .accessibilityIdentifier("meetings.showsTime")
     }
   }
 
