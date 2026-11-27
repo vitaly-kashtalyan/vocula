@@ -90,7 +90,7 @@ struct MeetingTranscriptionSlowTests {
     #expect(transcript.utterances.map(\.speaker) == [.me, .others])
     #expect(transcript.utterances.allSatisfy { !$0.text.isEmpty })
     #expect(transcript.utterances.first.map { $0.start >= 1 && $0.start < 3 } == true)
-    #expect(transcript.utterances.last.map { $0.start >= 6 && $0.start < 8 } == true)
+    #expect(transcript.utterances.last.map { $0.start >= 5.9 && $0.start < 8 } == true)
     #expect(transcript.utterances.first.map { latin($0.text) } == true)
     #expect(transcript.utterances.last.map { cyrillic($0.text) } == true)
   }

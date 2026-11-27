@@ -10,52 +10,76 @@ import Testing
     SpeechSegment(start: .milliseconds(from), end: .milliseconds(to), probability: 0.9)
   }
 
-  @Test func segmentsUnderASecondApartArePacked() {
+  @Test func aPauseUnderThreeSecondsStaysInOnePiece() {
     let plan = MeetingPieces.plan(
-      segments: [segment(0, 1_000), segment(1_500, 2_500)], count: window, isLast: true)
-    #expect(plan.pieces == [0..<40_000])
+      segments: [segment(1_000, 2_000), segment(4_500, 5_500)], count: window, isLast: true)
+    #expect(plan.pieces == [8_000..<96_000])
     #expect(plan.carryFrom == nil)
   }
 
-  @Test func aSecondApartSplits() {
+  @Test func threeSecondsApartSplits() {
     let plan = MeetingPieces.plan(
-      segments: [segment(0, 1_000), segment(2_000, 3_000)], count: window, isLast: true)
-    #expect(plan.pieces == [0..<16_000, 32_000..<48_000])
+      segments: [segment(1_000, 2_000), segment(5_000, 6_000)], count: window, isLast: true)
+    #expect(plan.pieces == [8_000..<40_000, 72_000..<104_000])
   }
 
-  @Test func aLongSegmentIsCutAtThirtySeconds() {
+  @Test func aPieceTakesHalfASecondEitherSide() {
+    let plan = MeetingPieces.plan(segments: [segment(10_000, 12_000)], count: window, isLast: true)
+    #expect(plan.pieces == [152_000..<200_000])
+  }
+
+  @Test func aPieceStopsAtTheEdgesOfItsBuffer() {
+    let plan = MeetingPieces.plan(segments: [segment(200, 59_900)], count: window, isLast: true)
+    #expect(plan.pieces == [0..<483_200, 483_200..<960_000])
+  }
+
+  @Test func aLongSegmentIsCutAtThirtySecondsWithoutOverlap() {
     let plan = MeetingPieces.plan(
       segments: [segment(0, 70_000)], count: 1_120_000, isLast: true)
     #expect(plan.pieces == [0..<480_000, 480_000..<960_000, 960_000..<1_120_000])
   }
 
-  @Test func speechAtTheEndIsCarried() {
+  @Test func speechAtTheEndIsCarriedWithHalfASecondBeforeIt() {
     let plan = MeetingPieces.plan(
       segments: [segment(1_000, 2_000), segment(59_500, 59_900)], count: window, isLast: false)
-    #expect(plan.pieces == [16_000..<32_000])
-    #expect(plan.carryFrom == 952_000)
+    #expect(plan.pieces == [8_000..<40_000])
+    #expect(plan.carryFrom == 944_000)
+  }
+
+  @Test func speechWithinThreeSecondsOfTheEndIsCarried() {
+    let plan = MeetingPieces.plan(
+      segments: [segment(1_000, 2_000), segment(57_500, 58_000)], count: window, isLast: false)
+    #expect(plan.pieces == [8_000..<40_000])
+    #expect(plan.carryFrom == 912_000)
+  }
+
+  @Test func theCarryNeverReachesBackPastHalfwayToTheLastPiece() {
+    let plan = MeetingPieces.plan(
+      segments: [segment(29_000, 59_000), segment(59_300, 59_800)], count: window, isLast: false)
+    #expect(plan.pieces == [456_000..<946_400])
+    #expect(plan.carryFrom == 946_400)
   }
 
   @Test func speechAcrossTheSeamIsCarriedOnce() {
     let first = MeetingPieces.plan(
       segments: [segment(59_000, 60_000)], count: window, isLast: false)
     #expect(first.pieces.isEmpty)
-    #expect(first.carryFrom == 944_000)
-    let carried = window - 944_000
+    #expect(first.carryFrom == 936_000)
+    let carried = window - 936_000
     let second = MeetingPieces.plan(
-      segments: [segment(0, 2_000)], count: carried + window, isLast: true)
-    #expect(second.pieces == [0..<32_000])
+      segments: [segment(500, 2_500)], count: carried + window, isLast: true)
+    #expect(second.pieces == [0..<48_000])
   }
 
   @Test func aFullPieceIsNotCarried() {
     let plan = MeetingPieces.plan(segments: [segment(30_000, 60_000)], count: window, isLast: false)
-    #expect(plan.pieces == [480_000..<960_000])
+    #expect(plan.pieces == [472_000..<960_000])
     #expect(plan.carryFrom == nil)
   }
 
   @Test func theLastWindowCarriesNothing() {
     let plan = MeetingPieces.plan(segments: [segment(59_500, 59_900)], count: window, isLast: true)
-    #expect(plan.pieces == [952_000..<958_400])
+    #expect(plan.pieces == [944_000..<960_000])
     #expect(plan.carryFrom == nil)
   }
 

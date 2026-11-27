@@ -2,8 +2,9 @@ import Foundation
 
 enum MeetingPieces {
   static let maxPiece = 480_000
-  static let joinGap = 16_000
-  static let carryReach = 16_000
+  static let joinGap = 48_000
+  static let carryReach = 48_000
+  static let edge = 8_000
   static let minPiece = 8_000
 
   struct Plan: Equatable, Sendable {
@@ -38,13 +39,28 @@ enum MeetingPieces {
         pieces.append(range)
       }
     }
+    var carryFrom: Int?
     if !isLast, let last = pieces.last, count - last.upperBound < carryReach,
       last.count < maxPiece
     {
       pieces.removeLast()
-      return Plan(pieces: pieces, carryFrom: last.lowerBound)
+      carryFrom = last.lowerBound
     }
-    return Plan(pieces: pieces, carryFrom: nil)
+    return widened(pieces, carryFrom: carryFrom, count: count)
+  }
+
+  private static func widened(_ pieces: [Range<Int>], carryFrom: Int?, count: Int) -> Plan {
+    let wide = pieces.indices.map { index in
+      let piece = pieces[index]
+      let before = index > 0 ? (pieces[index - 1].upperBound + piece.lowerBound + 1) / 2 : 0
+      let next = index + 1 < pieces.count ? pieces[index + 1].lowerBound : carryFrom
+      let after = next.map { (piece.upperBound + $0) / 2 } ?? count
+      return max(before, piece.lowerBound - edge)..<min(after, piece.upperBound + edge)
+    }
+    let carry = carryFrom.map { from in
+      max(from - edge, pieces.last.map { ($0.upperBound + from + 1) / 2 } ?? 0)
+    }
+    return Plan(pieces: wide, carryFrom: carry)
   }
 
   static func clamped(_ words: [TimedText], to speech: [ClosedRange<Double>]) -> [TimedText] {
