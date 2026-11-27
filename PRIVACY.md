@@ -48,21 +48,27 @@ recognised beside the cleaned-up one.
 
 ## Before you record a meeting
 
-**While *Offer to record when a call starts* is on** — it is until you switch it
-off in *Meetings (Beta)* — Vocula asks macOS every two seconds which apps are
-using the microphone and which are playing sound. That is all it learns, never
-what they hear or play. When one app has done both for ten seconds, Vocula
-takes it for a call and offers, in a small panel at the top right of the
-screen, to record it; nothing records until you choose *Record*, and each call
-is offered once. To name the app in the offer, Vocula reads where the app sits
-on disk. None of this is stored or written to the diagnostic log.
+**While *Offer to record a call and to stop when it ends* is on** — it is until
+you switch it off in *Meetings (Beta)* — Vocula asks macOS every two seconds
+which apps are using the microphone and which are playing sound. That is all it
+learns, never what they hear or play. When one app has done both for ten
+seconds, Vocula takes it for a call and offers, in a small panel at the top
+right of the screen, to record it; nothing records until you choose *Record*,
+and each call is offered once. To name the app in the offer, Vocula reads where
+the app sits on disk. None of this is stored or written to the diagnostic log.
 
 ## While you record a meeting
 
 *Record Meeting (Beta)*, in Vocula's menu, records two tracks until you choose
 *Stop Meeting*: your microphone, and the sound other apps play — the other side
 of a call. It also stops by itself after 15 minutes in which neither track heard
-anything, when the Mac goes to sleep, and when you quit Vocula. While it records,
+anything, when the Mac goes to sleep, and when you quit Vocula. While *Offer to
+record a call and to stop when it ends* is on, Vocula also offers to stop, in
+the same small panel, once every app it took for a call during the recording has
+not used the microphone for 30 seconds; the offer itself stops nothing until you
+choose *Stop Recording*. It asks again during that recording only if the call
+took the microphone back before you answered, and never during a recording in
+which no app looked like a call. While it records,
 and while Vocula transcribes recorded meetings afterwards, a second icon in the
 menu bar says so; after a meeting that stopped by itself, stopped at sleep, or
 could not start, after a transcript is ready, when one could not be made, and

@@ -333,18 +333,47 @@ extension MenuCopy {
       "Button in the panel that offers to record a call that seems to have started: closes the panel and does not ask again during this call. A short button beside Record."
   )
 
-  static let meetingsOffersOnCall = LocalizedStringResource(
-    "meetings.offersOnCall", defaultValue: "Offer to record when a call starts",
+  static func callEndOffer(in app: String?) -> LocalizedStringResource {
+    guard let app else { return callEndOfferUnnamed }
+    return LocalizedStringResource(
+      "meeting.callEndOffer.named",
+      defaultValue: "\(app) has stopped using the microphone. Stop recording the meeting?",
+      comment:
+        "Question in a small panel at the top right of the screen while a meeting records, when the app of a call heard during the recording has not used the microphone for 30 seconds, which Vocula takes for the end of the call. The argument is the app's name, e.g. Zoom or Telegram. Answered by two buttons, Keep Recording and Stop Recording; the panel is about 320 points wide and wraps."
+    )
+  }
+
+  static let callEndOfferUnnamed = LocalizedStringResource(
+    "meeting.callEndOffer.unnamed",
+    defaultValue: "Looks like the call has ended. Stop recording the meeting?",
     comment:
-      "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call."
+      "Question in a small panel at the top right of the screen while a meeting records, when the call heard during the recording has not used the microphone for 30 seconds, which Vocula takes for the end of the call. Shown under the app's name when the app can be named, alone when it cannot. Answered by two buttons, Keep Recording and Stop Recording; the panel is about 320 points wide and wraps."
+  )
+
+  static let callEndOfferKeep = LocalizedStringResource(
+    "meeting.callEndOffer.keep", defaultValue: "Keep Recording",
+    comment:
+      "Button in the panel that offers to stop recording a meeting after its call seems to have ended: closes the panel, the meeting goes on recording, and Vocula does not ask again during this meeting. A short button beside Stop Recording."
+  )
+
+  static let callEndOfferStop = LocalizedStringResource(
+    "meeting.callEndOffer.stop", defaultValue: "Stop Recording",
+    comment:
+      "Button in the panel that offers to stop recording a meeting after its call seems to have ended: stops the meeting, as Stop Meeting in Vocula's menu does. A short button beside Keep Recording."
+  )
+
+  static let meetingsOffersOnCall = LocalizedStringResource(
+    "meetings.offersOnCall", defaultValue: "Offer to record a call and to stop when it ends",
+    comment:
+      "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call, and, while a meeting records, one offering to stop when that call seems to have ended."
   )
 
   static let meetingsOffersOnCallFooter = LocalizedStringResource(
     "meetings.offersOnCall.footer",
     defaultValue:
-      "A call is an app that uses the microphone and plays sound for ten seconds. Vocula only asks: nothing records until you choose Record.",
+      "A call is an app that uses the microphone and plays sound for ten seconds, and it ends when the app leaves the microphone for 30 seconds. Vocula only asks: neither offer records or stops anything by itself.",
     comment:
-      "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call. Record is the button in the offer's panel; translate it as that button is translated."
+      "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call and to stop recording when it ends."
   )
 
   static let meetingShowsTime = LocalizedStringResource(
