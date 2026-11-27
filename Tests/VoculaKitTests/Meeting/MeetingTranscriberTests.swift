@@ -266,10 +266,23 @@ final class TranscriberRig: @unchecked Sendable {
     try? await store.transcript(of: header.id, cipher: MarkingCipher())
   }
 
-  func hasAudio(_ header: MeetingHeader) -> Bool {
-    FileManager.default.fileExists(
-      atPath: meetings.appendingPathComponent("\(header.id.uuidString)/audio").path)
+  private func audioFolder(_ header: MeetingHeader) -> URL {
+    meetings.appendingPathComponent("\(header.id.uuidString)/audio")
   }
+
+  private func chunkNames(_ header: MeetingHeader) -> [String] {
+    let names = try? FileManager.default.contentsOfDirectory(atPath: audioFolder(header).path)
+    return (names ?? []).filter { $0.hasSuffix(".sealed") }
+  }
+
+  func audio(of header: MeetingHeader) -> [String: Data] {
+    Dictionary(
+      uniqueKeysWithValues: chunkNames(header).compactMap { name in
+        (try? Data(contentsOf: audioFolder(header).appendingPathComponent(name))).map { (name, $0) }
+      })
+  }
+
+  func hasAudio(_ header: MeetingHeader) -> Bool { !chunkNames(header).isEmpty }
 
   func lines(_ kind: String) -> [String] {
     log.recent(100).reversed().filter { $0.kind == kind }.map(\.detail)
@@ -288,17 +301,18 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.calls.count("load") == 0)
   }
 
-  @Test func transcribesNewestFirstAndRemovesAudio() async throws {
+  @Test func transcribesNewestFirstAndKeepsTheAudio() async throws {
     let rig = TranscriberRig()
     let older = try rig.meeting(startedAt: 800_000_000, mic: [rig.speech(at: 0.5, for: 1)])
     let newer = try rig.meeting(startedAt: 800_000_600, mic: [rig.speech(at: 0.5, for: 2)])
+    let recorded = [rig.audio(of: older), rig.audio(of: newer)]
     await rig.run()
     #expect(rig.recognizers.calls == [32_000, 16_000])
     #expect(await rig.transcript(of: newer)?.utterances.map(\.speaker) == [.me])
     #expect(await rig.transcript(of: older)?.utterances.map(\.speaker) == [.me])
     #expect(await rig.transcript(of: newer)?.model == "largeV3Turbo")
-    #expect(!rig.hasAudio(older))
-    #expect(!rig.hasAudio(newer))
+    #expect([rig.audio(of: older), rig.audio(of: newer)] == recorded)
+    #expect(rig.hasAudio(older))
     #expect(rig.published.all.last == .finished(transcribed: 2, failed: 0))
     #expect(rig.recognizers.made == 1)
     #expect(rig.recognizers.released == 1)
@@ -342,16 +356,34 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.calls.count("load") == 0)
   }
 
-  @Test func removalsNeedNoModel() async throws {
+  @Test func aTranscriptBesideItsAudioIsNeverRedone() async throws {
     let rig = TranscriberRig()
     rig.model = nil
     let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
     try await rig.store.writeTranscript(
       .empty, of: header.id, cipher: MarkingCipher())
     await rig.run()
-    #expect(!rig.hasAudio(header))
+    #expect(rig.hasAudio(header))
+    #expect(await rig.transcript(of: header) == .empty)
+    #expect(rig.calls.all.isEmpty)
     #expect(rig.recognizers.made == 0)
     #expect(rig.published.all.isEmpty)
+    #expect(rig.lines("meeting.transcribeFailed").isEmpty)
+  }
+
+  @Test func aSecondPassLeavesTheTranscribedMeetingAlone() async throws {
+    let rig = TranscriberRig()
+    let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
+    await rig.run()
+    let transcript = await rig.transcript(of: header)
+    let calls = rig.recognizers.calls
+    let published = rig.published.all
+    await rig.run()
+    #expect(transcript != nil)
+    #expect(await rig.transcript(of: header) == transcript)
+    #expect(rig.recognizers.calls == calls)
+    #expect(rig.published.all == published)
+    #expect(rig.hasAudio(header))
   }
 
   @Test func aKeyFailureEndsThePass() async throws {
@@ -468,14 +500,14 @@ final class TranscriberRig: @unchecked Sendable {
     #expect(rig.published.all.last == .finished(transcribed: 1, failed: 1))
   }
 
-  @Test("ACCEPTED COST: a chunk that will not open is lost with the audio")
+  @Test("ACCEPTED COST: a chunk that will not open is left out of the transcript for good")
   func aCorruptChunkIsSkippedAndCounted() async throws {
     let rig = TranscriberRig()
     let header = try rig.meeting(
       mic: [rig.speech(at: 0.5, for: 1)], raw: ["audio/mic-000001.sealed": Data("junk".utf8)])
     await rig.run()
     #expect(await rig.transcript(of: header) != nil)
-    #expect(!rig.hasAudio(header))
+    #expect(rig.audio(of: header)["mic-000001.sealed"] == Data("junk".utf8))
     #expect(rig.lines("meeting.transcribed").first?.contains("skippedChunks=1") == true)
   }
 
@@ -598,17 +630,5 @@ final class TranscriberRig: @unchecked Sendable {
       lines.first
         == "meetings=2 audioSeconds=3 pieces=2 utterances=2 echoDropped=0 skippedChunks=0"
         + " tookSeconds=0 model=largeV3Turbo")
-  }
-
-  @Test func aRemoveFailureStillCountsAsTranscribed() async throws {
-    let rig = TranscriberRig()
-    let header = try rig.meeting(mic: [rig.speech(at: 0.5, for: 1)])
-    let audio = rig.meetings.appendingPathComponent("\(header.id.uuidString)/audio")
-    chmod(audio.path, 0o500)
-    defer { chmod(audio.path, 0o700) }
-    await rig.run()
-    #expect(await rig.transcript(of: header) != nil)
-    #expect(rig.lines("meeting.transcribeFailed").first?.hasPrefix("step=remove") == true)
-    #expect(rig.published.all.last == .finished(transcribed: 1, failed: 0))
   }
 }

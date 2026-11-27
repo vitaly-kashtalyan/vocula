@@ -6,7 +6,7 @@ public enum MeetingStoreError: Error, Equatable, Sendable {
 }
 
 struct MeetingWork: Equatable, Sendable {
-  public enum Kind: Equatable, Sendable { case recognize, emptyTranscript, removeAudio }
+  public enum Kind: Equatable, Sendable { case recognize, emptyTranscript }
 
   public let header: MeetingHeader
   public let kind: Kind
@@ -66,7 +66,7 @@ public actor MeetingStore {
         return nil
       }
       switch Self.presence(of: transcriptURL(id)) {
-      case .unknown:
+      case .unknown, .present:
         return nil
       case .absent:
         do {
@@ -79,13 +79,7 @@ public actor MeetingStore {
         } catch {
           return MeetingWork(header: header, kind: .recognize)
         }
-      case .present:
-        break
       }
-      guard (try? transcript(of: id, cipher: cipher)) != nil,
-        FileManager.default.fileExists(atPath: audioDirectory(id).path)
-      else { return nil }
-      return MeetingWork(header: header, kind: .removeAudio)
     }
     .sorted { $0.header.startedAt > $1.header.startedAt }
   }
@@ -194,15 +188,6 @@ public actor MeetingStore {
       let transcript = try? JSONDecoder().decode(MeetingTranscript.self, from: plain)
     else { throw MeetingStoreError.failed(step: "open", code: 0) }
     return transcript
-  }
-
-  func removeAudio(of meeting: UUID) throws {
-    do {
-      try FileManager.default.removeItem(at: audioDirectory(meeting))
-    } catch CocoaError.fileNoSuchFile {
-    } catch {
-      throw MeetingStoreError.failed(step: "remove", code: (error as NSError).code)
-    }
   }
 
   private static func holdsOnlyChunks(_ audio: URL) throws -> Bool {
