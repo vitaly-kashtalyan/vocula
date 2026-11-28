@@ -146,7 +146,6 @@ public actor MeetingTranscriber {
     do { work = try await deps.store.work(cipher: cipher) } catch {
       throw Stop.pass(step: "list", code: Self.code(of: error))
     }
-    for item in work where item.kind == .removeAudio { await removeAudio(of: item.header.id) }
     let empty = work.filter { $0.kind == .emptyTranscript }
     let pending = work.filter { $0.kind == .recognize }
     remaining = empty.count + pending.count
@@ -424,16 +423,6 @@ public actor MeetingTranscriber {
     }
     tally.transcribed += 1
     tally.utterances += transcript.utterances.count
-    guard !Task.isCancelled else { return }
-    await removeAudio(of: meeting)
-  }
-
-  private func removeAudio(of meeting: UUID) async {
-    do { try await deps.store.removeAudio(of: meeting) } catch {
-      if case .meeting(let step, let code) = Self.meetingStop(error) {
-        failed(step: step, code: code)
-      }
-    }
   }
 
   private func progress() async {

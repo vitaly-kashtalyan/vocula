@@ -116,6 +116,25 @@ import Testing
     #expect(tombstones.map(\.lastPathComponent) == ["\(header.id.uuidString).deleting"])
   }
 
+  @Test func deletingATranscribedMeetingTakesItsAudioWithIt() async throws {
+    let root = meetingTemporaryDirectory()
+    let store = MeetingStore(directory: root)
+    let header = try await meeting(in: store, at: 100, transcript: true)
+    try await store.write(
+      MeetingChunk(track: .mic, sequence: 0, runs: [MeetingRun(start: s, samples: [7])]),
+      of: header.id, cipher: cipher)
+    try await store.delete(header.id, cipher: cipher, busy: false)
+    let tombstone = try #require(store.tombstones().first)
+    #expect(
+      FileManager.default.fileExists(
+        atPath: tombstone.appendingPathComponent("audio/mic-000000.sealed").path))
+    #expect(
+      !FileManager.default.fileExists(
+        atPath: root.appendingPathComponent(header.id.uuidString).path))
+    try MeetingStore.removeTombstone(tombstone)
+    #expect(!FileManager.default.fileExists(atPath: tombstone.path))
+  }
+
   @Test func removingATombstoneTwiceIsFine() async throws {
     let store = MeetingStore(directory: meetingTemporaryDirectory())
     let header = try await meeting(in: store, at: 100)

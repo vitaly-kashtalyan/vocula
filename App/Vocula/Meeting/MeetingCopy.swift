@@ -448,9 +448,9 @@ extension MenuCopy {
 
   static let meetingDeleteMessage = LocalizedStringResource(
     "meetings.delete.message",
-    defaultValue: "Its transcript and any audio are removed. This cannot be undone.",
+    defaultValue: "Its recording and its transcript are removed. This cannot be undone.",
     comment:
-      "Message of the confirmation before deleting a meeting: what is lost, and that it is permanent."
+      "Message of the confirmation before deleting a meeting: what is lost — the meeting's audio recording, kept encrypted on this Mac, and its transcript — and that it is permanent."
   )
 
   static let meetingsDeleteWaits = LocalizedStringResource(
