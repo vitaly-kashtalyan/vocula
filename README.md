@@ -256,11 +256,11 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1765 tests: 1326 from `swift test` (the sum of the totals it prints, one per test
-target), 411 in the hosted app bundle, 28 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1792 tests: 1351 from `swift test` (the sum of the totals it prints, one per test
+target), 411 in the hosted app bundle, 30 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
-the 28 check English copy and skip whenever a language is set, so a run without
+the 30 check English copy and skip whenever a language is set, so a run without
 one is the only run that executes them.
 
 `swift test` never compiles `App/`, so a green run says nothing about whether the
