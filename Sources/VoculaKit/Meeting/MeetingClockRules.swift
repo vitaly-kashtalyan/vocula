@@ -4,6 +4,7 @@ public struct SilenceStop: Sendable {
   public enum Verdict: Equatable, Sendable { case recording, stopsSoon, stop }
   public static let warnAfter: UInt64 = 840_000_000_000
   public static let stopAfter: UInt64 = 900_000_000_000
+  public static let quietAfter: UInt64 = 120_000_000_000
 
   private var lastSound: UInt64
 
@@ -16,6 +17,10 @@ public struct SilenceStop: Sendable {
     let silent = HostTime.elapsed(from: lastSound, to: now)
     if silent >= Self.stopAfter { return .stop }
     return silent >= Self.warnAfter ? .stopsSoon : .recording
+  }
+
+  public func isQuiet(at now: UInt64) -> Bool {
+    HostTime.elapsed(from: lastSound, to: now) >= Self.quietAfter
   }
 }
 

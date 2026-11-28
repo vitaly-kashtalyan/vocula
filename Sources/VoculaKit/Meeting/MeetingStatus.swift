@@ -9,15 +9,17 @@ public struct MeetingStatus: Equatable, Sendable {
   public var startedAt: Date?
   public var warnings: [MeetingWarning]
   public var notice: MeetingNotice?
+  public var isQuiet: Bool
 
   public init(
     isRecording: Bool = false, startedAt: Date? = nil, warnings: [MeetingWarning] = [],
-    notice: MeetingNotice? = nil
+    notice: MeetingNotice? = nil, isQuiet: Bool = false
   ) {
     self.isRecording = isRecording
     self.startedAt = startedAt
     self.warnings = warnings
     self.notice = notice
+    self.isQuiet = isQuiet
   }
 }
 

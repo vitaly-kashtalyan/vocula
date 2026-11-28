@@ -899,6 +899,19 @@ private func details(of kind: String, in h: MeetingHarness) -> [String] {
     #expect(h.statuses.last?.notice == .autoStopped)
   }
 
+  @Test func twoQuietMinutesArePublishedUntilSoundIsHeard() async {
+    let h = MeetingHarness(mics: [FakeTrackSource(drains: [TrackDrain(), voice(at: anchor)])])
+    await h.recorder.start()
+    await h.tick(.seconds(119))
+    #expect(h.statuses.last?.isQuiet == false)
+    await h.tick(.seconds(1))
+    #expect(h.statuses.last?.isQuiet == true)
+    #expect(h.statuses.last?.isRecording == true)
+    await h.tick(.seconds(3))
+    #expect(h.statuses.last?.isQuiet == false)
+    #expect(h.ended.isOpen == false)
+  }
+
   @Test func systemZerosAreLoggedOncePerEpisode() async {
     let h = MeetingHarness(system: FakeTrackSource(drains: voices(1)))
     await h.recorder.start()

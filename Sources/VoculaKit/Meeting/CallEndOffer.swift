@@ -5,6 +5,7 @@ public struct CallEndOffer: Sendable {
 
   public enum Change: Equatable, Sendable {
     case offer(Int32)
+    case offerQuiet
     case withdraw
   }
 
@@ -13,16 +14,41 @@ public struct CallEndOffer: Sendable {
   private var heard: (pid: Int32, at: Double)?
   private var shown = false
   private var done = false
+  private var quietShown = false
+  private var quietKept = false
 
   public init() {}
 
-  public mutating func observe(_ clients: [AudioClient], at now: Double, recording: Bool)
-    -> Change?
-  {
+  public mutating func observe(
+    _ clients: [AudioClient], at now: Double, recording: Bool, quiet: Bool = false
+  ) -> Change? {
     guard recording else {
       defer { self = CallEndOffer() }
-      return shown ? .withdraw : nil
+      return shown || quietShown ? .withdraw : nil
     }
+    if !quiet { quietKept = false }
+    let call = callEnd(clients, at: now)
+    if case .offer = call {
+      quietShown = false
+      return call
+    }
+    let wantsQuiet = quiet && !quietKept && !shown
+    guard wantsQuiet != quietShown else { return call }
+    quietShown = wantsQuiet
+    return wantsQuiet ? .offerQuiet : .withdraw
+  }
+
+  public mutating func answered() {
+    if quietShown {
+      quietShown = false
+    } else {
+      shown = false
+      done = true
+    }
+    quietKept = true
+  }
+
+  private mutating func callEnd(_ clients: [AudioClient], at now: Double) -> Change? {
     let calling = Set(clients.filter { $0.input && $0.output }.map(\.pid))
     since = since.filter { calling.contains($0.key) }
     for pid in calling where since[pid] == nil { since[pid] = now }
@@ -36,10 +62,5 @@ public struct CallEndOffer: Sendable {
     guard let heard, !shown, !done, now - heard.at >= Self.after else { return nil }
     shown = true
     return .offer(heard.pid)
-  }
-
-  public mutating func answered() {
-    shown = false
-    done = true
   }
 }

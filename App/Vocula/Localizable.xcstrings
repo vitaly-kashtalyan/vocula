@@ -9902,7 +9902,7 @@
       }
     },
     "meeting.callEndOffer.keep" : {
-      "comment" : "Button in the panel that offers to stop recording a meeting after its call seems to have ended: closes the panel, the meeting goes on recording, and Vocula does not ask again during this meeting. A short button beside Stop Recording.",
+      "comment" : "Button in the panel that offers to stop recording a meeting, after its call seems to have ended or after two minutes in which nothing was heard: closes the panel, and the meeting goes on recording. A short button beside Stop Recording.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10022,7 +10022,7 @@
       }
     },
     "meeting.callEndOffer.stop" : {
-      "comment" : "Button in the panel that offers to stop recording a meeting after its call seems to have ended: stops the meeting, as Stop Meeting in Vocula's menu does. A short button beside Keep Recording.",
+      "comment" : "Button in the panel that offers to stop recording a meeting, after its call seems to have ended or after two minutes in which nothing was heard: stops the meeting, as Stop Meeting in Vocula's menu does. A short button beside Keep Recording.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -10437,6 +10437,126 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Показувати час запису"
+          }
+        }
+      }
+    },
+    "meeting.quietOffer.question" : {
+      "comment" : "Question in a small panel at the top right of the screen while a meeting records, under the title saying that nothing has been heard for two minutes, which Vocula takes for the end of the meeting. Answered by two buttons, Keep Recording and Stop Recording; the panel is about 320 points wide and wraps.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Offenbar ist das Meeting vorbei. Aufnahme beenden?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Looks like the meeting is over. Stop recording it?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que la reunión ha terminado. ¿Detener la grabación?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La réunion semble terminée. Arrêter l’enregistrement ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sembra che la riunione sia finita. Fermare la registrazione?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygląda na to, że spotkanie się skończyło. Zatrzymać nagrywanie?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Parece que a reunião terminou. Parar a gravação?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Похоже, встреча закончилась. Остановить запись?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Схоже, зустріч завершилася. Зупинити запис?"
+          }
+        }
+      }
+    },
+    "meeting.quietOffer.title" : {
+      "comment" : "Title, in bold, of a small panel at the top right of the screen while a meeting records, when neither the microphone nor the sound of other apps has been heard for two minutes. A question under it asks whether to stop recording; answered by two buttons, Keep Recording and Stop Recording. The panel is about 320 points wide and wraps.",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seit zwei Minuten nichts zu hören"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nothing heard for two minutes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dos minutos sin oír nada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien entendu depuis deux minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nessun suono da due minuti"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Od dwóch minut nic nie słychać"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dois minutos sem nenhum som"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Уже две минуты ничего не слышно"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Уже дві хвилини нічого не чути"
           }
         }
       }
@@ -12782,7 +12902,7 @@
       }
     },
     "meetings.offersOnCall" : {
-      "comment" : "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call, and, while a meeting records, one offering to stop when that call seems to have ended.",
+      "comment" : "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call, and, while a meeting records, one offering to stop when that call seems to have ended or when nothing has been heard for two minutes.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
@@ -12842,61 +12962,61 @@
       }
     },
     "meetings.offersOnCall.footer" : {
-      "comment" : "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call and to stop recording when it ends.",
+      "comment" : "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call, to stop recording when it ends, and to stop recording after two minutes in which nothing was heard.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Als Anruf gilt eine App, die zehn Sekunden lang das Mikrofon nutzt und Ton abspielt; er endet, wenn die App das Mikrofon 30 Sekunden lang nicht nutzt. Vocula fragt nur: Keines der beiden Angebote startet oder beendet von sich aus eine Aufnahme."
+            "value" : "Als Anruf gilt eine App, die zehn Sekunden lang das Mikrofon nutzt und Ton abspielt; er endet, wenn die App das Mikrofon 30 Sekunden lang nicht nutzt. Vocula bietet außerdem an, ein Meeting zu beenden, in dem zwei Minuten lang nichts zu hören war. Vocula fragt nur: Kein Angebot startet oder beendet von sich aus eine Aufnahme."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "A call is an app that uses the microphone and plays sound for ten seconds, and it ends when the app leaves the microphone for 30 seconds. Vocula only asks: neither offer records or stops anything by itself."
+            "value" : "A call is an app that uses the microphone and plays sound for ten seconds, and it ends when the app leaves the microphone for 30 seconds. Vocula also offers to stop a meeting in which nothing has been heard for two minutes. Vocula only asks: no offer records or stops anything by itself."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Una llamada es una app que usa el micrófono y reproduce sonido durante diez segundos, y termina cuando la app deja el micrófono durante 30 segundos. Vocula solo pregunta: ninguna de las dos ofertas graba ni detiene nada por sí sola."
+            "value" : "Una llamada es una app que usa el micrófono y reproduce sonido durante diez segundos, y termina cuando la app deja el micrófono durante 30 segundos. Vocula también ofrece detener una reunión en la que no se ha oído nada durante dos minutos. Vocula solo pregunta: ninguna oferta graba ni detiene nada por sí sola."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Un appel, c’est une app qui utilise le micro et diffuse du son pendant dix secondes ; il se termine quand l’app n’utilise plus le micro pendant 30 secondes. Vocula ne fait que demander : aucune des deux propositions n’enregistre ni n’arrête rien d’elle-même."
+            "value" : "Un appel, c’est une app qui utilise le micro et diffuse du son pendant dix secondes ; il se termine quand l’app n’utilise plus le micro pendant 30 secondes. Vocula propose aussi d’arrêter une réunion où rien n’a été entendu pendant deux minutes. Vocula ne fait que demander : aucune proposition n’enregistre ni n’arrête rien d’elle-même."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Una chiamata è un’app che usa il microfono e riproduce audio per dieci secondi, e finisce quando l’app lascia il microfono per 30 secondi. Vocula si limita a chiedere: nessuna delle due proposte registra o interrompe qualcosa da sola."
+            "value" : "Una chiamata è un’app che usa il microfono e riproduce audio per dieci secondi, e finisce quando l’app lascia il microfono per 30 secondi. Vocula propone anche di fermare una riunione in cui non si è sentito nulla per due minuti. Vocula si limita a chiedere: nessuna proposta registra o interrompe qualcosa da sola."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Rozmowa to aplikacja, która przez dziesięć sekund używa mikrofonu i odtwarza dźwięk; kończy się, gdy aplikacja przez 30 sekund nie używa mikrofonu. Vocula tylko pyta: żadna z propozycji sama niczego nie nagrywa ani nie zatrzymuje."
+            "value" : "Rozmowa to aplikacja, która przez dziesięć sekund używa mikrofonu i odtwarza dźwięk; kończy się, gdy aplikacja przez 30 sekund nie używa mikrofonu. Vocula proponuje też zatrzymanie spotkania, w którym przez dwie minuty nic nie było słychać. Vocula tylko pyta: żadna z propozycji sama niczego nie nagrywa ani nie zatrzymuje."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Uma chamada é um app que usa o microfone e reproduz som por dez segundos, e termina quando o app deixa o microfone por 30 segundos. O Vocula só pergunta: nenhuma das duas ofertas grava ou interrompe nada sozinha."
+            "value" : "Uma chamada é um app que usa o microfone e reproduz som por dez segundos, e termina quando o app deixa o microfone por 30 segundos. O Vocula também oferece parar uma reunião em que nada foi ouvido por dois minutos. O Vocula só pergunta: nenhuma oferta grava ou interrompe nada sozinha."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Звонок — это приложение, которое десять секунд использует микрофон и воспроизводит звук; он закончен, когда приложение 30 секунд не использует микрофон. Vocula только спрашивает: ни одно из предложений само ничего не записывает и не останавливает."
+            "value" : "Звонок — это приложение, которое десять секунд использует микрофон и воспроизводит звук; он закончен, когда приложение 30 секунд не использует микрофон. Vocula также предлагает остановить встречу, в которой две минуты ничего не было слышно. Vocula только спрашивает: ни одно из предложений само ничего не записывает и не останавливает."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Дзвінок — це застосунок, який десять секунд використовує мікрофон і відтворює звук; він завершений, коли застосунок 30 секунд не використовує мікрофон. Vocula лише питає: жодна з пропозицій сама нічого не записує й не зупиняє."
+            "value" : "Дзвінок — це застосунок, який десять секунд використовує мікрофон і відтворює звук; він завершений, коли застосунок 30 секунд не використовує мікрофон. Vocula також пропонує зупинити зустріч, у якій дві хвилини нічого не було чути. Vocula лише питає: жодна з пропозицій сама нічого не записує й не зупиняє."
           }
         }
       }
