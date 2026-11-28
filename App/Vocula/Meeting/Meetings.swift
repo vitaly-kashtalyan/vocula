@@ -8,6 +8,7 @@ final class Meetings {
     @MainActor (_ log: DiagnosticLog?, _ recover: Bool) -> MeetingRecorder.Dependencies?
 
   let status: MeetingStatusModel
+  let playback: MeetingPlayback
   private(set) var stopping: Task<Void, Never>?
   private let diagnosticLog: @MainActor () -> DiagnosticLog?
   private let makeDependencies: MakeDependencies
@@ -22,6 +23,7 @@ final class Meetings {
   private var schedule = MeetingPassSchedule()
   private var listings = MeetingPassSchedule()
   private var stopsInFlight = 0
+  private var savesInFlight = 0
   private var loggedNoKey = false
   private var lastListingFailure: MeetingListingOutcome?
   private(set) var pass: Task<Void, Never>? {
@@ -41,6 +43,7 @@ final class Meetings {
     self.makeDependencies = makeDependencies
     self.sleep = sleep
     parts = transcription
+    playback = MeetingPlayback(load: transcription.playable, makePlayer: transcription.makePlayer)
   }
 
   var holdsAMeeting: Bool { recorder != nil || follower != nil }
@@ -55,6 +58,7 @@ final class Meetings {
       release()
       return stopping
     case .start(let meeting, let recover):
+      playback.stop()
       status.update(MeetingStatus())
       guard var dependencies = makeDependencies(diagnosticLog(), recover) else {
         _ = meetingSwitch.ended(meeting)
@@ -94,12 +98,49 @@ final class Meetings {
         .allows(.delete, busy: busy, passRunning: pass != nil) == true,
       schedule.deleteBegan()
     else { return Task {} }
+    if playback.meeting == id { playback.stop() }
     let delete = parts.delete
     let log = diagnosticLog()
     return Task {
       let result = await delete(id, busy)
       if schedule.deleteEnded() { await startPass() }
       finished(result, action: "delete", failure: .notSaved, log: log)
+    }
+  }
+
+  @discardableResult
+  func play(_ id: UUID) -> Task<Void, Never> {
+    guard
+      status.meetings.first(where: { $0.id == id })?
+        .allows(.play, busy: status.busy, passRunning: pass != nil) == true
+    else { return Task {} }
+    let log = diagnosticLog()
+    return Task {
+      switch await playback.play(id) {
+      case .started:
+        status.actionSucceeded()
+      case .superseded:
+        break
+      case .failed(let step, let code):
+        finished(
+          .failed(step: step, code: code), action: "play", failure: .recordingUnreadable, log: log)
+      }
+    }
+  }
+
+  @discardableResult
+  func saveRecording(_ id: UUID, to url: URL) -> Task<Void, Never> {
+    let save = parts.saveRecording
+    let log = diagnosticLog()
+    savesInFlight += 1
+    status.update(savingRecording: true)
+    return Task {
+      let result = await save(id, url)
+      savesInFlight -= 1
+      status.update(savingRecording: savesInFlight > 0)
+      var failure = MeetingSectionFailure.recordingUnreadable
+      if case .failed(step: "write", _) = result { failure = .exportNotWritten }
+      finished(result, action: "saveRecording", failure: failure, log: log)
     }
   }
 

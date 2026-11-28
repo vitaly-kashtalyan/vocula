@@ -273,7 +273,7 @@ extension MenuCopy {
   static let meetingExportFailed = LocalizedStringResource(
     "meetings.failure.export", defaultValue: "The file could not be written.",
     comment:
-      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when exporting a meeting's transcript to the file the user chose failed. Shown as a row of its own, above the list when there is one; a long translation wraps."
+      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when writing the file the user chose failed: a meeting's transcript exported, or its recording saved. Shown as a row of its own, above the list when there is one; a long translation wraps."
   )
 
   static let meetingsSection = LocalizedStringResource(
@@ -421,6 +421,83 @@ extension MenuCopy {
     comment:
       "Spoken by VoiceOver for the pin symbol on a pinned meeting's row in the Meetings section of the Vocula window: a pinned meeting is kept and cannot be deleted. Never drawn."
   )
+
+  static let meetingHasRecording = LocalizedStringResource(
+    "meetings.hasRecording", defaultValue: "Has a recording",
+    comment:
+      "Spoken by VoiceOver for the waveform symbol on a meeting's row in the Meetings section of the Vocula window, and shown as its tooltip, which wraps rather than clips: the meeting still keeps its recorded audio, so it can be played and saved. Never drawn as text."
+  )
+
+  static let meetingPlay = LocalizedStringResource(
+    "meetings.action.play", defaultValue: "Play Recording",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: play the meeting's recorded audio — the microphone and the other apps together — in a row under the meeting. Unavailable while a meeting records."
+  )
+
+  static let meetingSaveRecording = LocalizedStringResource(
+    "meetings.action.saveRecording", defaultValue: "Save Recording…",
+    comment:
+      "Item in one meeting's menu in the Meetings section of the Vocula window: save the meeting's recorded audio as an audio file. The ellipsis means a save panel follows."
+  )
+
+  static let meetingPlayerPause = LocalizedStringResource(
+    "meetings.player.pause", defaultValue: "Pause",
+    comment:
+      "Spoken by VoiceOver for the button that pauses a meeting's recording while it plays, in a row under that meeting in the Meetings section of the Vocula window, and shown as its tooltip, which wraps rather than clips. The button itself shows a pause symbol."
+  )
+
+  static let meetingPlayerResume = LocalizedStringResource(
+    "meetings.player.resume", defaultValue: "Resume",
+    comment:
+      "Spoken by VoiceOver for the button that resumes a paused meeting recording, in a row under that meeting in the Meetings section of the Vocula window, and shown as its tooltip, which wraps rather than clips. The button itself shows a play symbol."
+  )
+
+  static let meetingPlayerStop = LocalizedStringResource(
+    "meetings.player.stop", defaultValue: "Stop Playing",
+    comment:
+      "Spoken by VoiceOver for the button that stops a meeting's recording and closes its player row in the Meetings section of the Vocula window, and shown as its tooltip, which wraps rather than clips. The button itself shows a stop symbol. It stops playing only; the meeting is not changed."
+  )
+
+  static let meetingPlayerPosition = LocalizedStringResource(
+    "meetings.player.position", defaultValue: "Position",
+    comment:
+      "Spoken by VoiceOver for the slider that shows, and moves, how far a meeting's recording has played, in a row under that meeting in the Meetings section of the Vocula window. Never drawn."
+  )
+
+  static func meetingPlayerPositionValue(_ elapsed: TimeInterval, of total: TimeInterval)
+    -> LocalizedStringResource
+  {
+    let played = meetingPlaybackTime(elapsed, of: total)
+    let length = meetingPlaybackTime(total, of: total)
+    return LocalizedStringResource(
+      "meetings.player.positionValue", defaultValue: "\(played) of \(length)",
+      comment:
+        "Spoken by VoiceOver as the value of the slider of a meeting recording that plays: how much has played, then the recording's whole length, both already formatted as times such as 1:05. Never drawn."
+    )
+  }
+
+  static let meetingPlayerLoading = LocalizedStringResource(
+    "meetings.player.loading", defaultValue: "Preparing the recording…",
+    comment:
+      "Row under a meeting in the Meetings section of the Vocula window after Play Recording, while its recorded audio is being decrypted and put together, before it starts to play; beside a small spinner. A long translation wraps."
+  )
+
+  static let meetingRecordingUnreadable = LocalizedStringResource(
+    "meetings.failure.recordingUnreadable", defaultValue: "This recording could not be read.",
+    comment:
+      "Line in the Meetings section of the Vocula window, and spoken by VoiceOver, when a meeting's recorded audio could not be opened, so it was neither played nor saved. Shown as a row of its own, above the list; a long translation wraps."
+  )
+
+  static let meetingSavingRecording = LocalizedStringResource(
+    "meetings.savingRecording", defaultValue: "Saving the recording…",
+    comment:
+      "Footer in the Meetings section of the Vocula window while a meeting's recorded audio is being written to the file the user chose, which takes several seconds for a long meeting."
+  )
+
+  static func meetingPlaybackTime(_ seconds: TimeInterval, of total: TimeInterval) -> String {
+    Duration.seconds(max(0, seconds.rounded(.down))).formatted(
+      .time(pattern: total >= 3600 ? .hourMinuteSecond : .minuteSecond).locale(.interface))
+  }
 
   static let meetingOpen = LocalizedStringResource(
     "meetings.action.open", defaultValue: "Open",

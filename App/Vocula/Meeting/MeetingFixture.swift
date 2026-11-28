@@ -8,13 +8,14 @@ final class MeetingFixture {
   private var meetings = [
     MeetingListing(
       id: UUID(uuidString: "00000000-0000-0000-0000-00000000000A")!, startedAt: start,
-      duration: 2832, title: "Weekly sync"),
+      duration: 2832, title: "Weekly sync", hasAudio: true),
     MeetingListing(
       id: UUID(uuidString: "00000000-0000-0000-0000-00000000000B")!,
       startedAt: start.addingTimeInterval(-86_400), duration: 312, isPinned: true),
     MeetingListing(
       id: UUID(uuidString: "00000000-0000-0000-0000-00000000000C")!,
-      startedAt: start.addingTimeInterval(3_600), duration: 95, hasTranscript: false),
+      startedAt: start.addingTimeInterval(3_600), duration: 95, hasTranscript: false,
+      hasAudio: true),
   ]
 
   private let transcript = MeetingTranscript(
@@ -35,6 +36,9 @@ final class MeetingFixture {
       updateHeader: { id, _, change in await self.update(id, change) },
       delete: { id, _ in await self.delete(id) },
       write: { _, _ in .done },
+      playable: { id in await self.playable(id) },
+      saveRecording: { _, _ in .done },
+      makePlayer: { MeetingTranscriptionParts.livePlayer($0) },
       paste: { _ in },
       fetchDiarizer: { _, _, _ in })
   }
@@ -42,6 +46,12 @@ final class MeetingFixture {
   private func read(_ id: UUID) -> MeetingReadResult {
     meetings.contains { $0.id == id && $0.hasTranscript }
       ? .transcript(transcript) : .failed(step: "read", code: 0)
+  }
+
+  private func playable(_ id: UUID) -> MeetingPlayable {
+    meetings.contains { $0.id == id && $0.hasAudio }
+      ? .wav(MeetingRecording.wav(Array(repeating: 0, count: 30 * MeetingRecording.sampleRate)))
+      : .failed(step: "read", code: 0)
   }
 
   private func update(_ id: UUID, _ change: (inout MeetingHeader) -> Void) -> MeetingActionResult {
@@ -54,7 +64,7 @@ final class MeetingFixture {
     meetings[index] = MeetingListing(
       id: id, startedAt: old.startedAt, duration: old.duration, hasEnd: old.hasEnd,
       title: header.title, isPinned: header.isPinned, isRecordingState: old.isRecordingState,
-      hasTranscript: old.hasTranscript)
+      hasTranscript: old.hasTranscript, hasAudio: old.hasAudio)
     return .done
   }
 

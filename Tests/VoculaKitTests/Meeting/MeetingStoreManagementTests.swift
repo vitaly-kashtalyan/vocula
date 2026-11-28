@@ -48,6 +48,20 @@ import Testing
     #expect(byID[interrupted.id]?.hasEnd == false)
   }
 
+  @Test func theListingSaysWhichMeetingsKeepAudio() async throws {
+    let store = MeetingStore(directory: meetingTemporaryDirectory())
+    let kept = try await meeting(in: store, at: 100)
+    let none = try await meeting(in: store, at: 200, transcript: true)
+    try await store.write(
+      MeetingChunk(
+        track: .system, sequence: 0, runs: [MeetingRun(start: s, samples: [1])]),
+      of: kept.id, cipher: cipher)
+    let byID = Dictionary(
+      uniqueKeysWithValues: try await store.listing(cipher: cipher).map { ($0.id, $0) })
+    #expect(byID[kept.id]?.hasAudio == true)
+    #expect(byID[none.id]?.hasAudio == false)
+  }
+
   @Test func renameAndPinAreSealedInTheHeader() async throws {
     let store = MeetingStore(directory: meetingTemporaryDirectory())
     let header = try await meeting(in: store, at: 100)

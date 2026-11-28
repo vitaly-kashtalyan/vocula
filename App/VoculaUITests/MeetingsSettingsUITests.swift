@@ -112,6 +112,64 @@ final class MeetingsSettingsUITests: XCTestCase {
     XCTAssertTrue(keep.waitForNonExistence(timeout: 5), "Keep Recording left the offer up")
   }
 
+  func testARecordedMeetingShowsItsMarkAndOffersPlayAndSave() throws {
+    let window = try openSection("meetings")
+    XCTAssertTrue(
+      element("meetings.hasRecording.2", in: window).waitForExistence(timeout: 10),
+      "the named meeting shows no recording mark")
+    XCTAssertTrue(
+      element("meetings.hasRecording.1", in: window).exists,
+      "the waiting meeting shows no recording mark")
+    XCTAssertFalse(
+      element("meetings.hasRecording.0", in: window).exists,
+      "a meeting without audio shows a recording mark")
+    let app = XCUIApplication()
+    element("meetings.menu.2", in: window).click()
+    for action in ["play", "saveRecording"] {
+      let item = element("meetings.action.\(action)", in: window)
+      XCTAssertTrue(item.waitForExistence(timeout: 5), "the \(action) item is missing")
+      XCTAssertTrue(item.isEnabled, "the \(action) item is disabled")
+    }
+    app.typeKey(.escape, modifierFlags: [])
+    element("meetings.menu.0", in: window).click()
+    XCTAssertTrue(element("meetings.action.open", in: window).waitForExistence(timeout: 5))
+    XCTAssertFalse(
+      element("meetings.action.play", in: window).exists,
+      "a meeting without audio offers Play Recording")
+    XCTAssertFalse(
+      element("meetings.action.saveRecording", in: window).exists,
+      "a meeting without audio offers Save Recording")
+    app.typeKey(.escape, modifierFlags: [])
+  }
+
+  func testPlayRecordingShowsThePlayerAndStopClosesIt() throws {
+    let window = try openSection("meetings")
+    choose("play", onRow: 2, in: window)
+    let pause = element("meetings.player.pause", in: window)
+    XCTAssertTrue(pause.waitForExistence(timeout: 10), "Play Recording showed no player")
+    XCTAssertTrue(
+      element("meetings.player.position", in: window).exists, "the player has no position")
+    pause.click()
+    element("meetings.player.stop", in: window).click()
+    XCTAssertTrue(pause.waitForNonExistence(timeout: 5), "Stop left the player in the row")
+  }
+
+  func testSaveRecordingAsksWhereAndCancelWritesNothing() throws {
+    let window = try openSection("meetings")
+    choose("saveRecording", onRow: 2, in: window)
+    let app = XCUIApplication()
+    let panel = NSPredicate { _, _ in app.dialogs.firstMatch.exists || app.sheets.firstMatch.exists
+    }
+    expectation(for: panel, evaluatedWith: nil)
+    waitForExpectations(timeout: 5)
+    app.typeKey(.escape, modifierFlags: [])
+    let closed = NSPredicate { _, _ in
+      !app.dialogs.firstMatch.exists && !app.sheets.firstMatch.exists
+    }
+    expectation(for: closed, evaluatedWith: nil)
+    waitForExpectations(timeout: 5)
+  }
+
   func testDeleteAsksFirstAndRemovesTheMeeting() throws {
     let window = try openSection("meetings")
     choose("delete", onRow: 1, in: window)
