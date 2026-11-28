@@ -68,7 +68,14 @@ the same small panel, once every app it took for a call during the recording has
 not used the microphone for 30 seconds; the offer itself stops nothing until you
 choose *Stop Recording*. It asks again during that recording only if the call
 took the microphone back before you answered, and never during a recording in
-which no app looked like a call. While it records,
+which no app looked like a call. With the same switch on, Vocula also offers to
+stop, in the same panel, any meeting in which neither track has heard anything
+for two minutes, with or without a call — an in-person meeting too. That offer
+rests only on the sound levels the meeting already measures for its 15-minute
+stop: nothing new is read or stored, and it too stops nothing until you choose
+*Stop Recording*. It goes away as soon as something is heard, and after *Keep
+Recording* it asks again only once something has been heard and two more silent
+minutes have passed. While it records,
 and while Vocula transcribes recorded meetings afterwards, a second icon in the
 menu bar says so; after a meeting that stopped by itself, stopped at sleep, or
 could not start, after a transcript is ready, when one could not be made, and

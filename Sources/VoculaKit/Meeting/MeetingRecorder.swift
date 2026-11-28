@@ -98,6 +98,7 @@ public actor MeetingRecorder {
   private var silence = SilenceStop(startedAt: 0)
   private var silenceVerdict = SilenceStop.Verdict.recording
   private var shownWarnings: [MeetingWarning] = []
+  private var shownQuiet = false
   private var schedule = MicReopenSchedule()
   private var reopenAt: UInt64?
   private var reopening: Task<Void, Never>?
@@ -381,10 +382,14 @@ public actor MeetingRecorder {
       deps.log?.record("meeting.warning", "reason=\(warning.rawValue)")
     }
     if report.systemZerosBegan { deps.log?.record("meeting.systemZeros", "") }
-    guard report.warnings != shownWarnings else { return }
+    let quiet = silence.isQuiet(at: deps.now())
+    guard report.warnings != shownWarnings || quiet != shownQuiet else { return }
     shownWarnings = report.warnings
+    shownQuiet = quiet
     await deps.publish(
-      MeetingStatus(isRecording: true, startedAt: header?.startedAt, warnings: report.warnings))
+      MeetingStatus(
+        isRecording: true, startedAt: header?.startedAt, warnings: report.warnings,
+        isQuiet: quiet))
   }
 
   private func flush() async -> SilenceStop.Verdict {

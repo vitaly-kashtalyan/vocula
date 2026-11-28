@@ -14,6 +14,7 @@ final class MeetingStatusModel {
   private(set) var startedAt: Date?
   private(set) var warnings: [MeetingWarning] = []
   private(set) var notice: MeetingNotice?
+  private(set) var isQuiet = false
   private(set) var statusItemShown = false
   private(set) var elapsed: String?
   private(set) var transcription: MeetingTranscription?
@@ -58,7 +59,8 @@ final class MeetingStatusModel {
 
   private var status: MeetingStatus {
     MeetingStatus(
-      isRecording: isRecording, startedAt: startedAt, warnings: warnings, notice: notice)
+      isRecording: isRecording, startedAt: startedAt, warnings: warnings, notice: notice,
+      isQuiet: isQuiet)
   }
 
   func update(_ new: MeetingStatus) {
@@ -67,6 +69,7 @@ final class MeetingStatusModel {
     if startedAt != new.startedAt { startedAt = new.startedAt }
     if warnings != new.warnings { warnings = new.warnings }
     if notice != new.notice { notice = new.notice }
+    if isQuiet != new.isQuiet { isQuiet = new.isQuiet }
     refreshShown()
     tick(from: new.isRecording ? new.startedAt : nil)
     let spoken = MeetingStatusRules.announcements(from: old, to: new).map { announcement in

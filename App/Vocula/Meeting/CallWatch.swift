@@ -21,7 +21,11 @@ final class CallWatch {
   func start() {
     if VoculaAppDelegate.isSecondCopy {
       let arguments = ProcessInfo.processInfo.arguments
-      if arguments.contains("-VoculaPretendCall") || arguments.contains("-VoculaPretendCallEnd") {
+      if arguments.contains("-VoculaPretendQuiet") {
+        panel.show(.quiet, app: nil, icon: nil) {}
+      } else if arguments.contains("-VoculaPretendCall")
+        || arguments.contains("-VoculaPretendCallEnd")
+      {
         let safari = "/Applications/Safari.app"
         panel.show(
           arguments.contains("-VoculaPretendCallEnd") ? .end : .start,
@@ -45,13 +49,17 @@ final class CallWatch {
     let enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
     let clients = enabled ? await Task.detached(priority: .utility) { Self.clients() }.value : []
     let now = ProcessInfo.processInfo.systemUptime
-    switch ending.observe(clients, at: now, recording: enabled && meetings.status.isRecording) {
+    switch ending.observe(
+      clients, at: now, recording: enabled && meetings.status.isRecording,
+      quiet: meetings.status.isQuiet)
+    {
     case .offer(let pid):
-      show(.end, for: pid, decline: { [weak self] in self?.ending.answered() }) { [weak self] in
-        guard let self else { return }
-        self.ending.answered()
-        guard self.meetings.status.isRecording else { return }
-        _ = self.meetings.toggle()
+      show(.end, for: pid, decline: { [weak self] in self?.ending.answered() }) {
+        [weak self] in self?.stopMeeting()
+      }
+    case .offerQuiet:
+      panel.show(.quiet, app: nil, icon: nil, decline: { [weak self] in self?.ending.answered() }) {
+        [weak self] in self?.stopMeeting()
       }
     case .withdraw:
       panel.close()
@@ -64,6 +72,12 @@ final class CallWatch {
       guard let self, !self.meetings.status.busy else { return }
       _ = self.meetings.toggle()
     }
+  }
+
+  private func stopMeeting() {
+    ending.answered()
+    guard meetings.status.isRecording else { return }
+    _ = meetings.toggle()
   }
 
   private func show(
@@ -127,6 +141,7 @@ final class CallWatch {
 enum CallOfferKind {
   case start
   case end
+  case quiet
 }
 
 @MainActor
@@ -172,9 +187,13 @@ final class CallOfferPanel {
     }
     panel.orderFrontRegardless()
     self.panel = panel
-    Announce.say(
-      String(
-        localized: kind == .start ? MenuCopy.callOffer(in: app) : MenuCopy.callEndOffer(in: app)))
+    let spoken: [LocalizedStringResource] =
+      switch kind {
+      case .start: [MenuCopy.callOffer(in: app)]
+      case .end: [MenuCopy.callEndOffer(in: app)]
+      case .quiet: [MenuCopy.quietOfferTitle, MenuCopy.quietOffer]
+      }
+    Announce.say(spoken.map { String(localized: $0) }.joined(separator: "\n"))
     guard kind == .start else { return }
     hiding = Task { [weak self] in
       try? await Task.sleep(for: Self.shownFor)
@@ -217,12 +236,13 @@ struct CallOfferView: View {
           .frame(width: 40, height: 40)
           .accessibilityHidden(true)
         VStack(alignment: .leading, spacing: 2) {
-          if let app {
-            Text(verbatim: app)
+          if let title {
+            title
               .font(.headline)
+              .fixedSize(horizontal: false, vertical: true)
           }
-          Text(kind == .start ? MenuCopy.callOfferUnnamed : MenuCopy.callEndOfferUnnamed)
-            .foregroundStyle(app == nil ? .primary : .secondary)
+          question
+            .foregroundStyle(title == nil ? .primary : .secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
       }
@@ -231,19 +251,39 @@ struct CallOfferView: View {
         Button(
           kind == .start ? MenuCopy.callOfferNotNow : MenuCopy.callEndOfferKeep, action: dismiss
         )
-        .accessibilityIdentifier(kind == .start ? "callOffer.notNow" : "callEndOffer.keep")
+        .accessibilityIdentifier(identifier + (kind == .start ? ".notNow" : ".keep"))
         Button(action: accept) {
           Label(
             kind == .start ? MenuCopy.callOfferRecord : MenuCopy.callEndOfferStop,
             systemImage: kind == .start ? "record.circle.fill" : "stop.circle.fill")
         }
         .buttonStyle(PrimaryButtonStyle())
-        .accessibilityIdentifier(kind == .start ? "callOffer.record" : "callEndOffer.stop")
+        .accessibilityIdentifier(identifier + (kind == .start ? ".record" : ".stop"))
       }
     }
     .padding(14)
     .frame(width: 340)
     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+  }
+
+  private var title: Text? {
+    kind == .quiet ? Text(MenuCopy.quietOfferTitle) : app.map { Text(verbatim: $0) }
+  }
+
+  private var question: Text {
+    switch kind {
+    case .start: Text(MenuCopy.callOfferUnnamed)
+    case .end: Text(MenuCopy.callEndOfferUnnamed)
+    case .quiet: Text(MenuCopy.quietOffer)
+    }
+  }
+
+  private var identifier: String {
+    switch kind {
+    case .start: "callOffer"
+    case .end: "callEndOffer"
+    case .quiet: "quietOffer"
+    }
   }
 
   @ViewBuilder
@@ -252,7 +292,7 @@ struct CallOfferView: View {
       Image(nsImage: icon)
         .resizable()
     } else {
-      Image(systemName: "phone.fill")
+      Image(systemName: kind == .quiet ? "waveform.slash" : "phone.fill")
         .font(.title2)
         .foregroundStyle(.secondary)
     }

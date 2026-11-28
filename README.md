@@ -126,8 +126,10 @@ to stop when it ends* is on, as it is until you switch it off in *Meetings
 play sound — never what they hear or play — offers to record when one has done
 both for ten seconds, and, while a meeting records, offers to stop it once every
 app it took for a call during the recording has left the microphone for 30
-seconds. Neither offer acts by itself: nothing records until you choose
-*Record*, and the offer to stop leaves the meeting recording until you choose
+seconds, or once nothing has been heard for two minutes — judged from the sound
+levels the meeting already measures for its 15-minute stop, so nothing new is
+read or stored. No offer acts by itself: nothing records until you choose
+*Record*, and an offer to stop leaves the meeting recording until you choose
 *Stop Recording*.
 Insertion goes through the system pasteboard for about a second, which other
 applications can read, and *Copy Transcript* puts a meeting's transcript there
@@ -250,11 +252,11 @@ xcodebuild test -project App/Vocula.xcodeproj -scheme Vocula \
   -skipPackagePluginValidation -only-testing:VoculaAppTests
 ```
 
-1749 tests: 1328 from `swift test` (the sum of the totals it prints, one per test
-target), 395 in the hosted app bundle, 26 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
+1762 tests: 1340 from `swift test` (the sum of the totals it prints, one per test
+target), 395 in the hosted app bundle, 27 driving the real interface. The UI tests are opt-in with `TEST_RUNNER_VOCULA_UI_TESTS=1` because
 they take over the screen, and `TEST_RUNNER_VOCULA_UI_LANG=de` runs the same
 suite against a translated interface, which is the run that catches layout. Two of
-the 26 check English copy and skip whenever a language is set, so a run without
+the 27 check English copy and skip whenever a language is set, so a run without
 one is the only run that executes them.
 
 `swift test` never compiles `App/`, so a green run says nothing about whether the

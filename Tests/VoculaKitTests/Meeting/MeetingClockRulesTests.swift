@@ -42,6 +42,21 @@ private let minute: UInt64 = 60_000_000_000
     var stop = SilenceStop(startedAt: 10 * minute)
     #expect(stop.levels(micPeak: 0, systemPeak: 0, at: 1 * minute) == .recording)
   }
+
+  @Test func twoSilentMinutesAreQuietUntilSoundIsHeard() {
+    var stop = SilenceStop(startedAt: 0)
+    #expect(!stop.isQuiet(at: 2 * minute - 1))
+    #expect(stop.isQuiet(at: 2 * minute))
+    _ = stop.levels(micPeak: 327, systemPeak: 0, at: 3 * minute)
+    #expect(stop.isQuiet(at: 3 * minute))
+    _ = stop.levels(micPeak: 0, systemPeak: 1, at: 3 * minute)
+    #expect(!stop.isQuiet(at: 5 * minute - 1))
+    #expect(stop.isQuiet(at: 5 * minute))
+  }
+
+  @Test func theQuietOfferMatchesTheCopy() {
+    #expect(SilenceStop.quietAfter == 2 * minute)
+  }
 }
 
 @Suite struct MicReopenScheduleTests {

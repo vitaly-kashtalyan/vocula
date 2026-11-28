@@ -353,27 +353,40 @@ extension MenuCopy {
   static let callEndOfferKeep = LocalizedStringResource(
     "meeting.callEndOffer.keep", defaultValue: "Keep Recording",
     comment:
-      "Button in the panel that offers to stop recording a meeting after its call seems to have ended: closes the panel, the meeting goes on recording, and Vocula does not ask again during this meeting. A short button beside Stop Recording."
+      "Button in the panel that offers to stop recording a meeting, after its call seems to have ended or after two minutes in which nothing was heard: closes the panel, and the meeting goes on recording. A short button beside Stop Recording."
   )
 
   static let callEndOfferStop = LocalizedStringResource(
     "meeting.callEndOffer.stop", defaultValue: "Stop Recording",
     comment:
-      "Button in the panel that offers to stop recording a meeting after its call seems to have ended: stops the meeting, as Stop Meeting in Vocula's menu does. A short button beside Keep Recording."
+      "Button in the panel that offers to stop recording a meeting, after its call seems to have ended or after two minutes in which nothing was heard: stops the meeting, as Stop Meeting in Vocula's menu does. A short button beside Keep Recording."
+  )
+
+  static let quietOfferTitle = LocalizedStringResource(
+    "meeting.quietOffer.title", defaultValue: "Nothing heard for two minutes",
+    comment:
+      "Title, in bold, of a small panel at the top right of the screen while a meeting records, when neither the microphone nor the sound of other apps has been heard for two minutes. A question under it asks whether to stop recording; answered by two buttons, Keep Recording and Stop Recording. The panel is about 320 points wide and wraps."
+  )
+
+  static let quietOffer = LocalizedStringResource(
+    "meeting.quietOffer.question",
+    defaultValue: "Looks like the meeting is over. Stop recording it?",
+    comment:
+      "Question in a small panel at the top right of the screen while a meeting records, under the title saying that nothing has been heard for two minutes, which Vocula takes for the end of the meeting. Answered by two buttons, Keep Recording and Stop Recording; the panel is about 320 points wide and wraps."
   )
 
   static let meetingsOffersOnCall = LocalizedStringResource(
     "meetings.offersOnCall", defaultValue: "Offer to record a call and to stop when it ends",
     comment:
-      "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call, and, while a meeting records, one offering to stop when that call seems to have ended."
+      "Switch in the Meetings section of the Vocula window. When it is on, Vocula shows a small panel offering to record when an app seems to start a call, and, while a meeting records, one offering to stop when that call seems to have ended or when nothing has been heard for two minutes."
   )
 
   static let meetingsOffersOnCallFooter = LocalizedStringResource(
     "meetings.offersOnCall.footer",
     defaultValue:
-      "A call is an app that uses the microphone and plays sound for ten seconds, and it ends when the app leaves the microphone for 30 seconds. Vocula only asks: neither offer records or stops anything by itself.",
+      "A call is an app that uses the microphone and plays sound for ten seconds, and it ends when the app leaves the microphone for 30 seconds. Vocula also offers to stop a meeting in which nothing has been heard for two minutes. Vocula only asks: no offer records or stops anything by itself.",
     comment:
-      "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call and to stop recording when it ends."
+      "Explanation under the switches of the Meetings section of the Vocula window, for the switch that offers to record a call, to stop recording when it ends, and to stop recording after two minutes in which nothing was heard."
   )
 
   static let meetingShowsTime = LocalizedStringResource(
