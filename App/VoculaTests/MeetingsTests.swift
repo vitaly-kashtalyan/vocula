@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import Testing
 
@@ -205,6 +206,25 @@ private final class PowerSpy: @unchecked Sendable {
   }
 }
 
+private final class FakePlayer: MeetingPlayer {
+  var duration: TimeInterval = 60
+  var currentTime: TimeInterval = 0
+  var isPlaying = false
+  var stops = 0
+
+  func play() -> Bool {
+    isPlaying = true
+    return true
+  }
+
+  func pause() { isPlaying = false }
+
+  func stop() {
+    isPlaying = false
+    stops += 1
+  }
+}
+
 private struct NoSpeech: SpeechDetecting {
   func markup(_ samples: [Float]) async throws -> SpeechMarkup {
     SpeechMarkup(segments: [], totalDuration: .zero)
@@ -226,6 +246,12 @@ private final class PassProbe {
   var deleteGate: Latch?
   var writeResult: MeetingActionResult = .done
   var written: [(Data, URL)] = []
+  var playable: MeetingPlayable = .wav(Data("wav".utf8))
+  var loads = 0
+  var loadGate: Latch?
+  var players: [FakePlayer] = []
+  var saveResult: MeetingActionResult = .done
+  var saved: [UUID] = []
   var pasted: [String] = []
   let cipherGate = Latch()
   var states: [MeetingDiarizerState] = []
@@ -288,6 +314,25 @@ private final class PassProbe {
           written.append((data, url))
           return writeResult
         }
+      },
+      playable: { [self] _ in
+        let gate = await MainActor.run {
+          loads += 1
+          return loadGate
+        }
+        await gate?.wait()
+        return await playable
+      },
+      saveRecording: { [self] id, _ in
+        await MainActor.run {
+          saved.append(id)
+          return saveResult
+        }
+      },
+      makePlayer: { [self] _ in
+        let player = FakePlayer()
+        players.append(player)
+        return player
       },
       paste: { [self] in pasted.append($0) },
       fetchDiarizer: { [self] log, progressed, arrived in
@@ -978,12 +1023,200 @@ struct MeetingsTests {
     #expect(!meetings.holdsAMeeting)
   }
 
+  private func recorded(_ rig: Rig, count: Int = 1, audio: Bool = true) -> [UUID] {
+    let ids = (0..<count).map { _ in UUID() }
+    let listed = MeetingListingOutcome.meetings(
+      ids.map {
+        MeetingListing(
+          id: $0, startedAt: Date(timeIntervalSince1970: 0), duration: 60, hasAudio: audio)
+      })
+    rig.passes.outcome = listed
+    rig.meetings.status.update(listing: listed)
+    return ids
+  }
+
+  @Test func playStartsThePlayerOfAMeetingWithAudio() async {
+    let rig = Rig()
+    let id = recorded(rig)[0]
+    await rig.meetings.play(id).value
+    #expect(rig.meetings.playback.meeting == id)
+    #expect(rig.meetings.playback.phase == .playing)
+    #expect(rig.passes.players.count == 1)
+    #expect(rig.passes.players.first?.isPlaying == true)
+  }
+
+  @Test func aMeetingWithoutAudioIsNeverLoaded() async {
+    let rig = Rig()
+    await rig.meetings.play(recorded(rig, audio: false)[0]).value
+    #expect(rig.passes.loads == 0)
+    #expect(rig.meetings.playback.meeting == nil)
+  }
+
+  @Test func oneMeetingPlaysAtATime() async {
+    let rig = Rig()
+    let ids = recorded(rig, count: 2)
+    await rig.meetings.play(ids[0]).value
+    await rig.meetings.play(ids[1]).value
+    #expect(rig.passes.players.map(\.stops) == [1, 0])
+    #expect(rig.meetings.playback.meeting == ids[1])
+  }
+
+  @Test func deletingThePlayingMeetingStopsItAndAnotherDeleteDoesNot() async {
+    let rig = Rig()
+    let ids = recorded(rig, count: 2)
+    await rig.meetings.play(ids[0]).value
+    await rig.meetings.delete(ids[1]).value
+    #expect(rig.meetings.playback.meeting == ids[0])
+    await rig.meetings.delete(ids[0]).value
+    #expect(rig.meetings.playback.meeting == nil)
+    #expect(rig.passes.players.first?.stops == 1)
+  }
+
+  @Test func recordingStopsPlaybackAndRefusesItUntilTheMeetingEnds() async throws {
+    let rig = Rig()
+    let id = recorded(rig)[0]
+    await rig.meetings.play(id).value
+    try await rig.record()
+    #expect(rig.meetings.playback.meeting == nil)
+    #expect(rig.passes.players.first?.isPlaying == false)
+    await rig.meetings.play(id).value
+    #expect(rig.passes.loads == 1)
+    await finishes(rig.meetings.toggle())
+  }
+
+  @Test func aRecordingStartedWhileLoadingNeverPlays() async throws {
+    let rig = Rig()
+    let gate = Latch()
+    rig.passes.loadGate = gate
+    let id = recorded(rig)[0]
+    let playing = rig.meetings.play(id)
+    for _ in 0..<50 where rig.passes.loads == 0 { await Task.yield() }
+    try await rig.record()
+    gate.open()
+    await playing.value
+    #expect(rig.passes.players.isEmpty)
+    #expect(rig.meetings.playback.meeting == nil)
+    await finishes(rig.meetings.toggle())
+  }
+
+  @Test func aRecordingThatWillNotOpenShowsTheLineAndLogsTheStep() async {
+    let rig = Rig()
+    rig.passes.playable = .failed(step: "open", code: 0)
+    await rig.meetings.play(recorded(rig)[0]).value
+    #expect(rig.meetings.status.sectionFailure == .recordingUnreadable)
+    #expect(rig.meetings.playback.meeting == nil)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail)
+        == ["action=play step=open code=0"])
+  }
+
+  @Test func aSaveThatFailsShowsTheLineForWhatFailed() async {
+    let rig = Rig()
+    let id = recorded(rig)[0]
+    rig.passes.saveResult = .failed(step: "write", code: 13)
+    await rig.meetings.saveRecording(id, to: URL(fileURLWithPath: "/tmp/x.m4a")).value
+    #expect(rig.meetings.status.sectionFailure == .exportNotWritten)
+    rig.passes.saveResult = .failed(step: "read", code: 2)
+    await rig.meetings.saveRecording(id, to: URL(fileURLWithPath: "/tmp/x.m4a")).value
+    #expect(rig.meetings.status.sectionFailure == .recordingUnreadable)
+    #expect(
+      rig.log.recent(10).filter { $0.kind == "meeting.storeFailed" }.map(\.detail).reversed()
+        == ["action=saveRecording step=write code=13", "action=saveRecording step=read code=2"])
+    #expect(rig.passes.saved == [id, id])
+  }
+
+  @Test func theSavingLineShowsOnlyWhileASaveRuns() async {
+    let rig = Rig()
+    let saving = rig.meetings.saveRecording(recorded(rig)[0], to: URL(fileURLWithPath: "/tmp/x"))
+    #expect(rig.meetings.status.savingRecording)
+    await saving.value
+    #expect(!rig.meetings.status.savingRecording)
+  }
+
+  @Test func pauseResumeAndSeekReachThePlayer() async {
+    let player = FakePlayer()
+    let playback = MeetingPlayback(load: { _ in .wav(Data()) }, makePlayer: { _ in player })
+    #expect(await playback.play(UUID()) == .started)
+    playback.pauseOrResume()
+    #expect(playback.phase == .paused)
+    #expect(!player.isPlaying)
+    playback.seek(to: 90)
+    #expect(player.currentTime == 60)
+    #expect(playback.position == 60)
+    playback.seek(to: 12)
+    playback.pauseOrResume()
+    #expect(playback.phase == .playing)
+    #expect(player.isPlaying)
+    #expect(player.currentTime == 12)
+    playback.stop()
+  }
+
+  @Test func theEndOfTheRecordingClosesThePlayer() async {
+    let player = FakePlayer()
+    let ticks = ManualSleeper()
+    let playback = MeetingPlayback(
+      load: { _ in .wav(Data()) }, makePlayer: { _ in player },
+      tick: { try await ticks.sleep(for: $0) })
+    #expect(await playback.play(UUID()) == .started)
+    await ticks.untilSleeping()
+    player.currentTime = 7
+    ticks.fire()
+    await ticks.untilSleeping()
+    #expect(playback.position == 7)
+    player.isPlaying = false
+    ticks.fire()
+    for _ in 0..<200 where playback.meeting != nil { await Task.yield() }
+    #expect(playback.meeting == nil)
+  }
+
+  @Test func aPlayerThatWillNotStartIsAFailure() async {
+    let playback = MeetingPlayback(load: { _ in .wav(Data()) }, makePlayer: { _ in nil })
+    #expect(await playback.play(UUID()) == .failed(step: "player", code: 0))
+    #expect(playback.meeting == nil)
+  }
+
+  @Test func theKitsWAVOpensInTheSystemPlayer() throws {
+    let player = try AVAudioPlayer(
+      data: MeetingRecording.wav(Array(repeating: 0, count: MeetingRecording.sampleRate)),
+      fileTypeHint: AVFileType.wav.rawValue)
+    #expect(abs(player.duration - 1) < 0.01)
+  }
+
+  @Test func aSavedRecordingIsLosslessStereoWithTheMicrophoneOnTheLeft() throws {
+    let directory = FileManager.default.temporaryDirectory
+      .appendingPathComponent("vocula-recording-\(UUID().uuidString)", isDirectory: true)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let url = directory.appendingPathComponent("meeting.m4a")
+    let frames = 1_000_000
+    let mic = (0..<frames).map { Int16(truncatingIfNeeded: $0 &* 7) }
+    let system = (0..<25_000).map { Int16(truncatingIfNeeded: -$0 &* 3) }
+    try MeetingAudioFile.writeLossless(mic: mic, system: system, to: url)
+    let file = try AVAudioFile(forReading: url, commonFormat: .pcmFormatInt16, interleaved: false)
+    #expect(file.fileFormat.streamDescription.pointee.mFormatID == kAudioFormatAppleLossless)
+    #expect(file.fileFormat.sampleRate == 16_000)
+    #expect(file.fileFormat.channelCount == 2)
+    #expect(file.length == AVAudioFramePosition(frames))
+    let buffer = try #require(
+      AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(frames)))
+    try file.read(into: buffer)
+    let channels = try #require(buffer.int16ChannelData)
+    #expect(Array(UnsafeBufferPointer(start: channels[0], count: frames)) == mic)
+    #expect(
+      Array(UnsafeBufferPointer(start: channels[1], count: frames))
+        == system + Array(repeating: 0, count: frames - system.count))
+  }
+
   @Test func aSecondCopyListsNoTranscripts() async {
     #expect(await MeetingTranscriptionParts.liveListing(log: nil) == .meetings([]))
     #expect(await MeetingTranscriptionParts.liveRead(UUID()) == .unavailable)
     #expect(
       await MeetingTranscriptionParts.liveUpdateHeader(UUID(), busy: false) { _ in } == .refused)
     #expect(await MeetingTranscriptionParts.liveDelete(UUID(), busy: false) == .refused)
+    #expect(await MeetingTranscriptionParts.livePlayable(UUID()) == .failed(step: "read", code: 0))
+    #expect(
+      await MeetingTranscriptionParts.liveSaveRecording(UUID(), to: URL(fileURLWithPath: "/"))
+        == .refused)
   }
 
   @Test func aSecondCopyCreatesNoStore() {

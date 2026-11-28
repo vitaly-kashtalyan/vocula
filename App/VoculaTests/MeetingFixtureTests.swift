@@ -60,7 +60,20 @@ import Testing
   }
 
   @Test func theFixtureTouchesNoDisk() async {
-    #expect(
-      await MeetingFixture().parts().write(Data("x".utf8), URL(fileURLWithPath: "/")) == .done)
+    let parts = MeetingFixture().parts()
+    #expect(await parts.write(Data("x".utf8), URL(fileURLWithPath: "/")) == .done)
+    #expect(await parts.saveRecording(UUID(), URL(fileURLWithPath: "/")) == .done)
+  }
+
+  @Test func theFixtureKeepsAudioForTheWaitingAndTheNamedMeeting() async {
+    #expect(await listed(MeetingFixture().parts()).map(\.hasAudio) == [false, true, true])
+  }
+
+  @Test func theFixturePlaysSilenceOnlyForAMeetingWithAudio() async {
+    let parts = MeetingFixture().parts()
+    let found = await listed(parts)
+    let silence = MeetingRecording.wav(Array(repeating: 0, count: 30 * MeetingRecording.sampleRate))
+    #expect(await parts.playable(found[2].id) == .wav(silence))
+    #expect(await parts.playable(found[0].id) == .failed(step: "read", code: 0))
   }
 }

@@ -8,9 +8,11 @@ public enum MeetingListingStatus: Equatable, Sendable {
 
 public enum MeetingAction: CaseIterable, Sendable {
   case open
+  case play
   case rename
   case pin
   case export
+  case saveRecording
   case copy
   case delete
 }
@@ -24,11 +26,12 @@ public struct MeetingListing: Equatable, Sendable, Identifiable {
   public let isPinned: Bool
   public let isRecordingState: Bool
   public let hasTranscript: Bool
+  public let hasAudio: Bool
 
   public init(
     id: UUID, startedAt: Date, duration: TimeInterval, hasEnd: Bool = true,
     title: String? = nil, isPinned: Bool = false, isRecordingState: Bool = false,
-    hasTranscript: Bool = true
+    hasTranscript: Bool = true, hasAudio: Bool = false
   ) {
     self.id = id
     self.startedAt = startedAt
@@ -38,6 +41,7 @@ public struct MeetingListing: Equatable, Sendable, Identifiable {
     self.isPinned = isPinned
     self.isRecordingState = isRecordingState
     self.hasTranscript = hasTranscript
+    self.hasAudio = hasAudio
   }
 
   public func status(busy: Bool) -> MeetingListingStatus {
@@ -51,6 +55,8 @@ public struct MeetingListing: Equatable, Sendable, Identifiable {
     case .open, .export, .copy: return status == .transcribed
     case .rename, .pin: return status != .recording
     case .delete: return status != .recording && !isPinned && !passRunning
+    case .play: return hasAudio && hasEnd && !busy
+    case .saveRecording: return hasAudio && hasEnd
     }
   }
 

@@ -93,7 +93,10 @@ public actor MeetingStore {
         duration: max(0, header.end?.timeIntervalSince(header.startedAt) ?? 0),
         hasEnd: header.end != nil, title: header.title, isPinned: header.isPinned,
         isRecordingState: header.state == .recording,
-        hasTranscript: FileManager.default.fileExists(atPath: transcriptURL(id).path))
+        hasTranscript: FileManager.default.fileExists(atPath: transcriptURL(id).path),
+        hasAudio: MeetingTrack.allCases.contains {
+          !((try? Self.chunkURLs(of: $0, in: audioDirectory(id))) ?? []).isEmpty
+        })
     }
     if found.isEmpty, !ids.isEmpty { throw MeetingStoreError.failed(step: "open", code: 0) }
     return found

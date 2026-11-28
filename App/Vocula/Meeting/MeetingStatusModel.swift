@@ -6,6 +6,7 @@ enum MeetingSectionFailure: Equatable {
   case notSaved
   case exportNotWritten
   case transcriptUnreadable
+  case recordingUnreadable
 }
 
 @MainActor @Observable
@@ -26,6 +27,7 @@ final class MeetingStatusModel {
   private(set) var busy = false
   private(set) var passRunning = false
   private(set) var sectionFailure: MeetingSectionFailure?
+  private(set) var savingRecording = false
 
   var transcripts: [MeetingListing] { MeetingListing.transcribed(meetings) }
 
@@ -135,12 +137,17 @@ final class MeetingStatusModel {
       case .notSaved: MenuCopy.meetingNotSaved
       case .exportNotWritten: MenuCopy.meetingExportFailed
       case .transcriptUnreadable: MenuCopy.transcriptUnreadable
+      case .recordingUnreadable: MenuCopy.meetingRecordingUnreadable
       }
     announce(String(localized: line))
   }
 
   func actionSucceeded() {
     if sectionFailure != nil { sectionFailure = nil }
+  }
+
+  func update(savingRecording new: Bool) {
+    if savingRecording != new { savingRecording = new }
   }
 
   func update(busy: Bool, passRunning: Bool) {
