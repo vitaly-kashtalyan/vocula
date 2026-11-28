@@ -156,16 +156,14 @@ final class MeetingsSettingsUITests: XCTestCase {
 
   func testSaveRecordingAsksWhereAndCancelWritesNothing() throws {
     let window = try openSection("meetings")
-    choose("saveRecording", onRow: 2, in: window)
     let app = XCUIApplication()
-    let panel = NSPredicate { _, _ in app.dialogs.firstMatch.exists || app.sheets.firstMatch.exists
-    }
+    let before = app.windows.count
+    choose("saveRecording", onRow: 2, in: window)
+    let panel = NSPredicate { _, _ in app.windows.count > before }
     expectation(for: panel, evaluatedWith: nil)
     waitForExpectations(timeout: 5)
     app.typeKey(.escape, modifierFlags: [])
-    let closed = NSPredicate { _, _ in
-      !app.dialogs.firstMatch.exists && !app.sheets.firstMatch.exists
-    }
+    let closed = NSPredicate { _, _ in app.windows.count == before }
     expectation(for: closed, evaluatedWith: nil)
     waitForExpectations(timeout: 5)
   }
