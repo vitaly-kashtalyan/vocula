@@ -77,9 +77,11 @@ struct MeetingTranscriptionSlowTests {
         publish: { _ in },
         log: nil))
     await transcriber.run()
+    let audio = root.appendingPathComponent("\(header.id.uuidString)/audio").path
     #expect(
-      !FileManager.default.fileExists(
-        atPath: root.appendingPathComponent("\(header.id.uuidString)/audio").path))
+      try FileManager.default.contentsOfDirectory(atPath: audio).contains {
+        $0.hasSuffix(".sealed")
+      })
     return try await store.transcript(of: header.id, cipher: PassthroughCipher())
   }
 

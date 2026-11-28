@@ -11,6 +11,7 @@ final class CallWatch {
   private let meetings: Meetings
   private let panel = CallOfferPanel()
   private var offer = CallOffer()
+  private var ending = CallEndOffer()
   private var polling: Task<Void, Never>?
 
   init(meetings: Meetings) {
@@ -19,9 +20,11 @@ final class CallWatch {
 
   func start() {
     if VoculaAppDelegate.isSecondCopy {
-      if ProcessInfo.processInfo.arguments.contains("-VoculaPretendCall") {
+      let arguments = ProcessInfo.processInfo.arguments
+      if arguments.contains("-VoculaPretendCall") || arguments.contains("-VoculaPretendCallEnd") {
         let safari = "/Applications/Safari.app"
         panel.show(
+          arguments.contains("-VoculaPretendCallEnd") ? .end : .start,
           app: URL(fileURLWithPath: safari).deletingPathExtension().lastPathComponent,
           icon: NSWorkspace.shared.icon(
             forFile: URL(fileURLWithPath: safari).resolvingSymlinksInPath().path)
@@ -39,17 +42,38 @@ final class CallWatch {
   }
 
   private func tick() async {
-    guard UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true else { return }
-    let clients = await Task.detached(priority: .utility) { Self.clients() }.value
-    let recording = meetings.status.isRecording || meetings.status.busy
+    let enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
+    let clients = enabled ? await Task.detached(priority: .utility) { Self.clients() }.value : []
     let now = ProcessInfo.processInfo.systemUptime
-    guard let pid = offer.observe(clients, at: now, recording: recording) else { return }
-    let app = Self.app(of: pid)
-    panel.show(app: app?.name, icon: app.map { NSWorkspace.shared.icon(forFile: $0.path) }) {
-      [weak self] in
+    switch ending.observe(clients, at: now, recording: enabled && meetings.status.isRecording) {
+    case .offer(let pid):
+      show(.end, for: pid, decline: { [weak self] in self?.ending.answered() }) { [weak self] in
+        guard let self else { return }
+        self.ending.answered()
+        guard self.meetings.status.isRecording else { return }
+        _ = self.meetings.toggle()
+      }
+    case .withdraw:
+      panel.close()
+    case nil:
+      break
+    }
+    let recording = meetings.status.isRecording || meetings.status.busy
+    guard enabled, let pid = offer.observe(clients, at: now, recording: recording) else { return }
+    show(.start, for: pid) { [weak self] in
       guard let self, !self.meetings.status.busy else { return }
       _ = self.meetings.toggle()
     }
+  }
+
+  private func show(
+    _ kind: CallOfferKind, for pid: Int32, decline: @escaping () -> Void = {},
+    accept: @escaping () -> Void
+  ) {
+    let app = Self.app(of: pid)
+    panel.show(
+      kind, app: app?.name, icon: app.map { NSWorkspace.shared.icon(forFile: $0.path) },
+      decline: decline, accept: accept)
   }
 
   nonisolated static func clients() -> [AudioClient] {
@@ -100,6 +124,11 @@ final class CallWatch {
   }
 }
 
+enum CallOfferKind {
+  case start
+  case end
+}
+
 @MainActor
 final class CallOfferPanel {
   static let shownFor: Duration = .seconds(20)
@@ -107,17 +136,24 @@ final class CallOfferPanel {
   private var panel: NSPanel?
   private var hiding: Task<Void, Never>?
 
-  func show(app: String?, icon: NSImage?, record: @escaping () -> Void) {
+  func show(
+    _ kind: CallOfferKind, app: String?, icon: NSImage?, decline: @escaping () -> Void = {},
+    accept: @escaping () -> Void
+  ) {
     close()
     let host = FirstClickHostingView(
       rootView: CallOfferView(
+        kind: kind,
         app: app,
         icon: icon,
-        record: { [weak self] in
+        accept: { [weak self] in
           self?.close()
-          record()
+          accept()
         },
-        dismiss: { [weak self] in self?.close() }))
+        dismiss: { [weak self] in
+          self?.close()
+          decline()
+        }))
     let size = host.fittingSize
     let panel = NSPanel(
       contentRect: NSRect(origin: .zero, size: size),
@@ -136,7 +172,10 @@ final class CallOfferPanel {
     }
     panel.orderFrontRegardless()
     self.panel = panel
-    Announce.say(String(localized: MenuCopy.callOffer(in: app)))
+    Announce.say(
+      String(
+        localized: kind == .start ? MenuCopy.callOffer(in: app) : MenuCopy.callEndOffer(in: app)))
+    guard kind == .start else { return }
     hiding = Task { [weak self] in
       try? await Task.sleep(for: Self.shownFor)
       if !Task.isCancelled { self?.close() }
@@ -156,9 +195,10 @@ private final class FirstClickHostingView: NSHostingView<CallOfferView> {
 }
 
 struct CallOfferView: View {
+  let kind: CallOfferKind
   let app: String?
   let icon: NSImage?
-  let record: () -> Void
+  let accept: () -> Void
   let dismiss: () -> Void
 
   var body: some View {
@@ -181,20 +221,24 @@ struct CallOfferView: View {
             Text(verbatim: app)
               .font(.headline)
           }
-          Text(MenuCopy.callOfferUnnamed)
+          Text(kind == .start ? MenuCopy.callOfferUnnamed : MenuCopy.callEndOfferUnnamed)
             .foregroundStyle(app == nil ? .primary : .secondary)
             .fixedSize(horizontal: false, vertical: true)
         }
       }
       HStack(spacing: 8) {
         Spacer()
-        Button(MenuCopy.callOfferNotNow, action: dismiss)
-          .accessibilityIdentifier("callOffer.notNow")
-        Button(action: record) {
-          Label(MenuCopy.callOfferRecord, systemImage: "record.circle.fill")
+        Button(
+          kind == .start ? MenuCopy.callOfferNotNow : MenuCopy.callEndOfferKeep, action: dismiss
+        )
+        .accessibilityIdentifier(kind == .start ? "callOffer.notNow" : "callEndOffer.keep")
+        Button(action: accept) {
+          Label(
+            kind == .start ? MenuCopy.callOfferRecord : MenuCopy.callEndOfferStop,
+            systemImage: kind == .start ? "record.circle.fill" : "stop.circle.fill")
         }
-        .buttonStyle(RecordButtonStyle())
-        .accessibilityIdentifier("callOffer.record")
+        .buttonStyle(PrimaryButtonStyle())
+        .accessibilityIdentifier(kind == .start ? "callOffer.record" : "callEndOffer.stop")
       }
     }
     .padding(14)
@@ -215,7 +259,7 @@ struct CallOfferView: View {
   }
 }
 
-private struct RecordButtonStyle: ButtonStyle {
+private struct PrimaryButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.body.weight(.semibold))

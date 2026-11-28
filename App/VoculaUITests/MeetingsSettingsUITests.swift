@@ -92,6 +92,16 @@ final class MeetingsSettingsUITests: XCTestCase {
     XCTAssertTrue(notNow.waitForNonExistence(timeout: 5), "Not Now left the offer up")
   }
 
+  func testAPretendCallEndIsOfferedAndKeepRecordingClosesTheOffer() throws {
+    _ = try openSection("meetings", arguments: ["-VoculaPretendCallEnd"])
+    let app = XCUIApplication()
+    let keep = app.buttons["callEndOffer.keep"]
+    XCTAssertTrue(keep.waitForExistence(timeout: 10), "no offer to stop recording appeared")
+    XCTAssertTrue(app.buttons["callEndOffer.stop"].exists, "the offer has no Stop Recording button")
+    keep.click()
+    XCTAssertTrue(keep.waitForNonExistence(timeout: 5), "Keep Recording left the offer up")
+  }
+
   func testDeleteAsksFirstAndRemovesTheMeeting() throws {
     let window = try openSection("meetings")
     choose("delete", onRow: 1, in: window)

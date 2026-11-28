@@ -30,8 +30,8 @@ recovered from. A meeting does save audio, and that includes what you dictate
 while one records: the meeting holds the same microphone and keeps every sample
 it hears, so your dictated words are in that meeting's recording, and the
 meeting notes when each dictation began and ended. Once the meeting is
-transcribed, those words are left out of its transcript, and its audio is
-deleted. The next section says how.
+transcribed, those words are left out of its transcript, but they stay in its
+recording, which is kept until you delete the meeting. The next section says how.
 
 Recognition runs entirely on this Mac, using a model downloaded from this
 project's GitHub releases.
@@ -48,21 +48,27 @@ recognised beside the cleaned-up one.
 
 ## Before you record a meeting
 
-**While *Offer to record when a call starts* is on** — it is until you switch it
-off in *Meetings (Beta)* — Vocula asks macOS every two seconds which apps are
-using the microphone and which are playing sound. That is all it learns, never
-what they hear or play. When one app has done both for ten seconds, Vocula
-takes it for a call and offers, in a small panel at the top right of the
-screen, to record it; nothing records until you choose *Record*, and each call
-is offered once. To name the app in the offer, Vocula reads where the app sits
-on disk. None of this is stored or written to the diagnostic log.
+**While *Offer to record a call and to stop when it ends* is on** — it is until
+you switch it off in *Meetings (Beta)* — Vocula asks macOS every two seconds
+which apps are using the microphone and which are playing sound. That is all it
+learns, never what they hear or play. When one app has done both for ten
+seconds, Vocula takes it for a call and offers, in a small panel at the top
+right of the screen, to record it; nothing records until you choose *Record*,
+and each call is offered once. To name the app in the offer, Vocula reads where
+the app sits on disk. None of this is stored or written to the diagnostic log.
 
 ## While you record a meeting
 
 *Record Meeting (Beta)*, in Vocula's menu, records two tracks until you choose
 *Stop Meeting*: your microphone, and the sound other apps play — the other side
 of a call. It also stops by itself after 15 minutes in which neither track heard
-anything, when the Mac goes to sleep, and when you quit Vocula. While it records,
+anything, when the Mac goes to sleep, and when you quit Vocula. While *Offer to
+record a call and to stop when it ends* is on, Vocula also offers to stop, in
+the same small panel, once every app it took for a call during the recording has
+not used the microphone for 30 seconds; the offer itself stops nothing until you
+choose *Stop Recording*. It asks again during that recording only if the call
+took the microphone back before you answered, and never during a recording in
+which no app looked like a call. While it records,
 and while Vocula transcribes recorded meetings afterwards, a second icon in the
 menu bar says so; after a meeting that stopped by itself, stopped at sleep, or
 could not start, after a transcript is ready, when one could not be made, and
@@ -107,11 +113,14 @@ ended because you quit is not transcribed then: both wait, audio and all, until
 the next meeting you record ends. A meeting that ends before the speaker
 separation model has arrived waits for it and is transcribed as soon as it
 arrives; if 24 hours pass first, the next meeting's end transcribes it without
-speakers, as *Others*. Once a meeting's transcript is written and read back, its audio is
-deleted, and speech the model missed or misheard — with Whisper, including
-speech in a language you have not ticked — is gone with it, as is any piece of the
-recording that can no longer be opened. *Recorded meetings*, below, says where the transcripts
-are kept, under which key, and how to delete them.
+speakers, as *Others*. A meeting is transcribed once: after its transcript is written and
+read back, Vocula never transcribes it again, so speech the model missed or
+misheard — with Whisper, including speech in a language you have not ticked —
+stays missing from the transcript, as does any piece of the recording that could
+not be opened. Its audio is not deleted then: it stays, encrypted, until you
+delete the meeting, and this version cannot play it back. *Recorded meetings*,
+below, says where the recordings and transcripts are kept, under which key, and
+how to delete them.
 
 ## Putting the text in place
 
@@ -179,8 +188,8 @@ all in Settings → History.
 
 **Recorded meetings**, in `~/Library/Application Support/app.vocula.mac/Meetings/`
 — a folder per meeting, named by a random identifier, holding the recording in
-pieces three seconds long until the meeting is transcribed, then its transcript,
-and a header that says when the meeting started and ended, how it ended —
+pieces three seconds long, its transcript once the meeting is transcribed, and
+a header that says when the meeting started and ended, how it ended —
 stopped by you, by itself, at sleep, at quit, or cut off — and when you dictated
 during it. Nothing reaches that folder unencrypted: each piece, the transcript
 and the header are sealed with AES-GCM in memory before they are written. The key is a second one in
@@ -196,17 +205,20 @@ meeting's header also holds the name you give it and whether you pinned it,
 sealed like the rest. The folders' dates still show when a meeting was recorded and roughly how
 long it ran.
 
-A meeting's audio stays there until its transcript is written, and until then it
-is not small: each track is kept whole as 16 kHz mono 16-bit samples — the sound
-of other apps through its silences too — which comes to about 115 MB per track
-per hour, so about 230 MB for an hour of meeting. That is computed from the
-format, not measured. If a meeting cannot be transcribed, its audio stays, and
-Vocula tries again after the next meeting you record ends. The transcript stays until you delete
-the meeting in *Meetings (Beta)* — that takes it out of the list at once and
-removes its folder, transcript and any audio from disk right after (if that
-removal fails, the folder, still encrypted, waits for the next time the list is
-read); it cannot be undone, and a pinned meeting cannot be deleted until you
-unpin it — and nothing deletes one on a timer. Deleting the `Meetings` folder deletes
+A meeting's audio stays there, beside its transcript, until you delete the
+meeting, and it is not small: each track is kept whole as 16 kHz mono 16-bit
+samples — the sound of other apps through its silences too — which comes to
+about 115 MB per track per hour, so about 230 MB for every hour of meeting you
+keep. That is computed from the format, not measured. (Earlier versions deleted
+the audio once the transcript was written, and a meeting they transcribed has no
+audio left; a copy of this document you remember saying so is out of date.) If a
+meeting cannot be transcribed, Vocula tries again after the next meeting you
+record ends. The recording and the transcript stay until you delete the meeting
+in *Meetings (Beta)* — that takes it out of the list at once and removes its
+folder, recording and transcript from disk right after (if that removal fails,
+the folder, still encrypted, waits for the next time the list is read); it
+cannot be undone, and a pinned meeting cannot be deleted until you unpin it —
+and nothing deletes one on a timer. Deleting the `Meetings` folder deletes
 every meeting in it. The
 History switch does not apply to meetings, and neither does deleting history — a
 day or everything — nor the one-year retention.
