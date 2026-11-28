@@ -103,6 +103,10 @@ import Testing
     #expect(MeetingMarkdown.fileName(for: "Q3: plan/review") == "Q3- plan-review.md")
   }
 
+  @Test func fileNameTakesTheExtensionAsked() {
+    #expect(MeetingMarkdown.fileName(for: "Q3: plan", pathExtension: "m4a") == "Q3- plan.m4a")
+  }
+
   @Test func fileNameOfSeparatorsOnly() {
     #expect(MeetingMarkdown.fileName(for: "/:/") == "---.md")
   }

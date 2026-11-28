@@ -6,12 +6,12 @@ import Testing
 @Suite struct MeetingListingTests {
   private func listing(
     at seconds: TimeInterval = 0, pinned: Bool = false, recording: Bool = false,
-    transcript: Bool = true
+    transcript: Bool = true, audio: Bool = true, ended: Bool? = nil
   ) -> MeetingListing {
     MeetingListing(
       id: UUID(), startedAt: Date(timeIntervalSinceReferenceDate: seconds), duration: 60,
-      hasEnd: !recording, isPinned: pinned, isRecordingState: recording,
-      hasTranscript: transcript)
+      hasEnd: ended ?? !recording, isPinned: pinned, isRecordingState: recording,
+      hasTranscript: transcript, hasAudio: audio)
   }
 
   @Test func statusFollowsTranscriptStateAndBusy() {
@@ -42,6 +42,23 @@ import Testing
       #expect(!live.allows(action, busy: true, passRunning: false))
     }
     #expect(live.allows(.delete, busy: false, passRunning: false))
+  }
+
+  @Test func theRecordingIsPlayedAndSavedOnlyWhenKeptAndEnded() {
+    let kept = listing(transcript: false)
+    #expect(kept.allows(.play, busy: false, passRunning: true))
+    #expect(kept.allows(.saveRecording, busy: false, passRunning: true))
+    #expect(!kept.allows(.play, busy: true, passRunning: false))
+    #expect(kept.allows(.saveRecording, busy: true, passRunning: false))
+
+    for action in [MeetingAction.play, .saveRecording] {
+      #expect(!listing(audio: false).allows(action, busy: false, passRunning: false))
+      #expect(
+        !listing(recording: true, transcript: false).allows(action, busy: false, passRunning: false)
+      )
+      #expect(
+        !listing(transcript: false, ended: false).allows(action, busy: false, passRunning: false))
+    }
   }
 
   @Test func pinnedFirstThenNewest() {

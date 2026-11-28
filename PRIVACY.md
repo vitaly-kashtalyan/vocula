@@ -31,7 +31,8 @@ while one records: the meeting holds the same microphone and keeps every sample
 it hears, so your dictated words are in that meeting's recording, and the
 meeting notes when each dictation began and ended. Once the meeting is
 transcribed, those words are left out of its transcript, but they stay in its
-recording, which is kept until you delete the meeting. The next section says how.
+recording, which is kept until you delete the meeting, and in any copy of it you
+save. The next section says how.
 
 Recognition runs entirely on this Mac, using a model downloaded from this
 project's GitHub releases.
@@ -112,9 +113,9 @@ read back, Vocula never transcribes it again, so speech the model missed or
 misheard — with Whisper, including speech in a language you have not ticked —
 stays missing from the transcript, as does any piece of the recording that could
 not be opened. Its audio is not deleted then: it stays, encrypted, until you
-delete the meeting, and this version cannot play it back. *Recorded meetings*,
-below, says where the recordings and transcripts are kept, under which key, and
-how to delete them.
+delete the meeting, and *Meetings (Beta)* can play it back and save a copy of
+it. *Recorded meetings*, below, says where the recordings and transcripts are
+kept, under which key, and how to play, save and delete them.
 
 ## Putting the text in place
 
@@ -194,7 +195,8 @@ is read when a meeting starts — if it cannot be read, the meeting does not
 start — and again when Vocula transcribes meetings, after each meeting ends, while
 *Meetings (Beta)* is showing in its window (when you open it, each time Vocula
 comes back to the front on it, and around each thing you do there: open,
-rename, pin, export, copy, delete); those later reads never create a key. A
+rename, pin, export, copy, play, save a recording, delete); those later reads
+never create a key. A
 meeting's header also holds the name you give it and whether you pinned it,
 sealed like the rest. The folders' dates still show when a meeting was recorded and roughly how
 long it ran.
@@ -229,6 +231,20 @@ not read before then. *Open* shows a transcript in the window without writing it
 anywhere. What you copy or export is yours, like anything you copy: Vocula's
 encryption does not follow it.
 
+A meeting that still has its recording shows a waveform on its row in
+*Meetings (Beta)*. *Play Recording* decrypts its two tracks into memory, lays
+them on the meeting's timeline with its silences, mixes them into one and plays
+that through your Mac's output; nothing is written to disk to play it, one
+meeting plays at a time, and playing stops when that meeting is deleted or any
+meeting starts recording. A meeting never records Vocula's own sound as other
+apps' sound, and because playing has stopped before a meeting starts, the
+microphone does not hear it either. **Save Recording… writes the recording to a file you choose, and
+that file is not encrypted**: Apple Lossless audio in an `.m4a`, 16 kHz, your
+microphone on the left channel and the other apps on the right, everything the
+meeting heard — what you dictated during it included. It is the one way a
+meeting's audio leaves Vocula's encryption, and only when you ask for it; like
+an export, the copy is yours.
+
 **A diagnostic log**, `diagnostics.json`, is **not** encrypted, and this is
 worth being precise about. It never contains a transcript: what may be written
 is restricted to a fixed list of event names and short values, and anything
@@ -251,9 +267,9 @@ went through, how many lines the transcripts hold and how many of your words wer
 dropped as echo, how many of the recording's three-second pieces it could not open, how long it took,
 and which model it used — never the text. When a call could not be split into
 speakers, a line says at which step and with which error code. Renaming, pinning, opening, copying,
-exporting or deleting a meeting in *Meetings (Beta)* writes a line only when it
-fails, saying which of those and the error code — never the meeting's name or
-text. There is a line for each other problem it ran into. It holds the last 2,000 events.
+exporting or deleting a meeting in *Meetings (Beta)*, and playing or saving its
+recording, writes a line only when it fails, saying which of those and the error
+code — never the meeting's name or text. There is a line for each other problem it ran into. It holds the last 2,000 events.
 "Reveal the Diagnostic Log in Finder" in the menu takes you to it.
 
 ## What leaves this Mac
@@ -325,8 +341,8 @@ advertising:
 
 - **Someone using your unlocked Mac.** The key is available to the app while you
   are logged in, so anyone sitting at your machine can read your history in the
-  app, and open, export, copy or delete any meeting in *Meetings (Beta)*,
-  exactly as you can.
+  app, and open, export, copy, play, save or delete any meeting in *Meetings
+  (Beta)*, exactly as you can.
 - **Software running as you with sufficient privilege.** The encryption raises
   the cost considerably, but a program that can drive the Keychain prompt or
   read this app's memory is a different class of problem.

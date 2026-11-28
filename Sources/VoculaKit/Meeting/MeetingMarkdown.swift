@@ -34,14 +34,14 @@ public enum MeetingMarkdown {
     }
   }
 
-  public static func fileName(for title: String) -> String {
+  public static func fileName(for title: String, pathExtension: String = "md") -> String {
     var stem = ""
     for character in title {
       let next = character == "/" || character == ":" ? "-" : String(character)
       guard stem.utf8.count + next.utf8.count <= 200 else { break }
       stem += next
     }
-    return stem + ".md"
+    return stem + "." + pathExtension
   }
 
   private static func labelled(
