@@ -66,7 +66,7 @@ import Testing
     #expect(rig.diarizer.calls == 1)
     #expect(await lines(rig, header).map(\.speaker) == [.others])
     #expect(rig.lines("meeting.diarizeFailed").isEmpty)
-    #expect(!rig.hasAudio(header))
+    #expect(rig.hasAudio(header))
   }
 
   @Test func twoMeetingsInOnePassAreBothSplit() async throws {
@@ -129,7 +129,7 @@ import Testing
       startedAt: ended(100, rig), system: [rig.speech(at: 0.5, for: 1)])
     await rig.run()
     #expect(await lines(rig, waited).map(\.speaker) == [.others])
-    #expect(!rig.hasAudio(waited))
+    #expect(rig.hasAudio(waited))
     #expect(await rig.transcript(of: fresh) == nil)
     #expect(rig.hasAudio(fresh))
     #expect(rig.lines("meeting.diarizeFailed") == ["step=waited code=0"])
@@ -168,8 +168,8 @@ import Testing
     await rig.run()
     #expect(await lines(rig, first).map(\.speaker) == [.others])
     #expect(await lines(rig, second).map(\.speaker) == [.others])
-    #expect(!rig.hasAudio(first))
-    #expect(!rig.hasAudio(second))
+    #expect(rig.hasAudio(first))
+    #expect(rig.hasAudio(second))
     #expect(rig.lines("meeting.diarizeFailed") == ["step=load code=-3"])
     #expect(rig.calls.count("load") == 1)
     #expect(rig.calls.count("discard") == 1)
@@ -228,7 +228,7 @@ import Testing
     let header = try rig.meeting(system: [rig.speech(at: 0.5, for: 1)])
     await rig.run()
     #expect(await lines(rig, header).map(\.speaker) == [.others])
-    #expect(!rig.hasAudio(header))
+    #expect(rig.hasAudio(header))
     #expect(rig.lines("meeting.diarizeFailed") == ["step=diarize code=4"])
     #expect(rig.calls.count("discard") == 0)
 

@@ -84,15 +84,17 @@ import Testing
     #expect(work.map(\.kind) == [.emptyTranscript])
   }
 
-  @Test func aTranscriptWithAudioOnlyRemovesAudio() async throws {
+  @Test func aTranscribedMeetingKeepsItsAudioAndIsNotPending() async throws {
     let root = meetingTemporaryDirectory()
     let header = recorded()
     try plant(header: header, chunks: ["audio/mic-000000.sealed": sealed(chunk(.mic))], in: root)
     let store = MeetingStore(directory: root)
     try await store.writeTranscript(transcript(), of: header.id, cipher: MarkingCipher())
-    #expect(try await store.work(cipher: MarkingCipher()).map(\.kind) == [.removeAudio])
-    try await store.removeAudio(of: header.id)
     #expect(try await store.work(cipher: MarkingCipher()).isEmpty)
+    #expect(
+      try await store.listing(cipher: MarkingCipher()).map { $0.status(busy: false) }
+        == [.transcribed])
+    #expect(try await store.chunkNames(of: header.id, track: .mic) == ["mic-000000.sealed"])
   }
 
   @Test func anUnreadableTranscriptIsLeftAlone() async throws {
@@ -226,19 +228,6 @@ import Testing
     #expect(
       !FileManager.default.fileExists(
         atPath: meeting(header.id, in: root).appendingPathComponent("transcript.sealed").path))
-  }
-
-  @Test func removingAudioLeavesTheTranscript() async throws {
-    let root = meetingTemporaryDirectory()
-    let header = recorded()
-    try plant(header: header, chunks: ["audio/mic-000000.sealed": sealed(chunk(.mic))], in: root)
-    let store = MeetingStore(directory: root)
-    try await store.writeTranscript(transcript(), of: header.id, cipher: MarkingCipher())
-    try await store.removeAudio(of: header.id)
-    try await store.removeAudio(of: header.id)
-    let directory = meeting(header.id, in: root)
-    #expect(!FileManager.default.fileExists(atPath: directory.appendingPathComponent("audio").path))
-    #expect(try await store.transcript(of: header.id, cipher: MarkingCipher()) == transcript())
   }
 
   @Test func theHeaderGivesItsEndAsHostTime() {

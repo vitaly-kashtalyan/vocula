@@ -12362,61 +12362,61 @@
       }
     },
     "meetings.delete.message" : {
-      "comment" : "Message of the confirmation before deleting a meeting: what is lost, and that it is permanent.",
+      "comment" : "Message of the confirmation before deleting a meeting: what is lost — the meeting's audio recording, kept encrypted on this Mac, and its transcript — and that it is permanent.",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Das Transkript und eventuelle Audiodaten werden entfernt. Dies kann nicht rückgängig gemacht werden."
+            "value" : "Die Aufnahme und das Transkript werden entfernt. Dies kann nicht rückgängig gemacht werden."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Its transcript and any audio are removed. This cannot be undone."
+            "value" : "Its recording and its transcript are removed. This cannot be undone."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Se eliminarán su transcripción y cualquier audio. No se puede deshacer."
+            "value" : "Se eliminarán su grabación y su transcripción. No se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sa transcription et tout audio sont supprimés. Cette action est irréversible."
+            "value" : "Son enregistrement et sa transcription sont supprimés. Cette action est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "La trascrizione e l’eventuale audio vengono rimossi. L’operazione non può essere annullata."
+            "value" : "La registrazione e la trascrizione vengono rimosse. L’operazione non può essere annullata."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Transkrypcja i ewentualny dźwięk zostaną usunięte. Tej operacji nie można cofnąć."
+            "value" : "Nagranie i transkrypcja zostaną usunięte. Tej operacji nie można cofnąć."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "A transcrição e qualquer áudio serão removidos. Não é possível desfazer."
+            "value" : "A gravação e a transcrição serão removidas. Não é possível desfazer."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Расшифровка и звук, если он остался, будут удалены. Это нельзя отменить."
+            "value" : "Запись и расшифровка будут удалены. Это нельзя отменить."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Розшифровку та звук, якщо він лишився, буде видалено. Це не можна скасувати."
+            "value" : "Запис і розшифровку буде видалено. Це не можна скасувати."
           }
         }
       }
