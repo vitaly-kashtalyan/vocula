@@ -307,7 +307,7 @@ final class TranscriberRig: @unchecked Sendable {
     let newer = try rig.meeting(startedAt: 800_000_600, mic: [rig.speech(at: 0.5, for: 2)])
     let recorded = [rig.audio(of: older), rig.audio(of: newer)]
     await rig.run()
-    #expect(rig.recognizers.calls == [32_000, 16_000])
+    #expect(rig.recognizers.calls == [40_000, 24_000])
     #expect(await rig.transcript(of: newer)?.utterances.map(\.speaker) == [.me])
     #expect(await rig.transcript(of: older)?.utterances.map(\.speaker) == [.me])
     #expect(await rig.transcript(of: newer)?.model == "largeV3Turbo")
@@ -322,6 +322,7 @@ final class TranscriberRig: @unchecked Sendable {
 
   @Test func wordsLandAtTheirTimeAndDictationIsLeftOut() async throws {
     let rig = TranscriberRig()
+    rig.recognizers.words = [TimedText(start: 0.6, end: 0.8, text: "w")]
     let header = try rig.meeting(
       lasting: 12,
       mic: [rig.speech(at: 1, for: 1), rig.speech(at: 8, for: 1)],
@@ -336,7 +337,7 @@ final class TranscriberRig: @unchecked Sendable {
 
   @Test func aWordStretchedPastTheSpeechEndsWhereTheSpeechEnds() async throws {
     let rig = TranscriberRig()
-    rig.recognizers.words = [TimedText(start: 0.1, end: 2.5, text: "stretched")]
+    rig.recognizers.words = [TimedText(start: 0.6, end: 3.0, text: "stretched")]
     let header = try rig.meeting(lasting: 6, mic: [rig.speech(at: 1, for: 1)])
     await rig.run()
     let utterance = try #require(await rig.transcript(of: header)?.utterances.first)
@@ -615,7 +616,7 @@ final class TranscriberRig: @unchecked Sendable {
     for index in 952_000..<960_000 { samples[index] = 1_000 }
     let header = try rig.meeting(lasting: 60, mic: [MeetingRun(start: rig.s, samples: samples)])
     await rig.run()
-    #expect(rig.recognizers.calls == [8_000])
+    #expect(rig.recognizers.calls == [16_000])
     #expect(await rig.transcript(of: header)?.utterances.count == 1)
   }
 
